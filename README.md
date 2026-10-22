@@ -16,7 +16,7 @@ That's the whole game:
 | --- | --- |
 | `Assets/Unity.QuickDuel/Core` | Engine-free duel rules (`Duel`, `DuelSettings`, `DuelResult`) |
 | `Tests/Core.Tests` | NUnit tests for the rules, run outside Unity |
-| `docs/ORIGINS.md` | Where the idea comes from: the old Bushido Coda builds |
+| `docs/ORIGINS.md` | Where the idea comes from: Samurai Kirby, then the old Bushido Coda builds |
 
 ## Build and test
 

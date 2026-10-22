@@ -1,4 +1,21 @@
-# Origins: Bushido Coda
+# Origins
+
+## Samurai Kirby
+
+The original inspiration is Samurai Kirby, a sub-game in Kirby Super Star (SNES, 1996):
+https://kirby.fandom.com/wiki/Samurai_Kirby. Two samurai stand off, a "!" appears, and the first to
+press the button wins; pressing before the signal loses. Bushido Coda grew out of that, and
+QuickDuel returns to it.
+
+## Online PvP: judge reactions, not packets
+
+Idea credited to Christopher Danielson. A host only listens. Each player runs the duel on their own
+client: the host sends the round's standoff length, each client shows its own cue, and each client
+measures its own reaction from its own cue to its own key press. The clients send only that
+reaction time, and the host compares the two. Network latency never enters the measurement, so
+neither player is favored by ping. A negative reaction (a strike before the cue) loses as usual.
+
+## Bushido Coda
 
 QuickDuel is the core of an older game, "Bushido Coda" (the name now belongs to a book). Those
 builds carried overworld maps, merchants, weather, items, stats, skill dials and a focus bar. Under
