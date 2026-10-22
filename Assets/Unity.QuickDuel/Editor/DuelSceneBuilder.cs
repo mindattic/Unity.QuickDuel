@@ -30,6 +30,7 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelController>();
             duel.AddComponent<DuelInput>();
             duel.AddComponent<DuelView>();
+            duel.AddComponent<DuelTaunt>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);

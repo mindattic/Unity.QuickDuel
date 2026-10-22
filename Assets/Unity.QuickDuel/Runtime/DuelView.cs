@@ -190,7 +190,7 @@ namespace Unity.QuickDuel
             countdown = Label("Countdown", 320, new Vector2(0, 120f), Ink);
             cue = Label("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f), tint: false);
             cue.text = "!";
-            headline = Label("Headline", 120, new Vector2(0, 280f), Ink);
+            headline = Label("Headline", 120, new Vector2(0, 370f), Ink);
             prompt = Label("Prompt", 44, new Vector2(0, -440f), Ink);
         }
 
