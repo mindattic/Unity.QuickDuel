@@ -110,6 +110,7 @@ namespace Unity.QuickDuel
             ai = AiPlaysRight ? new AiOpponent(Difficulty(mode)) : null;
             if (input != null) input.RightIsHuman = !AiPlaysRight;
             Match = new Match(winsNeeded);
+            if (view != null) view.RightName = AiPlaysRight ? "AI" : "Right";
             if (modeText == null) return;
             modeText.text = (AiPlaysRight ? $"vs AI ({Difficulty(mode)})" : "Local PvP") + "  -  Tab / Select: mode";
             verdict.enabled = false;

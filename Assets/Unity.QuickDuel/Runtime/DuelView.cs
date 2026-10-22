@@ -92,13 +92,16 @@ namespace Unity.QuickDuel
             return $"{Mathf.RoundToInt((float)(seconds.Value * 1000))} ms";
         }
 
-        public static string Headline(DuelResult result)
+        // Who the right fighter is called in the headline; the session sets "AI" in vs-AI modes.
+        public string RightName { get; set; } = "Right";
+
+        public static string Headline(DuelResult result, string rightName = "Right")
         {
             switch (result.Outcome)
             {
                 case DuelOutcome.Tie: return "Draw";
                 case DuelOutcome.NoStrike: return "Nobody struck";
-                default: return result.Winner == Side.Left ? "Left wins" : "Right wins";
+                default: return result.Winner == Side.Left ? "Left wins" : rightName + " wins";
             }
         }
 
@@ -122,7 +125,7 @@ namespace Unity.QuickDuel
 
             var resolved = phase == DuelPhase.Resolved;
             headline.enabled = resolved;
-            if (resolved) headline.text = Headline(controller.Result);
+            if (resolved) headline.text = Headline(controller.Result, RightName);
             title.enabled = phase == DuelPhase.Ready;
             prompt.enabled = phase == DuelPhase.Ready || resolved;
             prompt.text = phase == DuelPhase.Ready

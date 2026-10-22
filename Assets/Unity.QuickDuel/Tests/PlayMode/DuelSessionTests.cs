@@ -38,6 +38,8 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Result.RightReaction, Is.InRange(min, max));
             Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));
             Assert.That(session.ScoreText(Side.Right), Does.StartWith("AI  1/2"));
+            yield return null;
+            Assert.That(controller.GetComponent<DuelView>().HeadlineText, Is.EqualTo("AI wins"));
         }
 
         [UnityTest]
