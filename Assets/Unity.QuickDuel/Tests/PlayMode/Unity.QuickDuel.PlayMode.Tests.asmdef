@@ -4,6 +4,8 @@
     "references": [
         "Unity.QuickDuel.Core",
         "Unity.QuickDuel.Runtime",
+        "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

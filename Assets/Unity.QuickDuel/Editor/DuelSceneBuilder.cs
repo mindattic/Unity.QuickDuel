@@ -28,6 +28,7 @@ namespace Unity.QuickDuel.EditorTools
 
             var duel = new GameObject("Duel");
             duel.AddComponent<DuelController>();
+            duel.AddComponent<DuelInput>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);
