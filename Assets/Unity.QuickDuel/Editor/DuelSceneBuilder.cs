@@ -31,11 +31,21 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelInput>();
             duel.AddComponent<DuelView>();
             duel.AddComponent<DuelTaunt>();
+            duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"QuickDuel: wrote {ScenePath}");
+        }
+
+        private static AudioClip Clip(string name)
+        {
+            var path = $"Assets/Unity.QuickDuel/Audio/{name}.ogg";
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip == null)
+                Debug.LogWarning($"QuickDuel: missing {path}");
+            return clip;
         }
 
         private static void AddToBuildSettings(string path)
