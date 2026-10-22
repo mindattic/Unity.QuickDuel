@@ -31,6 +31,7 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelInput>();
             duel.AddComponent<DuelView>();
             duel.AddComponent<DuelTaunt>();
+            duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"));
 
             EditorSceneManager.SaveScene(scene, ScenePath);

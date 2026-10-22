@@ -17,6 +17,9 @@ namespace Unity.QuickDuel
         private InputAction padStrike;
         private InputAction nextRound;
 
+        // False while the computer plays the right side; L and gamepad 2 then do nothing.
+        public bool RightIsHuman { get; set; } = true;
+
         private void Awake()
         {
             controller = GetComponent<DuelController>();
@@ -33,7 +36,7 @@ namespace Unity.QuickDuel
             nextRound.AddBinding("<Gamepad>/start");
 
             leftKey.performed += ctx => controller.Strike(Side.Left, ctx.time);
-            rightKey.performed += ctx => controller.Strike(Side.Right, ctx.time);
+            rightKey.performed += ctx => { if (RightIsHuman) controller.Strike(Side.Right, ctx.time); };
             padStrike.performed += OnPadStrike;
             nextRound.performed += _ => controller.BeginRound();
         }
@@ -67,7 +70,7 @@ namespace Unity.QuickDuel
             if (!ctx.ReadValueAsButton())
                 return;
             var side = SideOfGamepad(ctx.control.device);
-            if (side.HasValue)
+            if (side.HasValue && (side.Value == Side.Left || RightIsHuman))
                 controller.Strike(side.Value, ctx.time);
         }
 
