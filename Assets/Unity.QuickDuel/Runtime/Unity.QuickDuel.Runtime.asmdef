@@ -1,0 +1,17 @@
+{
+    "name": "Unity.QuickDuel.Runtime",
+    "rootNamespace": "Unity.QuickDuel",
+    "references": [
+        "Unity.QuickDuel.Core",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
