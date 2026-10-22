@@ -26,4 +26,13 @@ Open the folder in Unity 6000.4.3f1. Test the rules without the editor:
 dotnet test Core.slnx
 ```
 
+Build the Windows player to `Build/QuickDuel/QuickDuel.exe` (exits non-zero on failure):
+
+```
+powershell -File deploy.ps1
+```
+
+Controls: left player A or gamepad 1 south button, right player L or gamepad 2 south button,
+Space or Start begins the next round.
+
 Rounds are judged by input event timestamps, not by frame, so the frame rate can't decide a duel.
