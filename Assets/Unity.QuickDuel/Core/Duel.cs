@@ -18,7 +18,8 @@ namespace Unity.QuickDuel.Core
         FasterStrike,
         EarlyStrike,
         Tie,
-        NoStrike
+        NoStrike,
+        Forfeit
     }
 
     public sealed class DuelResult
@@ -121,11 +122,10 @@ namespace Unity.QuickDuel.Core
             if (at < CueAt)
             {
                 var reaction = at - CueAt;
-                Resolve(new DuelResult(
-                    DuelOutcome.EarlyStrike,
-                    Other(side),
+                Resolve(DuelJudge.Judge(
                     side == Side.Left ? reaction : (double?)null,
-                    side == Side.Right ? reaction : (double?)null));
+                    side == Side.Right ? reaction : (double?)null,
+                    0));
                 return;
             }
 
@@ -140,24 +140,8 @@ namespace Unity.QuickDuel.Core
                 ResolveByReaction();
         }
 
-        private void ResolveByReaction()
-        {
-            var left = leftStrikeAt - CueAt;
-            var right = rightStrikeAt - CueAt;
-
-            if (left.HasValue && right.HasValue && left.Value == right.Value)
-            {
-                Resolve(new DuelResult(DuelOutcome.Tie, null, left, right));
-                return;
-            }
-
-            Side winner;
-            if (!right.HasValue) winner = Side.Left;
-            else if (!left.HasValue) winner = Side.Right;
-            else winner = left.Value < right.Value ? Side.Left : Side.Right;
-
-            Resolve(new DuelResult(DuelOutcome.FasterStrike, winner, left, right));
-        }
+        // Local strikes are real input events, so the online human-floor check does not apply.
+        private void ResolveByReaction() => Resolve(DuelJudge.Judge(leftStrikeAt - CueAt, rightStrikeAt - CueAt, 0));
 
         private void Resolve(DuelResult result)
         {
@@ -171,7 +155,5 @@ namespace Unity.QuickDuel.Core
             Phase = phase;
             PhaseChanged?.Invoke(phase);
         }
-
-        private static Side Other(Side side) => side == Side.Left ? Side.Right : Side.Left;
     }
 }
