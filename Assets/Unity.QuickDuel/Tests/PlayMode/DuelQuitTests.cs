@@ -68,17 +68,22 @@ namespace Unity.QuickDuel.Tests
         }
 
         [UnityTest]
-        public IEnumerator GamepadSelectAndStartQuitsWithoutAlsoBeginningARound()
+        public IEnumerator GamepadSelectAndStartQuitsWithoutAlsoBeginningARoundOrCyclingTheMode()
         {
             yield return Load();
+            var session = controller.GetComponent<DuelSession>();
             var pad = InputSystem.AddDevice<Gamepad>();
             Press(pad.selectButton);
             yield return null;
             Press(pad.startButton);
             yield return null;
+            Release(pad.selectButton);   // DuelSession would otherwise cycle the mode on Select's release
+            Release(pad.startButton);
+            yield return null;
 
             Assert.That(quitCalled, Is.True);
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Ready), "Select+Start quits; it shouldn't also begin a round.");
+            Assert.That(session.Mode, Is.EqualTo(DuelMode.LocalPvp), "Select+Start quits; it shouldn't also cycle the mode.");
         }
 
         [UnityTest]
@@ -91,6 +96,21 @@ namespace Unity.QuickDuel.Tests
 
             Assert.That(quitCalled, Is.False);
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
+        }
+
+        [UnityTest]
+        public IEnumerator GamepadSelectTapAloneStillCyclesTheMode()
+        {
+            yield return Load();
+            var session = controller.GetComponent<DuelSession>();
+            var pad = InputSystem.AddDevice<Gamepad>();
+            Press(pad.selectButton);
+            yield return null;
+            Release(pad.selectButton);
+            yield return null;
+
+            Assert.That(quitCalled, Is.False);
+            Assert.That(session.Mode, Is.EqualTo(DuelMode.VsAiEasy), "A plain Select tap should still cycle the mode.");
         }
     }
 }

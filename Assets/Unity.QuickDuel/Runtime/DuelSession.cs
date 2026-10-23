@@ -18,6 +18,7 @@ namespace Unity.QuickDuel
 
         private DuelController controller;
         private DuelInput input;
+        private DuelQuit quit;
         private DuelView view;
         private AiOpponent ai;
         private double? aiStrikeAt;
@@ -40,12 +41,20 @@ namespace Unity.QuickDuel
         {
             controller = GetComponent<DuelController>();
             input = GetComponent<DuelInput>();
+            quit = GetComponent<DuelQuit>();
             Match = new Match(winsNeeded);
 
             cycleMode = new InputAction("CycleMode", InputActionType.Button);
             cycleMode.AddBinding("<Keyboard>/tab");
             cycleMode.AddBinding("<Gamepad>/select");
-            cycleMode.performed += _ => CycleMode();
+            // Fires on release, not press, so a Select held into the Select+Start quit chord (DuelQuit)
+            // can be told apart from a plain tap and skip cycling the mode on its way out.
+            cycleMode.canceled += _ =>
+            {
+                if (quit != null && quit.ConsumeChord())
+                    return;
+                CycleMode();
+            };
 
             controller.PhaseChanged += OnPhaseChanged;
             controller.Resolved += OnResolved;

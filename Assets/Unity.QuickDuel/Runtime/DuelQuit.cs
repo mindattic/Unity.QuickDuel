@@ -14,6 +14,7 @@ namespace Unity.QuickDuel
         private DuelController controller;
         private InputAction escape;
         private InputAction padStart;
+        private bool chordFired;
 
         // Replaced by tests so quitting doesn't tear down the test process.
         public Action OnQuit { get; set; } = Application.Quit;
@@ -31,7 +32,12 @@ namespace Unity.QuickDuel
             padStart.performed += ctx =>
             {
                 if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
+                {
+                    // Mark the chord before TryQuit: DuelSession reads this on Select's release to
+                    // skip cycling the mode, whether or not CanBeginRound let the quit itself through.
+                    chordFired = true;
                     TryQuit();
+                }
             };
         }
 
@@ -60,6 +66,15 @@ namespace Unity.QuickDuel
                 return false;
             OnQuit();
             return true;
+        }
+
+        // DuelSession calls this when Select is released, to tell a Select+Start quit chord apart
+        // from a plain tap (which should still cycle the mode). Consumes the flag either way.
+        public bool ConsumeChord()
+        {
+            var fired = chordFired;
+            chordFired = false;
+            return fired;
         }
     }
 }
