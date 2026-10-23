@@ -1,0 +1,187 @@
+using System;
+using Unity.Multiplayer;      // NetEntity
+using Unity.Multiplayer.Core; // [ToServer], [ToClients], [Synced], NetSender
+using Unity.QuickDuel.Core;
+using UnityEngine;
+
+namespace Unity.QuickDuel.Online
+{
+    // The online duel on the wire (UQD-T14), over Unity.Multiplayer: one server-spawned network object that
+    // carries the protocol of OnlineDuelHost and OnlineDuelClient. The host draws each round's countdown and standoff
+    // and sends them to every peer (RoundBegan); each of the two seated players runs that round as a local Duel on its
+    // own clock and reports only its reaction time (ReportReaction); the host judges the pair with DuelJudge and sends
+    // the verdict (RoundJudged), which every peer records in its own copy of the Match. Latency only shifts when a
+    // player's round starts, never the reaction it reports, so it cannot decide a duel.
+    public partial class OnlineDuel : NetEntity
+    {
+        // Client ids of the two duelists; NoClient until the server seats them.
+        public const ulong NoClient = ulong.MaxValue;
+
+        [Synced] private ulong _leftClient = ulong.MaxValue;
+        [Synced] private ulong _rightClient = ulong.MaxValue;
+
+        // Server only: the round lengths, match length and human floor; change them with Configure between rounds.
+        public DuelSettings HostSettings { get; private set; }
+        public double HumanFloorSeconds { get; private set; } = DuelJudge.DefaultHumanFloorSeconds;
+
+        // Rounds a duelist needs to take the match (best of 3 by default); every peer scores against it.
+        [Synced] private int _winsNeeded = 2;
+
+        // Every peer's clock: the one Input System event timestamps use, so strikes can pass ctx.time straight in.
+        public Func<double> Clock { get; set; } = () => Time.realtimeSinceStartupAsDouble;
+        public double Now => Clock();
+
+        // Server only: the authority that draws rounds and judges reports.
+        public OnlineDuelHost Host { get; private set; }
+
+        // The local player's half when this peer is one of the two duelists, else null (a spectator, a dedicated server).
+        public OnlineDuelClient Local { get; private set; }
+        public Side? LocalSide => Local?.Side;
+
+        // Every peer's copy of the match, built from the host's verdicts.
+        public Match Match { get; private set; }
+        public int LastJudgedRound { get; private set; }
+        public DuelResult LastResult { get; private set; }
+
+        // Every peer: a round the host judged, after it is recorded in Match.
+        public event Action<int, DuelResult> Judged;
+
+        // host -> every peer: a new round, with the host's countdown and standoff lengths in seconds and who duels
+        // in it (the seating travels with the round, so a re-seat just before it can never race it).
+        [ToClients]
+        public partial void RoundBegan(int round, double countdownSeconds, double standoffSeconds, ulong leftClient, ulong rightClient);
+
+        // duelist -> host: this side's reaction for `round`, seconds from its own cue (negative before it); struck is
+        // false for no strike. Any connection may call it; the host keeps only the two seated duelists' reports.
+        [ToServer(RequireOwnership = false, RateLimit = 10)]
+        public partial void ReportReaction(int round, bool struck, double reaction);
+
+        // host -> every peer: the verdict. winner is -1 for none, else (int)Side.
+        [ToClients]
+        public partial void RoundJudged(int round, int outcome, int winner, bool leftStruck, double left, bool rightStruck, double right);
+
+        // Server: who duels. Usually the host's own client id on the left and the joining player's on the right.
+        public void Seat(ulong left, ulong right)
+        {
+            if (!IsServer)
+                throw new InvalidOperationException("Only the server seats the duelists.");
+            if (left == right)
+                throw new ArgumentException("The two duelists must be different connections.");
+            LeftClient = left;
+            RightClient = right;
+        }
+
+        // Server: opens the next round and sends its lengths out. False while a round is still being played.
+        public bool BeginRound()
+        {
+            if (!IsServer || Host == null)
+                throw new InvalidOperationException("Only the server begins rounds.");
+            if (Host.RoundOpen)
+                return false;
+            Host.BeginRound(Now);
+            return true;
+        }
+
+        // The local duelist's strike, at its own timestamp on Clock (an input event time).
+        public void Strike(double at) => Local?.Strike(at);
+
+        // Server, before the first round: the round lengths, match length and human floor.
+        public void Configure(DuelSettings settings, int winsNeeded = 2, double humanFloorSeconds = DuelJudge.DefaultHumanFloorSeconds)
+        {
+            if (!IsServer)
+                throw new InvalidOperationException("Only the server configures the duel.");
+            if (Host != null && Host.Round > 0)
+                throw new InvalidOperationException("Configure the duel before its first round.");
+            HostSettings = settings;
+            HumanFloorSeconds = humanFloorSeconds;
+            CreateHost(winsNeeded);
+        }
+
+        protected override void OnSpawned()
+        {
+            Match = new Match(WinsNeeded);
+            if (IsServer)
+                CreateHost(WinsNeeded);
+        }
+
+        private void CreateHost(int winsNeeded)
+        {
+            Host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds);
+            Host.RoundBegan += (round, countdown, standoff) => RoundBegan(round, countdown, standoff, LeftClient, RightClient);
+            Host.RoundJudged += SendVerdict;
+            WinsNeeded = winsNeeded;
+            Match = new Match(winsNeeded);
+        }
+
+        protected override void OnDespawned()
+        {
+            Host = null;
+            Local = null;
+        }
+
+        private void SendVerdict(int round, DuelResult result)
+        {
+            RoundJudged(
+                round,
+                (int)result.Outcome,
+                result.Winner.HasValue ? (int)result.Winner.Value : -1,
+                result.LeftReaction.HasValue, result.LeftReaction ?? 0,
+                result.RightReaction.HasValue, result.RightReaction ?? 0);
+        }
+
+        private void OnRoundBegan(int round, double countdownSeconds, double standoffSeconds, ulong leftClient, ulong rightClient)
+        {
+            var me = Session != null ? Session.LocalClientId : NoClient;
+            var side = me == leftClient ? Side.Left : me == rightClient ? Side.Right : (Side?)null;
+            if (side == null)
+            {
+                Local = null;
+                return;
+            }
+            if (Local == null || Local.Side != side.Value)
+            {
+                Local = new OnlineDuelClient(side.Value);
+                Local.ReactionReady += (r, reaction) => ReportReaction(r, reaction.HasValue, reaction ?? 0);
+            }
+            Local.Begin(round, countdownSeconds, standoffSeconds, Now);
+        }
+
+        private void OnReportReaction(int round, bool struck, double reaction, NetSender sender)
+        {
+            if (Host == null)
+                return;
+            Side side;
+            if (sender.ClientId == LeftClient) side = Side.Left;
+            else if (sender.ClientId == RightClient) side = Side.Right;
+            else return;
+            Host.Report(side, round, struck ? reaction : (double?)null);
+        }
+
+        private void OnRoundJudged(int round, int outcome, int winner, bool leftStruck, double left, bool rightStruck, double right)
+        {
+            if (round <= LastJudgedRound)
+                return;
+            var result = new DuelResult(
+                (DuelOutcome)outcome,
+                winner < 0 ? (Side?)null : (Side)winner,
+                leftStruck ? left : (double?)null,
+                rightStruck ? right : (double?)null);
+            if (Match.IsOver || Match.WinsNeeded != WinsNeeded)
+                Match = new Match(WinsNeeded);
+            Match.Record(result);
+            LastJudgedRound = round;
+            LastResult = result;
+            Judged?.Invoke(round, result);
+        }
+
+        private void Update()
+        {
+            if (!IsSpawned)
+                return;
+            var now = Now;
+            Local?.Tick(now);
+            if (IsServer)
+                Host?.Tick(now);
+        }
+    }
+}

@@ -82,12 +82,20 @@ namespace Unity.QuickDuel.Core
 
         public void Begin(double now)
         {
+            var span = settings.MaxStandoffSeconds - settings.MinStandoffSeconds;
+            Begin(now, settings.MinStandoffSeconds + random.NextDouble() * span);
+        }
+
+        // Begins with a standoff length chosen elsewhere: an online client uses the one its host drew.
+        public void Begin(double now, double standoffSeconds)
+        {
             if (Phase != DuelPhase.Ready)
                 throw new InvalidOperationException("A duel can only begin once.");
+            if (double.IsNaN(standoffSeconds) || double.IsInfinity(standoffSeconds) || standoffSeconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(standoffSeconds), "The standoff must be a finite, non-negative length.");
 
             countdownEndsAt = now + settings.CountdownSeconds;
-            var span = settings.MaxStandoffSeconds - settings.MinStandoffSeconds;
-            CueAt = countdownEndsAt + settings.MinStandoffSeconds + random.NextDouble() * span;
+            CueAt = countdownEndsAt + standoffSeconds;
             SetPhase(DuelPhase.Countdown);
             Tick(now);
         }

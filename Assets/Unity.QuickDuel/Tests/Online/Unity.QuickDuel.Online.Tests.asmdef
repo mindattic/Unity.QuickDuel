@@ -1,0 +1,36 @@
+{
+    "name": "Unity.QuickDuel.Online.Tests",
+    "rootNamespace": "Unity.QuickDuel.Online.Tests",
+    "references": [
+        "Unity.QuickDuel.Core",
+        "Unity.QuickDuel.Online",
+        "Unity.Multiplayer",
+        "Unity.Multiplayer.Core",
+        "Unity.Multiplayer.Testing",
+        "Unity.Netcode.Runtime",
+        "Unity.Netcode.Runtime.Tests",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "MINDATTIC_NGO_TESTABLE",
+        "QUICKDUEL_MULTIPLAYER"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mindattic.unity.multiplayer",
+            "expression": "2.0.0",
+            "define": "QUICKDUEL_MULTIPLAYER"
+        }
+    ],
+    "noEngineReferences": false
+}

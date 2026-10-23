@@ -1,0 +1,27 @@
+{
+    "name": "Unity.QuickDuel.Online",
+    "rootNamespace": "Unity.QuickDuel.Online",
+    "references": [
+        "Unity.QuickDuel.Core",
+        "Unity.Multiplayer",
+        "Unity.Multiplayer.Core",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "QUICKDUEL_MULTIPLAYER"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.mindattic.unity.multiplayer",
+            "expression": "2.0.0",
+            "define": "QUICKDUEL_MULTIPLAYER"
+        }
+    ],
+    "noEngineReferences": false
+}

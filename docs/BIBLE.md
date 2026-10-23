@@ -40,17 +40,20 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 - **NOT a game where the AI cheats.** The AI draws a reaction time from its difficulty's range when the
   countdown starts and strikes at exactly `CueAt + reaction`; it never sees the player's input and never
   strikes early.
-- **NOT online (yet).** Online PvP is designed (§4.4) and its judge exists (`DuelJudge`), but there is no
-  transport; that is [frontier](#UQD-§7).
+- **NOT online in the shipped scene (yet).** Online PvP is built and tested at the protocol and transport
+  level (§4.4, `OnlineDuel`), but the Duel scene has no Host / Join menu; that is [frontier](#UQD-§7).
 
 ## 4. Architecture canon {#UQD-§4}
 
 ```
 Assets/Unity.QuickDuel/
-  Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent
+  Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
+                                                      OnlineDuelHost, OnlineDuelClient
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio
+  Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present)
   Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), QuickDuelBuild
   Tests/PlayMode/                                     scene, input, session, view, taunt and audio tests
+  Tests/Online/                                       host + client over the Unity.Multiplayer test kit
 Tests/Core.Tests                                      NUnit tests of Core, run with `dotnet test Core.slnx`
 ```
 
@@ -93,6 +96,22 @@ client runs its own countdown and cue and measures its own reaction from its own
 and sends back just that number. The host judges the two numbers with `DuelJudge` (human floor on). Ping
 never enters the measurement, so neither player is favoured by latency.
 
+Built as (UQD-T14):
+
+- **`OnlineDuelHost`** (Core) draws each round's standoff (and hands out its countdown), accepts the first
+  report per side for the open round only, and judges once both are in, or when the report window closes
+  (`CountdownSeconds + standoff + StrikeTimeoutSeconds + SettleSeconds + ReportGraceSeconds` (2 s) after the
+  round began) with a silent side counted as no strike. A finished match is replaced on the next round.
+- **`OnlineDuelClient`** (Core) runs each announced round as an ordinary local `Duel` on its own clock with the
+  host's lengths (`Duel.Begin(now, standoffSeconds)`), and reports its own side's reaction once that duel
+  resolves: at once for an early strike, after the settle window for a strike, after the timeout for none.
+  A round no newer than the current one is ignored.
+- **`OnlineDuel`** (Online, a `NetEntity`) is the wire: the server `Seat`s two client ids (synced),
+  `BeginRound` sends `RoundBegan(round, countdown, standoff)` to every peer, the seated duelists send
+  `ReportReaction(round, struck, reaction)`, reports from any other connection are dropped, and
+  `RoundJudged` carries the verdict to every peer, which records it in its own `Match`. A local strike is
+  `OnlineDuel.Strike(eventTime)`.
+
 ## 5. The Laws {#UQD-§5}
 
 Unity.QuickDuel **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
@@ -133,7 +152,10 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   PlayMode tests under `Assets/Unity.QuickDuel/Tests/PlayMode`.
 - ✅ Standalone Windows build with `deploy.ps1` (UQD-T11).
 - ✅ Docs site on GitHub Pages via the shared pipeline (UQD-T10).
+- ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):
+  `OnlineDuelTests` in Core.Tests, and host + client PlayMode tests in `Tests/Online`.
 
 ## 7. Frontier {#UQD-§7}
-- ⬜ Online PvP transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14).
+- ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an
+  `OnlineDuel` instead of a local `Duel`.
 - ⬜ The round headline names the AI in vs-AI mode (UQD-T17).
