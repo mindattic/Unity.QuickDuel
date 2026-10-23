@@ -68,6 +68,27 @@ namespace Unity.QuickDuel.Tests
         }
 
         [UnityTest]
+        public IEnumerator MouseClickStrikesForTheLeftByEventTime()
+        {
+            yield return Load();
+            var mouse = InputSystem.AddDevice<Mouse>();
+            Press(keyboard.spaceKey);
+            Release(keyboard.spaceKey);
+            yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
+
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
+            var cue = controller.Duel.CueAt;
+            Press(mouse.leftButton, cue + 0.180);
+            yield return null;
+
+            // Nobody struck for the right, so the round only resolves once it settles.
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved);
+            Assert.That(controller.Result.Winner, Is.EqualTo(Side.Left));
+            Assert.That(controller.Result.LeftReaction, Is.EqualTo(0.180).Within(1e-6));
+        }
+
+        [UnityTest]
         public IEnumerator AKeyDuringTheStandoffIsAnEarlyStrike()
         {
             yield return Load();
