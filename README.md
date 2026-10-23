@@ -18,6 +18,7 @@ That's the whole game:
 | `Tests/Core.Tests` | NUnit tests for the rules, run outside Unity |
 | `docs/BIBLE.md` | Game design: what the game is and isn't, the round, judging, and the project laws |
 | `docs/ORIGINS.md` | Where the idea comes from: Samurai Kirby, then the old Bushido Coda builds |
+| `docs/RECONSTRUCTION.md` | Reverse-engineering of the original, what the rebuild still lacks, and the ordered build plan |
 
 ## Build and test
 
