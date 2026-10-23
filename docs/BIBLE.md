@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: bible
 status: living
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # Unity.QuickDuel — Project Bible
@@ -155,7 +155,12 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):
   `OnlineDuelTests` in Core.Tests, and host + client PlayMode tests in `Tests/Online`.
 - ✅ The round headline names the AI in vs-AI mode (UQD-T17, `DuelSessionTests`).
+- ✅ End-to-end port check of the Windows build against `BushidoCoda.gmx`: every mode reached and
+  played to a match verdict; the room-by-room map is in [ORIGINS](ORIGINS.md) (UQD-T19).
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an
-  `OnlineDuel` instead of a local `Duel`.
+  `OnlineDuel` instead of a local `Duel` (UQD-T21).
+- ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
+  (UQD-T22); Escape quits the player (UQD-T23); the victory / defeat sting (UQD-T24); a mouse /
+  touch strike for the left duelist (UQD-T25).

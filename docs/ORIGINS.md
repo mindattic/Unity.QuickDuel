@@ -52,3 +52,27 @@ From `gmlBushidoCoda\09-11-13_5.58am\scripts\gameclock_*.gml` and `BattleSystem.
 Dropped on purpose: stats (ART, LCK, PWR), focus, skills, combos, reaction penalties, the clash
 button-mash, arenas and characters as gameplay. The old build ran the action phase at 1000 FPS to
 time reactions by frame; QuickDuel times them by input event timestamp instead.
+
+## Room by room: where each GameMaker room went (verified 2026-10-23, UQD-T19)
+
+Checked against `GameMaker\gmlBushidoCoda\BushidoCoda.gmx` and a scripted run of the Windows build
+(`deploy.ps1`, then real key presses into `QuickDuel.exe`). In that source both New Game and Versus
+fade straight from `mainmenu` to `gamescreen`; character select was already bypassed.
+
+| Room | What it did | In QuickDuel |
+| --- | --- | --- |
+| `intro` | clouds, typewriter story text, click to the menu | the Ready screen (title and controls) |
+| `mainmenu` | New Game (vs computer), Versus (two players), Quit; Options and Credits were empty stubs, Scores jumped to `travel` | Tab / Select cycles Local PvP and vs AI; Quit is UQD-T23 |
+| `gamescreen` | the duel: startup, countdown, drumroll, action, clash, aftermath, then the next round | the Duel scene; the clash is dropped |
+| `victory`, `gameover` | end of a single-player fight when a side's HP hit 0 | the best-of-3 match verdict |
+| `characterselect`, `room2` | pick a fighter (unreachable in this source) | dropped: characters |
+| `location`, `travel` | overworld map and walking between battles | dropped: overworld |
+| `room0` | empty test room, not in the room order | — |
+
+Every mode reached and played through in the build: Local PvP (a faster strike, an early strike
+with its taunt, nobody striking, a 2-0 match verdict), vs AI (the AI winning, the AI taking the
+match), and Tab ignored mid-round. Gaps filed as fixes: a strike during the 3-2-1 countdown loses,
+where the original ignored it (UQD-T22); no in-game quit (UQD-T23); no victory / defeat sting
+(UQD-T24); no mouse / touch strike against the computer (UQD-T25). Kept as deliberate changes: the
+original's one-second "Get Ready" before 3-2-1 and its automatic next round, the adaptive computer
+opponent (replaced by Easy / Normal / Hard), and Left / Right Ctrl for Versus (now A / L).
