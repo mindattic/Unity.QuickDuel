@@ -129,8 +129,8 @@ namespace Unity.QuickDuel
             title.enabled = phase == DuelPhase.Ready;
             prompt.enabled = phase == DuelPhase.Ready || resolved;
             prompt.text = phase == DuelPhase.Ready
-                ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel"
-                : "Press Space or Start for the next round";
+                ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
+                : "Press Space or Start for the next round\nEsc / Select+Start: quit";
 
             left.Animate(dt);
             right.Animate(dt);

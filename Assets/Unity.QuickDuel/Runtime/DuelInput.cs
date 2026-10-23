@@ -38,7 +38,13 @@ namespace Unity.QuickDuel
             leftKey.performed += ctx => controller.Strike(Side.Left, ctx.time);
             rightKey.performed += ctx => { if (RightIsHuman) controller.Strike(Side.Right, ctx.time); };
             padStrike.performed += OnPadStrike;
-            nextRound.performed += _ => controller.BeginRound();
+            // A Start press is "next round", unless Select is held with it — that chord is DuelQuit's.
+            nextRound.performed += ctx =>
+            {
+                if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
+                    return;
+                controller.BeginRound();
+            };
         }
 
         private void OnEnable()

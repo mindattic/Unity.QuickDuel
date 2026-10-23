@@ -29,6 +29,7 @@ namespace Unity.QuickDuel.EditorTools
             var duel = new GameObject("Duel");
             duel.AddComponent<DuelController>();
             duel.AddComponent<DuelInput>();
+            duel.AddComponent<DuelQuit>();
             duel.AddComponent<DuelView>();
             duel.AddComponent<DuelTaunt>();
             duel.AddComponent<DuelSession>();

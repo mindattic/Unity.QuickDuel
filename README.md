@@ -35,6 +35,7 @@ powershell -File deploy.ps1
 
 Controls: left player A or gamepad 1 south button, right player L or gamepad 2 south button,
 Space or Start begins the next round. Tab or Select (between rounds) cycles local PvP and vs AI
-(Easy, Normal, Hard; the AI plays the right side). A match is best of 3.
+(Easy, Normal, Hard; the AI plays the right side). Escape, or gamepad Select held while pressing
+Start (between rounds), quits the player. A match is best of 3.
 
 Rounds are judged by input event timestamps, not by frame, so the frame rate can't decide a duel.
