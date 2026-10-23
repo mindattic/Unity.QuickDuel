@@ -154,8 +154,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ Docs site on GitHub Pages via the shared pipeline (UQD-T10).
 - ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):
   `OnlineDuelTests` in Core.Tests, and host + client PlayMode tests in `Tests/Online`.
+- ✅ The round headline names the AI in vs-AI mode (UQD-T17, `DuelSessionTests`).
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an
   `OnlineDuel` instead of a local `Duel`.
-- ⬜ The round headline names the AI in vs-AI mode (UQD-T17).
