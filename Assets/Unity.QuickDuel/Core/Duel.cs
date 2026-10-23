@@ -127,6 +127,13 @@ namespace Unity.QuickDuel.Core
             if ((side == Side.Left ? leftStrikeAt : rightStrikeAt).HasValue)
                 return;
 
+            // A strike timestamped during the 3-2-1 countdown is too early to mean anything and is ignored,
+            // not punished: only a strike during the standoff (after the countdown, before the cue) loses
+            // the round outright (BIBLE §2). Timestamp, not Phase, decides this for the same reason the
+            // CueAt check below does: an input event can be timestamped past a boundary before Tick sees it.
+            if (at < countdownEndsAt)
+                return;
+
             if (at < CueAt)
             {
                 var reaction = at - CueAt;

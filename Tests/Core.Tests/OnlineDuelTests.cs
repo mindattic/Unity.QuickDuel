@@ -100,6 +100,23 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void Client_ignores_a_strike_during_the_countdown()
+        {
+            var client = new OnlineDuelClient(Side.Left);
+            var reports = new List<double?>();
+            client.ReactionReady += (_, r) => reports.Add(r);
+            client.Begin(1, 1.0, 2.0, 0);
+
+            client.Strike(0.5);   // still inside the 1.0s countdown: too early to mean anything, not a loss
+            Assert.That(reports, Is.Empty);
+            Assert.That(client.Duel.Phase, Is.EqualTo(DuelPhase.Countdown));
+
+            client.Strike(client.Duel.CueAt + 0.2);
+            client.Tick(client.Duel.CueAt + 0.3);
+            Assert.That(reports, Is.EqualTo(new double?[] { 0.2 }).Within(1e-9));
+        }
+
+        [Test]
         public void A_client_that_never_strikes_reports_no_strike_after_the_timeout()
         {
             var client = new OnlineDuelClient(Side.Right, new DuelSettings { StrikeTimeoutSeconds = 3.0 });

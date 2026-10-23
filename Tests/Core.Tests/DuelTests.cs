@@ -87,12 +87,20 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
-        public void Striking_during_the_countdown_loses()
+        public void Striking_during_the_countdown_is_ignored()
         {
-            var duel = StartedDuel(out _);
+            var duel = StartedDuel(out var cue);
             duel.Strike(Side.Right, 1.0);
+
+            Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Countdown));
+            Assert.That(duel.Result, Is.Null);
+
+            // The ignored press didn't consume Right's strike, so the round still plays out normally.
+            duel.Tick(cue);
+            duel.Strike(Side.Left, cue + 0.2);
+            duel.Strike(Side.Right, cue + 0.3);
             Assert.That(duel.Result.Winner, Is.EqualTo(Side.Left));
-            Assert.That(duel.Result.Outcome, Is.EqualTo(DuelOutcome.EarlyStrike));
+            Assert.That(duel.Result.Outcome, Is.EqualTo(DuelOutcome.FasterStrike));
         }
 
         [Test]
@@ -130,7 +138,8 @@ namespace Unity.QuickDuel.Core.Tests
         public void Strikes_after_resolution_are_ignored()
         {
             var duel = StartedDuel(out var cue);
-            duel.Strike(Side.Left, 1.0);
+            duel.Tick(4.0);
+            duel.Strike(Side.Left, 4.0);   // during the standoff, before the cue: an early strike resolves the round
             var result = duel.Result;
             duel.Strike(Side.Right, cue + 0.1);
             Assert.That(duel.Result, Is.SameAs(result));

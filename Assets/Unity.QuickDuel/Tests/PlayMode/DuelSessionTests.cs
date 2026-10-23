@@ -84,7 +84,8 @@ namespace Unity.QuickDuel.Tests
             Assert.That(session.Mode, Is.EqualTo(DuelMode.LocalPvp));
             controller.BeginRound();
             Assert.That(session.CycleMode(), Is.False);
-            controller.Strike(Side.Left, controller.Now);   // early strike ends the round
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Standoff);
+            controller.Strike(Side.Left, controller.Now);   // early strike (during the standoff) ends the round
             Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));
 
             Assert.That(session.CycleMode(), Is.True);
