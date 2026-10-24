@@ -44,14 +44,14 @@ namespace Unity.QuickDuel.Core
 
     public sealed class DuelSettings
     {
-        // Defaults come from the 2013 GameMaker build: a 3-2-1 countdown, then a 3 to 6.5 second drumroll.
-        public double CountdownSeconds { get; set; } = 3.0;
-        public double MinStandoffSeconds { get; set; } = 3.0;
-        public double MaxStandoffSeconds { get; set; } = 6.5;
-        public double StrikeTimeoutSeconds { get; set; } = 3.0;
+        // The figures are tuning data (Settings/tuning.json, DuelTuning.ToSettings), not defaults in code.
+        public double CountdownSeconds { get; set; }
+        public double MinStandoffSeconds { get; set; }
+        public double MaxStandoffSeconds { get; set; }
+        public double StrikeTimeoutSeconds { get; set; }
 
         // How long to wait after the first strike for a later-delivered input event that happened earlier.
-        public double SettleSeconds { get; set; } = 0.05;
+        public double SettleSeconds { get; set; }
     }
 
     // One round: wait, the cue comes, the first to strike wins; striking before the cue loses.
@@ -65,9 +65,9 @@ namespace Unity.QuickDuel.Core
         private double? rightStrikeAt;
         private double? firstStrikeAt;
 
-        public Duel(DuelSettings settings = null, Random random = null)
+        public Duel(DuelSettings settings, Random random = null)
         {
-            this.settings = settings ?? new DuelSettings();
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.random = random ?? new Random();
             if (this.settings.MinStandoffSeconds > this.settings.MaxStandoffSeconds)
                 throw new ArgumentException("MinStandoffSeconds must not exceed MaxStandoffSeconds.");

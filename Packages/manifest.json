@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.mindattic.unity.shared": "file:../../Unity.Shared/unity/com.mindattic.unity.shared",
     "com.mindattic.unity.multiplayer": "file:../../Unity.Multiplayer/unity/com.mindattic.unity.multiplayer",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.rider": "3.0.39",

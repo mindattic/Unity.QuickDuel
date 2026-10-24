@@ -14,8 +14,13 @@ namespace Unity.QuickDuel.Core.Tests
             CountdownSeconds = 1.0,
             MinStandoffSeconds = 2.0,
             MaxStandoffSeconds = 4.0,
-            StrikeTimeoutSeconds = 3.0
+            StrikeTimeoutSeconds = 3.0,
+            SettleSeconds = 0.05
         };
+
+        private static OnlineDuelHost NewHost(DuelSettings settings, int winsNeeded = 2, Random random = null) =>
+            new OnlineDuelHost(settings, winsNeeded, TestTuning.Profile.Judge.HumanFloorSeconds,
+                TestTuning.Profile.Online.ReportGraceSeconds, random);
 
         [Test]
         public void Duel_begun_with_a_given_standoff_cues_after_countdown_plus_that_standoff()
@@ -23,14 +28,14 @@ namespace Unity.QuickDuel.Core.Tests
             var duel = new Duel(Quick());
             duel.Begin(10.0, 2.5);
             Assert.That(duel.CueAt, Is.EqualTo(13.5).Within(1e-9));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new Duel().Begin(0, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new Duel().Begin(0, double.NaN));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new Duel(Quick()).Begin(0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new Duel(Quick()).Begin(0, double.NaN));
         }
 
         [Test]
         public void Host_draws_each_rounds_standoff_within_the_settings_and_announces_it()
         {
-            var host = new OnlineDuelHost(Quick(), random: new Random(7));
+            var host = NewHost(Quick(), random: new Random(7));
             var announced = new List<(int Round, double Countdown, double Standoff)>();
             host.RoundBegan += (r, c, s) => announced.Add((r, c, s));
 
@@ -47,9 +52,9 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Clients_that_start_at_different_times_judge_by_their_own_reactions_not_arrival()
         {
-            var host = new OnlineDuelHost(Quick(), random: new Random(1));
-            var left = new OnlineDuelClient(Side.Left);
-            var right = new OnlineDuelClient(Side.Right);
+            var host = NewHost(Quick(), random: new Random(1));
+            var left = new OnlineDuelClient(Side.Left, TestTuning.Profile.Duel.ToSettings());
+            var right = new OnlineDuelClient(Side.Right, TestTuning.Profile.Duel.ToSettings());
             Wire(host, left, right, leftNow: 100.0, rightNow: 5000.0);   // unrelated clocks, the right one far behind
             DuelResult judged = null;
             host.RoundJudged += (_, r) => judged = r;
@@ -78,9 +83,9 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void An_early_strike_is_reported_at_once_and_loses()
         {
-            var host = new OnlineDuelHost(Quick(), random: new Random(2));
-            var left = new OnlineDuelClient(Side.Left);
-            var right = new OnlineDuelClient(Side.Right);
+            var host = NewHost(Quick(), random: new Random(2));
+            var left = new OnlineDuelClient(Side.Left, TestTuning.Profile.Duel.ToSettings());
+            var right = new OnlineDuelClient(Side.Right, TestTuning.Profile.Duel.ToSettings());
             Wire(host, left, right, leftNow: 0, rightNow: 0);
             var reports = new List<double?>();
             left.ReactionReady += (_, r) => reports.Add(r);
@@ -102,7 +107,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Client_ignores_a_strike_during_the_countdown()
         {
-            var client = new OnlineDuelClient(Side.Left);
+            var client = new OnlineDuelClient(Side.Left, TestTuning.Profile.Duel.ToSettings());
             var reports = new List<double?>();
             client.ReactionReady += (_, r) => reports.Add(r);
             client.Begin(1, 1.0, 2.0, 0);
@@ -119,7 +124,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void A_client_that_never_strikes_reports_no_strike_after_the_timeout()
         {
-            var client = new OnlineDuelClient(Side.Right, new DuelSettings { StrikeTimeoutSeconds = 3.0 });
+            var client = new OnlineDuelClient(Side.Right, new DuelSettings { StrikeTimeoutSeconds = 3.0, SettleSeconds = 0.05 });
             var reports = new List<(int, double?)>();
             client.ReactionReady += (r, t) => reports.Add((r, t));
             client.Begin(1, 1.0, 2.0, 0);
@@ -132,7 +137,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Client_ignores_a_stale_or_repeated_round()
         {
-            var client = new OnlineDuelClient(Side.Left);
+            var client = new OnlineDuelClient(Side.Left, TestTuning.Profile.Duel.ToSettings());
             Assert.That(client.Begin(2, 1, 2, 0), Is.True);
             var duel = client.Duel;
             Assert.That(client.Begin(2, 1, 3, 0), Is.False);
@@ -145,7 +150,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Host_ignores_reports_for_another_round_and_repeats()
         {
-            var host = new OnlineDuelHost(Quick());
+            var host = NewHost(Quick());
             Assert.That(host.Report(Side.Left, 1, 0.3), Is.False, "no round open");
             host.BeginRound(0);
             Assert.That(host.Report(Side.Left, 2, 0.3), Is.False, "wrong round");
@@ -159,7 +164,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void A_superhuman_report_forfeits_the_round()
         {
-            var host = new OnlineDuelHost(Quick());
+            var host = NewHost(Quick());
             DuelResult judged = null;
             host.RoundJudged += (_, r) => judged = r;
             host.BeginRound(0);
@@ -173,7 +178,8 @@ namespace Unity.QuickDuel.Core.Tests
         public void A_silent_side_is_judged_as_no_strike_once_the_report_window_closes()
         {
             var settings = Quick();
-            var host = new OnlineDuelHost(settings) { ReportGraceSeconds = 2.0 };
+            var host = NewHost(settings);
+            host.ReportGraceSeconds = 2.0;
             DuelResult judged = null;
             host.RoundJudged += (_, r) => judged = r;
             host.BeginRound(10);
@@ -192,7 +198,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void A_finished_match_is_replaced_by_a_fresh_one_on_the_next_round()
         {
-            var host = new OnlineDuelHost(Quick(), winsNeeded: 1);
+            var host = NewHost(Quick(), winsNeeded: 1);
             host.BeginRound(0);
             host.Report(Side.Left, 1, 0.3);
             host.Report(Side.Right, 1, 0.4);

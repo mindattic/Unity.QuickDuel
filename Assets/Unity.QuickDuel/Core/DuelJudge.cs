@@ -6,11 +6,9 @@ namespace Unity.QuickDuel.Core
     // null for no strike. An online host uses it on the times each client measured from its own local cue.
     public static class DuelJudge
     {
-        public const double DefaultHumanFloorSeconds = 0.1;
-
         // A reported reaction faster than humanFloorSeconds (or not a finite number) is rejected as
-        // suspicious and forfeits the round. Pass 0 to disable the check.
-        public static DuelResult Judge(double? left, double? right, double humanFloorSeconds = DefaultHumanFloorSeconds)
+        // suspicious and forfeits the round. Pass 0 to disable the check; online play passes JudgeTuning.HumanFloorSeconds.
+        public static DuelResult Judge(double? left, double? right, double humanFloorSeconds)
         {
             if (humanFloorSeconds < 0 || double.IsNaN(humanFloorSeconds))
                 throw new ArgumentOutOfRangeException(nameof(humanFloorSeconds), "The human floor must not be negative.");

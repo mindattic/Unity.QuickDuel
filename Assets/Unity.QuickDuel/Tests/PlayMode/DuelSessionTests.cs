@@ -33,9 +33,9 @@ namespace Unity.QuickDuel.Tests
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved);
 
-            var (min, max) = AiOpponent.ReactionRange(AiDifficulty.Hard);
+            var range = TuningStore.Profile.Ai.Hard;
             Assert.That(controller.Result.Winner, Is.EqualTo(Side.Right));
-            Assert.That(controller.Result.RightReaction, Is.InRange(min, max));
+            Assert.That(controller.Result.RightReaction, Is.InRange(range.Min, range.Max));
             Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));
             Assert.That(session.ScoreText(Side.Right), Does.StartWith("AI  1/2"));
             yield return null;

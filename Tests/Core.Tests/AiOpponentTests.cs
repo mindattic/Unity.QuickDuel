@@ -11,7 +11,7 @@ namespace Unity.QuickDuel.Core.Tests
         [TestCase(AiDifficulty.Hard, 0.20, 0.30)]
         public void Reactions_stay_inside_the_difficulty_range(AiDifficulty difficulty, double min, double max)
         {
-            var ai = new AiOpponent(difficulty, new Random(3));
+            var ai = new AiOpponent(difficulty, TestTuning.Profile.Ai, new Random(3));
             for (var i = 0; i < 500; i++)
                 Assert.That(ai.NextReaction(), Is.InRange(min, max));
         }
@@ -21,7 +21,7 @@ namespace Unity.QuickDuel.Core.Tests
         {
             double Average(AiDifficulty difficulty)
             {
-                var ai = new AiOpponent(difficulty, new Random(5));
+                var ai = new AiOpponent(difficulty, TestTuning.Profile.Ai, new Random(5));
                 var sum = 0.0;
                 for (var i = 0; i < 200; i++)
                     sum += ai.NextReaction();
@@ -35,17 +35,17 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Same_seed_gives_the_same_reactions()
         {
-            var a = new AiOpponent(AiDifficulty.Normal, new Random(9));
-            var b = new AiOpponent(AiDifficulty.Normal, new Random(9));
+            var a = new AiOpponent(AiDifficulty.Normal, TestTuning.Profile.Ai, new Random(9));
+            var b = new AiOpponent(AiDifficulty.Normal, TestTuning.Profile.Ai, new Random(9));
             Assert.That(a.NextReaction(), Is.EqualTo(b.NextReaction()));
         }
 
         [Test]
         public void Strike_time_is_the_cue_plus_a_reaction()
         {
-            var duel = new Duel(new DuelSettings(), new Random(7));
+            var duel = new Duel(TestTuning.Profile.Duel.ToSettings(), new Random(7));
             duel.Begin(0);
-            var ai = new AiOpponent(AiDifficulty.Hard, new Random(1));
+            var ai = new AiOpponent(AiDifficulty.Hard, TestTuning.Profile.Ai, new Random(1));
 
             Assert.That(ai.StrikeTime(duel) - duel.CueAt, Is.InRange(0.20, 0.30));
         }
@@ -53,9 +53,9 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Ai_strike_beats_a_slower_player()
         {
-            var duel = new Duel(new DuelSettings(), new Random(7));
+            var duel = new Duel(TestTuning.Profile.Duel.ToSettings(), new Random(7));
             duel.Begin(0);
-            var ai = new AiOpponent(AiDifficulty.Hard, new Random(1));
+            var ai = new AiOpponent(AiDifficulty.Hard, TestTuning.Profile.Ai, new Random(1));
             var aiAt = ai.StrikeTime(duel);
 
             duel.Tick(duel.CueAt);
@@ -68,8 +68,8 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Strike_time_before_the_duel_begins_throws()
         {
-            var ai = new AiOpponent(AiDifficulty.Easy, new Random(1));
-            Assert.Throws<InvalidOperationException>(() => ai.StrikeTime(new Duel()));
+            var ai = new AiOpponent(AiDifficulty.Easy, TestTuning.Profile.Ai, new Random(1));
+            Assert.Throws<InvalidOperationException>(() => ai.StrikeTime(new Duel(TestTuning.Profile.Duel.ToSettings())));
         }
     }
 }

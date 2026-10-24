@@ -49,7 +49,10 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 Assets/Unity.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
                                                       OnlineDuelHost, OnlineDuelClient
-  Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio
+  Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
+  StreamingAssets/Settings/tuning.json                every tuning number, as data
+  Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
+                                                      TuningStore
   Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present)
   Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), QuickDuelBuild
   Tests/PlayMode/                                     scene, input, session, view, taunt and audio tests
@@ -150,6 +153,11 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ Duel scene and controller (UQD-T3), two-player input by event timestamp (UQD-T2), presentation (UQD-T4),
   taunts (UQD-T6), original Bushido Coda audio (UQD-T5), vs-AI mode and match scoreboard (UQD-T15) —
   PlayMode tests under `Assets/Unity.QuickDuel/Tests/PlayMode`.
+- ✅ Tuning is data (UQD-T28, `TuningRegistryTests`): every number (round clock, AI reaction ranges, wins needed,
+  human floor, online report grace, taunt lines) lives in `StreamingAssets/Settings/tuning.json` as named profiles
+  (`standard` holds the figures the rebuild has always had), validated on load with every problem named by file,
+  key and line, and read through `TuningRegistry` / `TuningStore`; Core has no number baked in. The
+  `com.mindattic.unity.shared` package is in the manifest, ready for the player-profile work.
 - ✅ Standalone Windows build with `deploy.ps1` (UQD-T11).
 - ✅ Docs site on GitHub Pages via the shared pipeline (UQD-T10).
 - ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):

@@ -3,6 +3,7 @@
     "rootNamespace": "Unity.QuickDuel.Online.Tests",
     "references": [
         "Unity.QuickDuel.Core",
+        "Unity.QuickDuel.Runtime",
         "Unity.QuickDuel.Online",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",

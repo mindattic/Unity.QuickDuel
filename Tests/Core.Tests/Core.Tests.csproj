@@ -14,6 +14,10 @@
     <PackageReference Include="NUnit.Analyzers" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The shipped tuning file, so the tests run on the very figures the game ships with. -->
+    <Content Include="../../Assets/StreamingAssets/Settings/tuning.json" Link="Settings/tuning.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../Unity.QuickDuel.Core/Unity.QuickDuel.Core.csproj" />
   </ItemGroup>
 </Project>

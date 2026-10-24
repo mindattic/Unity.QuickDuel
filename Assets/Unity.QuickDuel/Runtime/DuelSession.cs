@@ -14,7 +14,7 @@ namespace Unity.QuickDuel
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelSession : MonoBehaviour
     {
-        [SerializeField] private int winsNeeded = 2;   // best of 3
+        private int winsNeeded;   // MatchTuning.WinsNeeded: 2, best of 3
 
         private DuelController controller;
         private DuelInput input;
@@ -42,6 +42,7 @@ namespace Unity.QuickDuel
             controller = GetComponent<DuelController>();
             input = GetComponent<DuelInput>();
             quit = GetComponent<DuelQuit>();
+            winsNeeded = TuningStore.Profile.Match.WinsNeeded;
             Match = new Match(winsNeeded);
 
             cycleMode = new InputAction("CycleMode", InputActionType.Button);
@@ -116,7 +117,7 @@ namespace Unity.QuickDuel
         public void SetMode(DuelMode mode)
         {
             Mode = mode;
-            ai = AiPlaysRight ? new AiOpponent(Difficulty(mode)) : null;
+            ai = AiPlaysRight ? new AiOpponent(Difficulty(mode), TuningStore.Profile.Ai) : null;
             if (input != null) input.RightIsHuman = !AiPlaysRight;
             Match = new Match(winsNeeded);
             if (view != null) view.RightName = AiPlaysRight ? "AI" : "Right";

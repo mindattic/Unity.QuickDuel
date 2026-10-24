@@ -9,7 +9,7 @@ namespace Unity.QuickDuel.Core.Tests
     {
         private static Duel StartedDuel(out double cue, int seed = 7)
         {
-            var duel = new Duel(new DuelSettings(), new Random(seed));
+            var duel = new Duel(TestTuning.Profile.Duel.ToSettings(), new Random(seed));
             duel.Begin(0);
             cue = duel.CueAt;
             return duel;
@@ -148,7 +148,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Phase_changes_and_resolution_are_announced()
         {
-            var duel = new Duel(new DuelSettings(), new Random(1));
+            var duel = new Duel(TestTuning.Profile.Duel.ToSettings(), new Random(1));
             var phases = new List<DuelPhase>();
             DuelResult resolved = null;
             duel.PhaseChanged += phases.Add;

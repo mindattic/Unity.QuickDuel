@@ -11,10 +11,10 @@ namespace Unity.QuickDuel.Core
         private readonly DuelSettings settings;
         private bool reported;
 
-        public OnlineDuelClient(Side side, DuelSettings settings = null)
+        public OnlineDuelClient(Side side, DuelSettings settings)
         {
             Side = side;
-            this.settings = settings ?? new DuelSettings();
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public Side Side { get; }

@@ -18,7 +18,8 @@ namespace Unity.QuickDuel.Tests
             CountdownSeconds = 0.2,
             MinStandoffSeconds = 0.1,
             MaxStandoffSeconds = 0.2,
-            StrikeTimeoutSeconds = 1.0
+            StrikeTimeoutSeconds = 1.0,
+            SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
         };
 
         public static IEnumerator WaitUntil(Func<bool> condition, float timeoutSeconds = 5f)

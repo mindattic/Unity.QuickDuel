@@ -9,30 +9,22 @@ namespace Unity.QuickDuel.Core
     {
         private readonly Random random;
 
-        public AiOpponent(AiDifficulty difficulty, Random random = null)
+        // The reaction range of each difficulty is tuning data (AiTuning, Settings/tuning.json).
+        public AiOpponent(AiDifficulty difficulty, AiTuning tuning, Random random = null)
         {
+            if (tuning == null)
+                throw new ArgumentNullException(nameof(tuning));
             Difficulty = difficulty;
+            Range = tuning.RangeOf(difficulty);
             this.random = random ?? new Random();
         }
 
         public AiDifficulty Difficulty { get; }
 
-        public static (double Min, double Max) ReactionRange(AiDifficulty difficulty)
-        {
-            switch (difficulty)
-            {
-                case AiDifficulty.Easy: return (0.45, 0.70);
-                case AiDifficulty.Normal: return (0.30, 0.45);
-                case AiDifficulty.Hard: return (0.20, 0.30);
-                default: throw new ArgumentOutOfRangeException(nameof(difficulty));
-            }
-        }
+        // The seconds range this opponent draws its reaction from.
+        public ReactionRange Range { get; }
 
-        public double NextReaction()
-        {
-            var (min, max) = ReactionRange(Difficulty);
-            return min + random.NextDouble() * (max - min);
-        }
+        public double NextReaction() => Range.Min + random.NextDouble() * (Range.Max - Range.Min);
 
         // Draws a fresh reaction for this round; strike with duel.Strike(side, that time) once the clock reaches it.
         public double StrikeTime(Duel duel)

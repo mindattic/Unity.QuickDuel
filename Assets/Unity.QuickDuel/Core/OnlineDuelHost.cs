@@ -9,10 +9,6 @@ namespace Unity.QuickDuel.Core
     // Transport-free: the caller sends RoundBegan/RoundJudged out and passes reports in. Times are host-clock seconds.
     public sealed class OnlineDuelHost
     {
-        // Allowance past a round's latest possible end for a report still on its way (and for the client's round
-        // starting late by one trip). A side still silent when it runs out is judged as not having struck.
-        public const double DefaultReportGraceSeconds = 2.0;
-
         private readonly DuelSettings settings;
         private readonly Random random;
         private readonly int winsNeeded;
@@ -23,12 +19,16 @@ namespace Unity.QuickDuel.Core
         private double deadline;
 
         public OnlineDuelHost(
-            DuelSettings settings = null,
-            int winsNeeded = 2,
-            double humanFloorSeconds = DuelJudge.DefaultHumanFloorSeconds,
+            DuelSettings settings,
+            int winsNeeded,
+            double humanFloorSeconds,
+            double reportGraceSeconds,
             Random random = null)
         {
-            this.settings = settings ?? new DuelSettings();
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            if (reportGraceSeconds < 0 || double.IsNaN(reportGraceSeconds))
+                throw new ArgumentOutOfRangeException(nameof(reportGraceSeconds), "The report grace must not be negative.");
+            ReportGraceSeconds = reportGraceSeconds;
             if (this.settings.MinStandoffSeconds > this.settings.MaxStandoffSeconds)
                 throw new ArgumentException("MinStandoffSeconds must not exceed MaxStandoffSeconds.");
             if (humanFloorSeconds < 0 || double.IsNaN(humanFloorSeconds))
@@ -40,7 +40,10 @@ namespace Unity.QuickDuel.Core
         }
 
         public double HumanFloorSeconds { get; }
-        public double ReportGraceSeconds { get; set; } = DefaultReportGraceSeconds;
+        // Allowance past a round's latest possible end for a report still on its way (and for the client's round
+        // starting late by one trip). A side still silent when it runs out is judged as not having struck.
+        // (OnlineTuning.ReportGraceSeconds)
+        public double ReportGraceSeconds { get; set; }
         public Match Match { get; private set; }
 
         // The current (or last) round's number, from 1; 0 before the first round.

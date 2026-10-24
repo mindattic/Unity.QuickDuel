@@ -12,7 +12,13 @@ namespace Unity.QuickDuel
         [SerializeField] private bool beginOnStart;
 
         // Replaced by tests to shorten a round; applies from the next BeginRound.
-        public DuelSettings Settings { get; set; } = new DuelSettings();
+        public DuelSettings Settings
+        {
+            get => settings ?? (settings = TuningStore.Profile.Duel.ToSettings());
+            set => settings = value;
+        }
+
+        private DuelSettings settings;
 
         // The clock for Tick and for Begin. Leave it alone outside tests.
         public Func<double> Clock { get; set; } = () => Time.realtimeSinceStartupAsDouble;

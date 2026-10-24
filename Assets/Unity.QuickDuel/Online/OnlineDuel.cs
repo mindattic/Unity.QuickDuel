@@ -22,10 +22,10 @@ namespace Unity.QuickDuel.Online
 
         // Server only: the round lengths, match length and human floor; change them with Configure between rounds.
         public DuelSettings HostSettings { get; private set; }
-        public double HumanFloorSeconds { get; private set; } = DuelJudge.DefaultHumanFloorSeconds;
+        public double HumanFloorSeconds { get; private set; }
 
-        // Rounds a duelist needs to take the match (best of 3 by default); every peer scores against it.
-        [Synced] private int _winsNeeded = 2;
+        // Rounds a duelist needs to take the match (MatchTuning.WinsNeeded until the host says otherwise); every peer scores against it.
+        [Synced] private int _winsNeeded;
 
         // Every peer's clock: the one Input System event timestamps use, so strikes can pass ctx.time straight in.
         public Func<double> Clock { get; set; } = () => Time.realtimeSinceStartupAsDouble;
@@ -86,7 +86,7 @@ namespace Unity.QuickDuel.Online
         public void Strike(double at) => Local?.Strike(at);
 
         // Server, before the first round: the round lengths, match length and human floor.
-        public void Configure(DuelSettings settings, int winsNeeded = 2, double humanFloorSeconds = DuelJudge.DefaultHumanFloorSeconds)
+        public void Configure(DuelSettings settings, int winsNeeded, double humanFloorSeconds)
         {
             if (!IsServer)
                 throw new InvalidOperationException("Only the server configures the duel.");
@@ -97,16 +97,32 @@ namespace Unity.QuickDuel.Online
             CreateHost(winsNeeded);
         }
 
+        // Server, before the first round: the round lengths, match length and human floor all from one tuning profile.
+        public void Configure(TuningProfile profile) =>
+            Configure(profile.Duel.ToSettings(), profile.Match.WinsNeeded, profile.Judge.HumanFloorSeconds);
+
+        private static TuningProfile Tuning => TuningStore.Profile;
+
+        // The match length: the host's once it has synced, else the tuning profile's.
+        private int EffectiveWinsNeeded => WinsNeeded > 0 ? WinsNeeded : Tuning.Match.WinsNeeded;
+
         protected override void OnSpawned()
         {
-            Match = new Match(WinsNeeded);
+            Match = new Match(EffectiveWinsNeeded);
             if (IsServer)
-                CreateHost(WinsNeeded);
+            {
+                if (HostSettings == null)
+                {
+                    HostSettings = Tuning.Duel.ToSettings();
+                    HumanFloorSeconds = Tuning.Judge.HumanFloorSeconds;
+                }
+                CreateHost(EffectiveWinsNeeded);
+            }
         }
 
         private void CreateHost(int winsNeeded)
         {
-            Host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds);
+            Host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds, Tuning.Online.ReportGraceSeconds);
             Host.RoundBegan += (round, countdown, standoff) => RoundBegan(round, countdown, standoff, LeftClient, RightClient);
             Host.RoundJudged += SendVerdict;
             WinsNeeded = winsNeeded;
@@ -140,7 +156,7 @@ namespace Unity.QuickDuel.Online
             }
             if (Local == null || Local.Side != side.Value)
             {
-                Local = new OnlineDuelClient(side.Value);
+                Local = new OnlineDuelClient(side.Value, Tuning.Duel.ToSettings());
                 Local.ReactionReady += (r, reaction) => ReportReaction(r, reaction.HasValue, reaction ?? 0);
             }
             Local.Begin(round, countdownSeconds, standoffSeconds, Now);
@@ -166,8 +182,8 @@ namespace Unity.QuickDuel.Online
                 winner < 0 ? (Side?)null : (Side)winner,
                 leftStruck ? left : (double?)null,
                 rightStruck ? right : (double?)null);
-            if (Match.IsOver || Match.WinsNeeded != WinsNeeded)
-                Match = new Match(WinsNeeded);
+            if (Match.IsOver || Match.WinsNeeded != EffectiveWinsNeeded)
+                Match = new Match(EffectiveWinsNeeded);
             Match.Record(result);
             LastJudgedRound = round;
             LastResult = result;

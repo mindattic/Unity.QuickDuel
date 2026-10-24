@@ -8,11 +8,8 @@ namespace Unity.QuickDuel
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelTaunt : MonoBehaviour
     {
-        public static readonly string[] Lines =
-        {
-            "Premature Strike", "Stumbled", "Impetuous Attack", "Clumsy Move", "Hurried Action",
-            "Jumped the Gun", "Overzealous", "Too Soon", "Too Early", "Fail"
-        };
+        // The Android build's taunt lines are tuning data (Settings/tuning.json, "taunts").
+        public static string[] Lines => TuningStore.Profile.Taunts;
 
         private DuelController controller;
         private Text text;

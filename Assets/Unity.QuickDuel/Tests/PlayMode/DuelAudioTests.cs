@@ -18,7 +18,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(audio, Is.Not.Null, "Duel scene has no DuelAudio.");
             controller.Settings = new DuelSettings
             {
-                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 1
+                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 1, SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
             };
 
             controller.BeginRound();
@@ -45,7 +45,7 @@ namespace Unity.QuickDuel.Tests
             var audio = controller.GetComponent<DuelAudio>();
             controller.Settings = new DuelSettings
             {
-                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 1
+                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 1, SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
             };
 
             controller.BeginRound();
@@ -65,7 +65,7 @@ namespace Unity.QuickDuel.Tests
             var audio = controller.GetComponent<DuelAudio>();
             controller.Settings = new DuelSettings
             {
-                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 0.1
+                CountdownSeconds = 2.9, MinStandoffSeconds = 0.2, MaxStandoffSeconds = 0.3, StrikeTimeoutSeconds = 0.1, SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
             };
 
             controller.BeginRound();

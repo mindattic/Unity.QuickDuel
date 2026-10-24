@@ -30,7 +30,7 @@ namespace Unity.QuickDuel.Tests
 
             controller.Settings = new DuelSettings
             {
-                CountdownSeconds = 1.5, MinStandoffSeconds = 0.4, MaxStandoffSeconds = 0.5, StrikeTimeoutSeconds = 2
+                CountdownSeconds = 1.5, MinStandoffSeconds = 0.4, MaxStandoffSeconds = 0.5, StrikeTimeoutSeconds = 2, SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
             };
             controller.BeginRound();
             yield return null;

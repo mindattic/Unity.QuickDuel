@@ -10,9 +10,9 @@ namespace Unity.QuickDuel.Core.Tests
             new DuelResult(DuelOutcome.FasterStrike, winner, left, right);
 
         [Test]
-        public void First_to_three_wins_by_default()
+        public void First_to_the_wins_needed_takes_the_match()
         {
-            var match = new Match();
+            var match = new Match(3);
             match.Record(Win(Side.Left, 0.2, 0.3));
             match.Record(Win(Side.Right, 0.4, 0.3));
             match.Record(Win(Side.Left, 0.2, 0.3));
@@ -50,7 +50,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Early_strike_awards_the_round_to_the_other_side()
         {
-            var match = new Match();
+            var match = new Match(3);
             match.Record(new DuelResult(DuelOutcome.EarlyStrike, Side.Right, -0.5, null));
             Assert.That(match.WinsOf(Side.Right), Is.EqualTo(1));
         }
@@ -58,7 +58,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Best_reaction_is_the_smallest_non_negative_one()
         {
-            var match = new Match();
+            var match = new Match(3);
             match.Record(Win(Side.Left, 0.30, 0.35));
             match.Record(new DuelResult(DuelOutcome.EarlyStrike, Side.Right, -0.8, null));
             match.Record(Win(Side.Left, 0.22, 0.40));
@@ -71,7 +71,7 @@ namespace Unity.QuickDuel.Core.Tests
         [Test]
         public void Best_reaction_is_null_before_any_valid_strike()
         {
-            var match = new Match();
+            var match = new Match(3);
             match.Record(new DuelResult(DuelOutcome.EarlyStrike, Side.Right, -0.8, null));
             Assert.That(match.BestReactionOf(Side.Left), Is.Null);
             Assert.That(match.BestReactionOf(Side.Right), Is.Null);

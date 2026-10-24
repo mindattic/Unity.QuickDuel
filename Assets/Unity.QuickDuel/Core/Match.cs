@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Unity.QuickDuel.Core
 {
-    // First to WinsNeeded rounds takes the match; ties and no-strike rounds award nobody.
+    // First to WinsNeeded rounds (MatchTuning.WinsNeeded) takes the match; ties and no-strike rounds award nobody.
     public sealed class Match
     {
         private readonly List<DuelResult> rounds = new List<DuelResult>();
@@ -12,7 +12,7 @@ namespace Unity.QuickDuel.Core
         private double? leftBest;
         private double? rightBest;
 
-        public Match(int winsNeeded = 3)
+        public Match(int winsNeeded)
         {
             if (winsNeeded < 1)
                 throw new ArgumentOutOfRangeException(nameof(winsNeeded), "A match needs at least one win.");
