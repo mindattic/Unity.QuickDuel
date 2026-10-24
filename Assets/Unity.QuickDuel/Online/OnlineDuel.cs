@@ -20,9 +20,10 @@ namespace Unity.QuickDuel.Online
         [Synced] private ulong _leftClient = ulong.MaxValue;
         [Synced] private ulong _rightClient = ulong.MaxValue;
 
-        // Server only: the round lengths, match length and human floor; change them with Configure between rounds.
+        // Server only: the round lengths, match length, human floor and report grace; change them with Configure between rounds.
         public DuelSettings HostSettings { get; private set; }
         public double HumanFloorSeconds { get; private set; }
+        public double ReportGraceSeconds { get; private set; }
 
         // Rounds a duelist needs to take the match (MatchTuning.WinsNeeded until the host says otherwise); every peer scores against it.
         [Synced] private int _winsNeeded;
@@ -86,7 +87,7 @@ namespace Unity.QuickDuel.Online
         public void Strike(double at) => Local?.Strike(at);
 
         // Server, before the first round: the round lengths, match length and human floor.
-        public void Configure(DuelSettings settings, int winsNeeded, double humanFloorSeconds)
+        public void Configure(DuelSettings settings, int winsNeeded, double humanFloorSeconds, double reportGraceSeconds)
         {
             if (!IsServer)
                 throw new InvalidOperationException("Only the server configures the duel.");
@@ -94,12 +95,14 @@ namespace Unity.QuickDuel.Online
                 throw new InvalidOperationException("Configure the duel before its first round.");
             HostSettings = settings;
             HumanFloorSeconds = humanFloorSeconds;
+            ReportGraceSeconds = reportGraceSeconds;
             CreateHost(winsNeeded);
         }
 
         // Server, before the first round: the round lengths, match length and human floor all from one tuning profile.
         public void Configure(TuningProfile profile) =>
-            Configure(profile.Duel.ToSettings(), profile.Match.WinsNeeded, profile.Judge.HumanFloorSeconds);
+            Configure(profile.Duel.ToSettings(), profile.Match.WinsNeeded, profile.Judge.HumanFloorSeconds,
+                profile.Online.ReportGraceSeconds);
 
         private static TuningProfile Tuning => TuningStore.Profile;
 
@@ -115,6 +118,7 @@ namespace Unity.QuickDuel.Online
                 {
                     HostSettings = Tuning.Duel.ToSettings();
                     HumanFloorSeconds = Tuning.Judge.HumanFloorSeconds;
+                    ReportGraceSeconds = Tuning.Online.ReportGraceSeconds;
                 }
                 CreateHost(EffectiveWinsNeeded);
             }
@@ -122,7 +126,7 @@ namespace Unity.QuickDuel.Online
 
         private void CreateHost(int winsNeeded)
         {
-            Host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds, Tuning.Online.ReportGraceSeconds);
+            Host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds, ReportGraceSeconds);
             Host.RoundBegan += (round, countdown, standoff) => RoundBegan(round, countdown, standoff, LeftClient, RightClient);
             Host.RoundJudged += SendVerdict;
             WinsNeeded = winsNeeded;

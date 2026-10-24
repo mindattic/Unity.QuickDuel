@@ -157,7 +157,9 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   human floor, online report grace, taunt lines) lives in `StreamingAssets/Settings/tuning.json` as named profiles
   (`standard` holds the figures the rebuild has always had), validated on load with every problem named by file,
   key and line, and read through `TuningRegistry` / `TuningStore`; Core has no number baked in. The
-  `com.mindattic.unity.shared` package is in the manifest, ready for the player-profile work.
+  `com.mindattic.unity.shared` package is in the manifest, ready for the player-profile work (the registry itself is
+  Core code; nothing yet uses the package). `TuningStore` reads the file from disk, so it is desktop-only: Android
+  and WebGL need a UnityWebRequest source before they ship.
 - ✅ Standalone Windows build with `deploy.ps1` (UQD-T11).
 - ✅ Docs site on GitHub Pages via the shared pipeline (UQD-T10).
 - ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):

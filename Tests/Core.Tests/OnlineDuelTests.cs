@@ -179,7 +179,7 @@ namespace Unity.QuickDuel.Core.Tests
         {
             var settings = Quick();
             var host = NewHost(settings);
-            host.ReportGraceSeconds = 2.0;
+            Assert.That(host.ReportGraceSeconds, Is.EqualTo(2.0));
             DuelResult judged = null;
             host.RoundJudged += (_, r) => judged = r;
             host.BeginRound(10);

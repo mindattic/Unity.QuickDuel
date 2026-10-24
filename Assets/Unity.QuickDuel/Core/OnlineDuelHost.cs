@@ -43,7 +43,7 @@ namespace Unity.QuickDuel.Core
         // Allowance past a round's latest possible end for a report still on its way (and for the client's round
         // starting late by one trip). A side still silent when it runs out is judged as not having struck.
         // (OnlineTuning.ReportGraceSeconds)
-        public double ReportGraceSeconds { get; set; }
+        public double ReportGraceSeconds { get; }
         public Match Match { get; private set; }
 
         // The current (or last) round's number, from 1; 0 before the first round.

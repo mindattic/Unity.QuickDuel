@@ -146,7 +146,7 @@ screen, no fullscreen toggle. Of the original's 27 duel sounds only six are pres
 | Engine-free Core | Rules are in Core with 30+ NUnit tests, but `DuelSession` (mode, difficulty, match reset, AI wiring) lives in the MonoBehaviour layer, and `Duel.Strike` takes no command or player id (UQD-T30) |
 | Input System | Good: `InputAction`s with event timestamps, gamepad per side |
 | URP | Missing: no render pipeline package (UQD-T29) |
-| Unity.Shared profiles and settings | Done (UQD-T28): `com.mindattic.unity.shared` is in the manifest and every tuning number is in `tuning.json`, validated on load (player profiles through Unity.Shared come with the settings screens) |
+| Unity.Shared profiles and settings | Partly done (UQD-T28): `com.mindattic.unity.shared` is in the manifest and every tuning number is in `tuning.json` (named profiles, validated on load); the registry is the game's own Core code, and wiring player profiles through Unity.Shared comes with the settings screens |
 | UI | Legacy uGUI `Text` with `LegacyRuntime.ttf`; the standard is UI Toolkit or the shared components (UQD-T31) |
 | Tests | Core is covered; Editor generators and the new scenes are not (UQD-T51); CI runs only `dotnet test Core.slnx` (UQD-T52) |
 | README and BIBLE | README lists only Core, Tests and docs and none of the Runtime, Online or Editor layers; BIBLE section 3 and 7 need the cosmetic fighters and parity scenes (UQD-T53) |
