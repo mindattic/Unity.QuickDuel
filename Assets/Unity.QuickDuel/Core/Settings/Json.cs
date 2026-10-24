@@ -127,7 +127,7 @@ namespace Unity.QuickDuel.Core
             {
                 _text = text;
                 // A UTF-8 byte order mark read as text.
-                if (_text.Length > 0 && _text[0] == '﻿')
+                if (_text.Length > 0 && _text[0] == '\uFEFF')
                 {
                     _at = 1;
                     _lineStart = 1;
