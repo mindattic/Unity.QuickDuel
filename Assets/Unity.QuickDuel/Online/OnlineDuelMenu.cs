@@ -4,43 +4,43 @@ using Unity.Multiplayer.Core; // HostAddress, JoinCodeProvider
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Unity.QuickDuel.Online
 {
-    // The Duel scene's Host / Join menu (UQD-T21): a small panel at the left edge, under the left score, built in code on DuelView's
-    // canvas, shown between rounds. Host starts a listen server on the scene's NetBootstrap (this player duels on the
-    // left); Join dials an address ("192.168.1.20" or "192.168.1.20:7777") and plays the right; Leave ends either and
-    // drops back to the local game. The session flow itself is OnlineDuelLobby's; this only draws it and turns clicks
-    // into its calls. DuelSceneBuilder adds it, wired to the scene's NetBootstrap and the OnlineDuel prefab.
+    // The Duel scene's Host / Join menu (UQD-T21): a small panel at the left edge, under the left score, built in
+    // code on DuelView's UI Toolkit tree (UQD-T31), shown between rounds. Host starts a listen server on the scene's
+    // NetBootstrap (this player duels on the left); Join dials an address ("192.168.1.20" or "192.168.1.20:7777") and
+    // plays the right; Leave ends either and drops back to the local game. The session flow itself is OnlineDuelLobby's;
+    // this only draws it and turns clicks into its calls. DuelSceneBuilder adds it, wired to the scene's NetBootstrap
+    // and the OnlineDuel prefab.
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class OnlineDuelMenu : MonoBehaviour
     {
         private static readonly Color Ink = new Color(0.10f, 0.08f, 0.08f);
         private static readonly Color Panel = new Color(0.10f, 0.08f, 0.08f, 0.82f);
         private static readonly Color Paper = new Color(0.93f, 0.88f, 0.78f);
-        private static readonly Color Accent = new Color(0.62f, 0.12f, 0.10f);
 
         [SerializeField] private NetBootstrap bootstrap;
         [SerializeField] private GameObject duelPrefab;
 
         private DuelController controller;
         private DuelView view;
-        private RectTransform panel;
+        private VisualElement panel;
         private Button hostButton;
         private Button joinButton;
         private Button leaveButton;
-        private InputField address;
-        private Text status;
+        private TextField address;
+        private Label status;
 
         public OnlineDuelLobby Lobby { get; private set; }
 
-        public bool IsShown => panel != null && panel.gameObject.activeSelf;
+        public bool IsShown => panel != null && panel.style.display != DisplayStyle.None;
         public string StatusText => status != null ? status.text : "";
         public string Address
         {
-            get => address != null ? address.text : "";
-            set { if (address != null) address.text = value; }
+            get => address != null ? address.value : "";
+            set { if (address != null) address.value = value; }
         }
 
         // Called by DuelSceneBuilder (and tests) in place of Inspector wiring.
@@ -60,7 +60,8 @@ namespace Unity.QuickDuel.Online
             if (bootstrap == null || bootstrap.Session == null)
             {
                 status.text = "Online play is not set up in this scene.";
-                hostButton.interactable = joinButton.interactable = false;
+                hostButton.SetEnabled(false);
+                joinButton.SetEnabled(false);
                 return;
             }
 
@@ -87,7 +88,7 @@ namespace Unity.QuickDuel.Online
         {
             // Shown between rounds only, never over a round being played.
             if (panel != null)
-                panel.gameObject.SetActive(controller.CanBeginRound);
+                SetVisible(panel, controller.CanBeginRound);
         }
 
         // Hosts a listen server; this machine duels on the left. False when it could not start.
@@ -132,10 +133,10 @@ namespace Unity.QuickDuel.Online
             if (panel == null || Lobby == null)
                 return;
             var active = Lobby.IsActive;
-            hostButton.gameObject.SetActive(!active);
-            joinButton.gameObject.SetActive(!active);
-            address.gameObject.SetActive(!active);
-            leaveButton.gameObject.SetActive(active);
+            SetVisible(hostButton, !active);
+            SetVisible(joinButton, !active);
+            SetVisible(address, !active);
+            SetVisible(leaveButton, active);
             status.text = Lobby.Status;
         }
 
@@ -143,25 +144,31 @@ namespace Unity.QuickDuel.Online
         {
             EnsureEventSystem();
 
-            panel = new GameObject("OnlineMenu", typeof(RectTransform)).GetComponent<RectTransform>();
-            panel.SetParent(view.Root, false);
-            // Pinned to the left edge at the scoreboard's height (which is centre-anchored), just under the left score.
-            panel.anchorMin = panel.anchorMax = new Vector2(0, 0.5f);
-            panel.pivot = new Vector2(0, 1);
-            panel.anchoredPosition = new Vector2(40, 440);
-            panel.sizeDelta = new Vector2(340, 240);
-            panel.gameObject.AddComponent<Image>().color = Panel;   // also keeps clicks on it from striking
+            panel = new VisualElement { name = "OnlineMenu" };
+            panel.style.position = Position.Absolute;
+            panel.style.left = 40;
+            // Pinned to the left edge at the scoreboard's height (Root's real vertical centre, which tracks
+            // the actual aspect -- see DuelView.CreateEdgeLabel), just under the left score.
+            panel.style.top = Length.Percent(50);
+            panel.style.marginTop = -440;
+            panel.style.width = 340;
+            panel.style.height = 240;
+            panel.style.backgroundColor = Panel;   // also keeps clicks on it from striking (it is opaque to picking)
+            view.Root.Add(panel);
 
-            Text(panel, "Heading", "ONLINE", 30, new Vector2(20, -12), new Vector2(300, 36), Paper);
-            hostButton = MakeButton(panel, "Host", "Host", new Vector2(20, -56), new Vector2(300, 48), () => Host());
-            address = MakeField(panel, new Vector2(20, -114), new Vector2(190, 48));
-            joinButton = MakeButton(panel, "Join", "Join", new Vector2(220, -114), new Vector2(100, 48), () => Join(address.text));
-            leaveButton = MakeButton(panel, "Leave", "Leave", new Vector2(20, -56), new Vector2(300, 48), () => Leave());
-            status = Text(panel, "Status", "", 22, new Vector2(20, -172), new Vector2(300, 60), Paper);
-            status.horizontalOverflow = HorizontalWrapMode.Wrap;
-            status.alignment = TextAnchor.UpperLeft;
-            leaveButton.gameObject.SetActive(false);
+            TextLabel(panel, "Heading", "ONLINE", 30, 20, 12, 300, 36, Paper);
+            hostButton = MakeButton(panel, "Host", "Host", 20, 56, 300, 48, () => Host());
+            address = MakeField(panel, 20, 114, 190, 48);
+            joinButton = MakeButton(panel, "Join", "Join", 220, 114, 100, 48, () => Join(address.value));
+            leaveButton = MakeButton(panel, "Leave", "Leave", 20, 56, 300, 48, () => Leave());
+            status = TextLabel(panel, "Status", "", 22, 20, 172, 300, 60, Paper);
+            status.style.whiteSpace = WhiteSpace.Normal;
+            status.style.unityTextAlign = TextAnchor.UpperLeft;
+            SetVisible(leaveButton, false);
         }
+
+        private static void SetVisible(VisualElement element, bool visible) =>
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
 
         private static void EnsureEventSystem()
         {
@@ -171,67 +178,60 @@ namespace Unity.QuickDuel.Online
             events.AddComponent<InputSystemUIInputModule>();
         }
 
-        private Text Text(RectTransform parent, string name, string value, int size, Vector2 at, Vector2 box, Color color)
+        // Every child is placed top-left, relative to its own parent's top-left corner (`panel`'s own, for
+        // these) -- the same top-left anchor the original's RectTransform.Place used, just expressed as
+        // plain absolute left/top instead of an anchor + pivot + anchoredPosition triple.
+        private static VisualElement Place(VisualElement element, VisualElement parent, float left, float top, float width, float height)
         {
-            var rect = Place(new GameObject(name, typeof(RectTransform)), parent, at, box);
-            var text = rect.gameObject.AddComponent<Text>();
-            text.font = view.Font;
-            text.fontSize = size;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = TextAnchor.MiddleLeft;
-            text.color = color;
-            text.raycastTarget = false;
-            text.text = value;
-            return text;
+            element.style.position = Position.Absolute;
+            element.style.left = left;
+            element.style.top = top;
+            element.style.width = width;
+            element.style.height = height;
+            parent.Add(element);
+            return element;
         }
 
-        private Button MakeButton(RectTransform parent, string name, string label, Vector2 at, Vector2 box, Action onClick)
+        private static Label TextLabel(VisualElement parent, string name, string value, int size, float left, float top, float width, float height, Color color)
         {
-            var rect = Place(new GameObject(name, typeof(RectTransform)), parent, at, box);
-            var image = rect.gameObject.AddComponent<Image>();
-            image.color = Paper;
-            var button = rect.gameObject.AddComponent<Button>();
-            button.targetGraphic = image;
-            var caption = Text(rect, "Label", label, 26, Vector2.zero, box, Ink);
-            caption.alignment = TextAnchor.MiddleCenter;
-            button.onClick.AddListener(() =>
+            var label = new Label(value) { name = name, pickingMode = PickingMode.Ignore };
+            label.style.fontSize = size;
+            label.style.unityFontStyleAndWeight = FontStyle.Bold;
+            label.style.unityTextAlign = TextAnchor.MiddleLeft;
+            label.style.color = color;
+            Place(label, parent, left, top, width, height);
+            return label;
+        }
+
+        private static Button MakeButton(VisualElement parent, string name, string label, float left, float top, float width, float height, Action onClick)
+        {
+            Button button = null;
+            button = new Button(() =>
             {
-                // Let go of the button, so Space (also the UI's Submit) starts a round instead of clicking it again.
-                if (EventSystem.current != null)
-                    EventSystem.current.SetSelectedGameObject(null);
                 onClick();
-            });
+                // Let go of the button, so Space (also the UI's Submit) starts a round instead of clicking it again.
+                button.Blur();
+            }) { name = name, text = label };
+            button.style.backgroundColor = Paper;
+            button.style.color = Ink;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.fontSize = 26;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
+            button.style.marginLeft = button.style.marginRight = button.style.marginTop = button.style.marginBottom = 0;
+            Place(button, parent, left, top, width, height);
             return button;
         }
 
-        private InputField MakeField(RectTransform parent, Vector2 at, Vector2 box)
+        private static TextField MakeField(VisualElement parent, float left, float top, float width, float height)
         {
-            var rect = Place(new GameObject("Address", typeof(RectTransform)), parent, at, box);
-            var image = rect.gameObject.AddComponent<Image>();
-            image.color = Color.white;
-            var field = rect.gameObject.AddComponent<InputField>();
-            field.targetGraphic = image;
-            var inner = new Vector2(box.x - 16, box.y);
-            var text = Text(rect, "Text", "", 24, new Vector2(8, 0), inner, Ink);
-            text.supportRichText = false;
-            var hint = Text(rect, "Placeholder", "host address", 24, new Vector2(8, 0), inner, new Color(Ink.r, Ink.g, Ink.b, 0.4f));
-            hint.fontStyle = FontStyle.Italic;
-            field.textComponent = text;
-            field.placeholder = hint;
-            field.lineType = InputField.LineType.SingleLine;
-            field.caretColor = Accent;
-            field.text = "127.0.0.1";
+            var field = new TextField { name = "Address", value = "127.0.0.1" };
+            field.style.backgroundColor = Color.white;
+            field.style.color = Ink;
+            field.style.fontSize = 24;
+            field.style.unityTextAlign = TextAnchor.MiddleLeft;
+            field.style.marginLeft = field.style.marginRight = field.style.marginTop = field.style.marginBottom = 0;
+            Place(field, parent, left, top, width, height);
             return field;
-        }
-
-        private static RectTransform Place(GameObject go, RectTransform parent, Vector2 at, Vector2 box)
-        {
-            var rect = (RectTransform)go.transform;
-            rect.SetParent(parent, false);
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
-            rect.anchoredPosition = at;
-            rect.sizeDelta = box;
-            return rect;
         }
     }
 }

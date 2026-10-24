@@ -15,8 +15,11 @@ namespace Unity.QuickDuel.EditorTools
     /// committed asset untouched. Run from the menu or in batch mode via
     /// <c>-executeMethod Unity.QuickDuel.EditorTools.DuelPanelBuilder.BuildPanel</c>; <see cref="DuelSceneBuilder"/>
     /// runs it first so the scene is never generated without a panel for its UIDocument to use.
-    /// No theme style sheet is assigned: the duel screen is built entirely from plain VisualElement/Label
-    /// with its own Duel.uss, never a themed built-in control (Button, Toggle, ...), so it needs none.
+    /// Keeps Unity's default runtime theme style sheet (auto-assigned the first time any PanelSettings is
+    /// created in a project with none, copying it to Assets/UI Toolkit/): DuelView itself is plain
+    /// VisualElement/Label styled by its own Duel.uss and would need no theme, but OnlineDuelMenu's Host /
+    /// Join panel (UQD-T21) is built from themed built-in controls (Button, TextField), which look and lay
+    /// out wrong -- no default padding, border or background -- without one.
     /// </summary>
     public static class DuelPanelBuilder
     {
@@ -43,26 +46,11 @@ namespace Unity.QuickDuel.EditorTools
             panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
             panel.match = 0.5f;
             panel.clearColor = false;
-
-            // PanelSettings.OnEnable auto-assigns (and, the first time in a project, auto-copies) Unity's
-            // own default runtime theme if nothing clears it. This screen uses no themed built-in control
-            // (Button, Toggle, ...), only plain VisualElement/Label styled by its own Duel.uss, so it needs
-            // no theme; undoing the default here, every time, keeps a clean checkout's regenerated asset
-            // identical to the committed one, matching the class doc's "no theme style sheet is assigned".
-            panel.themeStyleSheet = null;
-            var serialized = new SerializedObject(panel);
-            var warning = serialized.FindProperty("m_DisableNoThemeWarning");
-            if (warning != null) warning.boolValue = true;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
+            // panel.themeStyleSheet is left at whatever PanelSettings.OnEnable already auto-assigned
+            // (Unity's own default runtime theme) -- see the class doc for why this panel keeps it.
 
             AssetDatabase.CreateAsset(panel, PanelPath);
             AssetDatabase.SaveAssets();
-
-            // The auto-copy above (before this method ever ran) is what put this folder in the project;
-            // clear it so Ensure() never leaves a stray, unreferenced "Assets/UI Toolkit" behind.
-            if (AssetDatabase.IsValidFolder("Assets/UI Toolkit"))
-                AssetDatabase.DeleteAsset("Assets/UI Toolkit");
-
             return panel;
         }
     }
