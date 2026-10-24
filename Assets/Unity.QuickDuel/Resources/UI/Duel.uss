@@ -11,7 +11,23 @@
     right: 0;
     bottom: 0;
     -unity-font-style: bold;
-    overflow: hidden;
+    /* visible, not hidden: Root's own real size tracks the device aspect (see .stage below), so at an
+       aspect narrower than 16:9 the fixed-size stage can be very slightly wider than Root itself; letting
+       it overflow keeps every centred element on screen instead of clipping its edges. */
+    overflow: visible;
+}
+
+/* A fixed 1920x1080 frame, always centred in Root regardless of Root's own real (aspect-dependent) size --
+   DuelView parents every centre-anchored element (the fighters, every CreateLabel) here instead of
+   straight onto Root, so "x pixels from centre" means the same thing at any screen aspect. */
+.stage {
+    position: absolute;
+    width: 1920px;
+    height: 1080px;
+    left: 50%;
+    top: 50%;
+    margin-left: -960px;
+    margin-top: -540px;
 }
 
 .sky {

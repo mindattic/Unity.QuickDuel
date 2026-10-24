@@ -11,7 +11,10 @@ namespace Unity.QuickDuel
     // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label shares the font asset
     // Resources/UI/Fonts/Cinzel.ttf -- no more Resources.GetBuiltinResource("LegacyRuntime.ttf"). The panel
     // renders as a screen-space overlay (UI Toolkit has no "Screen Space - Camera" mode); the main camera
-    // behind it only clears to its background colour, the way it always has.
+    // behind it only clears to its background colour, the way it always has. Centre-anchored content (the
+    // fighters, every CreateLabel) lives on a fixed 1920x1080 "stage" kept centred in Root (see Build()),
+    // so it stays centred at any aspect; screen-edge content (sky, ground, letterbox, the edge score
+    // labels) is positioned by percentage straight off Root, which does track the real aspect.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
@@ -32,6 +35,7 @@ namespace Unity.QuickDuel
         private DuelController controller;
         private UIDocument document;
         private Font font;
+        private VisualElement stage;
         private VisualElement letterboxTop;
         private VisualElement letterboxBottom;
         private Fighter left;
@@ -195,10 +199,22 @@ namespace Unity.QuickDuel
             var styleSheet = Resources.Load<StyleSheet>("UI/Duel");
             if (styleSheet != null) Root.styleSheets.Add(styleSheet);
 
+            // Root's own resolved size is not fixed at the reference resolution (ScaleWithScreenSize keeps
+            // it at the real device aspect, only the final render scale is reference-resolution-based), so
+            // a fixed-size, always-centred "stage" is what gives centre-anchored content (the fighters,
+            // every CreateLabel) a true 1920x1080, any-aspect-safe coordinate space -- the same way the
+            // original's canvas-centre anchors kept them centred regardless of the real canvas rect size.
+            // Things that must reach the real screen edges at any aspect (sky, ground, letterbox, the edge
+            // score labels) stay on Root itself instead, sized/positioned by percentage, not by the stage.
+            stage = new VisualElement { name = "Stage", pickingMode = PickingMode.Ignore };
+            stage.AddToClassList("stage");
+            Root.Add(stage);
+
             Box("Sky", Root, Paper).AddToClassList("sky");
             var ground = Box("Ground", Root, Ground);
             ground.AddToClassList("ground");
-            ground.style.height = StageHeight / 2f + GroundY;
+            ground.style.top = Length.Percent(50);
+            ground.style.marginTop = -GroundY;
 
             left = new Fighter(this, "Left", -380f, LeftColor, 1f);
             right = new Fighter(this, "Right", 380f, RightColor, -1f);
@@ -246,12 +262,13 @@ namespace Unity.QuickDuel
             label.style.color = color;
             PlaceOnStage(label, position.x, position.y, 1600f, size * 1.2f);
             if (tint) tinted.Add((label, color, true));
-            Root.Add(label);
+            stage.Add(label);
             return label;
         }
 
         // Pinned to the left (edge 0) or right (edge 1) screen edge so it stays visible at any aspect,
-        // the way the original anchored EdgeLabel to that edge instead of the canvas centre.
+        // the way the original anchored EdgeLabel to that edge (of the real canvas rect, not the fixed
+        // stage) instead of the canvas centre; `top: 50%` finds Root's real vertical centre at any aspect.
         public Label CreateEdgeLabel(string name, int size, float edge, float y, Color color, bool tint = true)
         {
             var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
@@ -263,7 +280,8 @@ namespace Unity.QuickDuel
             label.style.position = Position.Absolute;
             label.style.width = 600f;
             label.style.height = height;
-            label.style.top = StageHeight / 2f - y - height / 2f;
+            label.style.top = Length.Percent(50);
+            label.style.marginTop = -(y + height / 2f);
             if (edge < 0.5f) label.style.left = 40f; else label.style.right = 40f;
             if (tint) tinted.Add((label, color, true));
             Root.Add(label);
@@ -320,7 +338,7 @@ namespace Unity.QuickDuel
                 this.facing = facing;
                 root = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
                 PlaceOnStage(root, x, GroundY, 0f, 0f);
-                view.Root.Add(root);
+                view.stage.Add(root);
 
                 var body = view.Box("Body", root, color);
                 PlacePivoted(body, 0f, 0f, 130f, 250f, 0.5f, 0f);

@@ -44,8 +44,25 @@ namespace Unity.QuickDuel.EditorTools
             panel.match = 0.5f;
             panel.clearColor = false;
 
+            // PanelSettings.OnEnable auto-assigns (and, the first time in a project, auto-copies) Unity's
+            // own default runtime theme if nothing clears it. This screen uses no themed built-in control
+            // (Button, Toggle, ...), only plain VisualElement/Label styled by its own Duel.uss, so it needs
+            // no theme; undoing the default here, every time, keeps a clean checkout's regenerated asset
+            // identical to the committed one, matching the class doc's "no theme style sheet is assigned".
+            panel.themeStyleSheet = null;
+            var serialized = new SerializedObject(panel);
+            var warning = serialized.FindProperty("m_DisableNoThemeWarning");
+            if (warning != null) warning.boolValue = true;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
             AssetDatabase.CreateAsset(panel, PanelPath);
             AssetDatabase.SaveAssets();
+
+            // The auto-copy above (before this method ever ran) is what put this folder in the project;
+            // clear it so Ensure() never leaves a stray, unreferenced "Assets/UI Toolkit" behind.
+            if (AssetDatabase.IsValidFolder("Assets/UI Toolkit"))
+                AssetDatabase.DeleteAsset("Assets/UI Toolkit");
+
             return panel;
         }
     }
