@@ -5,33 +5,30 @@ using UnityEngine.UI;
 
 namespace Unity.QuickDuel
 {
-    public enum DuelMode { LocalPvp, VsAiEasy, VsAiNormal, VsAiHard }
-
-    // The session around the rounds: who plays the right side (a second human or the AI) and the
-    // match score. Tab or gamepad Select cycles the mode between rounds, which starts a fresh match.
-    // Runs before DuelController so the AI's strike is registered before the round's Tick can settle.
-    [DefaultExecutionOrder(-100)]
+    // The on-screen session labels: who plays the right side (a second human or the AI), the match score
+    // and the verdict banner. The mode, the match and the AI's own wiring belong to Core's MatchSession
+    // (DuelController.Session, UQD-T30) -- this only reads its state, plays its events, and turns Tab /
+    // gamepad Select into its SetMode command on the local machine's behalf. Mode cycling between rounds
+    // still starts a fresh match; that reset happens in MatchSession, not here.
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelSession : MonoBehaviour
     {
-        private int winsNeeded;   // MatchTuning.WinsNeeded: 2, best of 3
-
         private DuelController controller;
         private DuelInput input;
         private DuelQuit quit;
         private DuelView view;
-        private AiOpponent ai;
-        private double? aiStrikeAt;
         private InputAction cycleMode;
         private Text modeText;
         private Text leftScore;
         private Text rightScore;
         private Text verdict;
 
-        public DuelMode Mode { get; private set; } = DuelMode.LocalPvp;
-        public Match Match { get; private set; }
-        public bool AiPlaysRight => Mode != DuelMode.LocalPvp;
-        public double? AiStrikeAt => aiStrikeAt;
+        private MatchSession Session => controller.Session;
+
+        public DuelMode Mode => Session.Mode;
+        public Match Match => Session.Match;
+        public bool AiPlaysRight => Session.AiPlaysRight;
+        public double? AiStrikeAt => Session.AiStrikeAt;
 
         public string ModeText => modeText.text;
         public string ScoreText(Side side) => (side == Side.Left ? leftScore : rightScore).text;
@@ -42,8 +39,6 @@ namespace Unity.QuickDuel
             controller = GetComponent<DuelController>();
             input = GetComponent<DuelInput>();
             quit = GetComponent<DuelQuit>();
-            winsNeeded = TuningStore.Profile.Match.WinsNeeded;
-            Match = new Match(winsNeeded);
 
             cycleMode = new InputAction("CycleMode", InputActionType.Button);
             cycleMode.AddBinding("<Keyboard>/tab");
@@ -57,9 +52,8 @@ namespace Unity.QuickDuel
                 CycleMode();
             };
 
-            controller.PhaseChanged += OnPhaseChanged;
-            controller.Resolved += OnResolved;
             controller.RoundStarted += OnRoundStarted;
+            controller.Resolved += OnResolved;
         }
 
         private void Start()
@@ -71,7 +65,9 @@ namespace Unity.QuickDuel
             rightScore = EdgeLabel(view, "RightScore", 1f, ink);
             verdict = view.Label("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f), tint: false);
             verdict.enabled = false;
-            SetMode(Mode);
+
+            Session.ModeChanged += OnModeChanged;
+            OnModeChanged(Session.Mode);
         }
 
         // Pinned to the left (x = 0) or right (x = 1) screen edge so it stays visible at any aspect.
@@ -91,69 +87,38 @@ namespace Unity.QuickDuel
         private void OnDisable() => cycleMode.Disable();
         private void OnDestroy() => cycleMode.Dispose();
 
-        private void Update()
-        {
-            if (!aiStrikeAt.HasValue || controller.Duel == null)
-                return;
-            var phase = controller.Phase;
-            if ((phase == DuelPhase.Standoff || phase == DuelPhase.Strike) && controller.Now >= aiStrikeAt.Value)
-            {
-                // Strike at the drawn time itself, not at this frame's time, so frame rate can't help or hurt the AI.
-                var at = aiStrikeAt.Value;
-                aiStrikeAt = null;
-                controller.Strike(Side.Right, at);
-            }
-        }
+        // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP. Issued on the local machine's behalf.
+        public bool CycleMode() => Session.CycleMode(MatchSession.LeftPlayerId);
 
-        // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP.
-        public bool CycleMode()
-        {
-            if (!controller.CanBeginRound)
-                return false;
-            SetMode((DuelMode)(((int)Mode + 1) % 4));
-            return true;
-        }
+        public void SetMode(DuelMode mode) => Session.SetMode(MatchSession.LeftPlayerId, mode);
 
-        public void SetMode(DuelMode mode)
+        // Session already applied the mode (and reset the match, and wired up the AI) by the time this
+        // fires; this only has to redraw the labels from its new state.
+        private void OnModeChanged(DuelMode mode)
         {
-            Mode = mode;
-            ai = AiPlaysRight ? new AiOpponent(Difficulty(mode), TuningStore.Profile.Ai) : null;
-            if (input != null) input.RightIsHuman = !AiPlaysRight;
-            Match = new Match(winsNeeded);
-            if (view != null) view.RightName = AiPlaysRight ? "AI" : "Right";
+            if (input != null) input.RightIsHuman = !Session.AiPlaysRight;
+            if (view != null) view.RightName = Session.AiPlaysRight ? "AI" : "Right";
             if (modeText == null) return;
-            modeText.text = (AiPlaysRight ? $"vs AI ({Difficulty(mode)})" : "Local PvP") + "  -  Tab / Select: mode";
+            modeText.text = (Session.AiPlaysRight ? $"vs AI ({MatchSession.DifficultyOf(mode)})" : "Local PvP")
+                + "  -  Tab / Select: mode";
             verdict.enabled = false;
             RefreshScore();
         }
 
-        private static AiDifficulty Difficulty(DuelMode mode) =>
-            mode == DuelMode.VsAiEasy ? AiDifficulty.Easy : mode == DuelMode.VsAiHard ? AiDifficulty.Hard : AiDifficulty.Normal;
-
         private void OnRoundStarted()
         {
-            if (Match.IsOver)
-                Match = new Match(winsNeeded);
-            aiStrikeAt = null;
             if (verdict != null) verdict.enabled = false;
             RefreshScore();
         }
 
-        private void OnPhaseChanged(DuelPhase phase)
-        {
-            if (phase == DuelPhase.Countdown && ai != null)
-                aiStrikeAt = ai.StrikeTime(controller.Duel);
-        }
-
         private void OnResolved(DuelResult result)
         {
-            aiStrikeAt = null;
-            Match.Record(result);
             RefreshScore();
-            if (Match.IsOver && verdict != null)
+            var match = Session.Match;
+            if (match.IsOver && verdict != null)
             {
-                var winner = Match.Winner == Side.Left ? "Left" : AiPlaysRight ? "The AI" : "Right";
-                verdict.text = $"{winner} takes the match {Match.WinsOf(Match.Winner.Value)}-{Match.WinsOf(Other(Match.Winner.Value))}";
+                var winner = match.Winner == Side.Left ? "Left" : Session.AiPlaysRight ? "The AI" : "Right";
+                verdict.text = $"{winner} takes the match {match.WinsOf(match.Winner.Value)}-{match.WinsOf(Other(match.Winner.Value))}";
                 verdict.enabled = true;
             }
         }
@@ -162,13 +127,14 @@ namespace Unity.QuickDuel
         {
             if (leftScore == null) return;
             leftScore.text = Score("Left", Side.Left);
-            rightScore.text = Score(AiPlaysRight ? "AI" : "Right", Side.Right);
+            rightScore.text = Score(Session.AiPlaysRight ? "AI" : "Right", Side.Right);
         }
 
         private string Score(string name, Side side)
         {
-            var best = Match.BestReactionOf(side);
-            return $"{name}  {Match.WinsOf(side)}/{Match.WinsNeeded}   best {(best.HasValue ? DuelView.FormatReaction(best) : "-")}";
+            var match = Session.Match;
+            var best = match.BestReactionOf(side);
+            return $"{name}  {match.WinsOf(side)}/{match.WinsNeeded}   best {(best.HasValue ? DuelView.FormatReaction(best) : "-")}";
         }
 
         private static Side Other(Side side) => side == Side.Left ? Side.Right : Side.Left;

@@ -48,7 +48,7 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 ```
 Assets/Unity.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
-                                                      OnlineDuelHost, OnlineDuelClient
+                                                      MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
@@ -87,9 +87,17 @@ means before it; null means no strike). In order:
 5. **FasterStrike** — the lower reaction wins; a lone striker wins.
 
 ### 4.3 Session and match {#UQD-§4.3}
-`DuelSession` owns the mode (Local PvP → vs AI Easy → Normal → Hard, cycled with Tab / Select between
-rounds only) and the `Match`. A match is first to 2 wins (best of 3); ties and no-strike rounds award
-nobody; changing mode starts a fresh match. The scoreboard shows wins and each side's best reaction.
+`MatchSession` (Core, UQD-T30) is the one authority over a local duel's round, mode and match: it owns the
+mode (Local PvP → vs AI Easy → Normal → Hard), the difficulty mapping, the `Match`, the current `Duel` and
+the AI's wiring (scheduling and striking on its own behalf). Nothing changes any of that except its three
+commands -- `BeginRound`, `Strike`, `SetMode` -- each named by the seat issuing it (`playerId`: 0 the left
+seat, 1 the right, the seam a future `NetEntity` will plug a real player id through, AGENTS.md rule 9); every
+change it makes is announced only as an event (`RoundStarted`, `PhaseChanged`, `Resolved`, `ModeChanged`).
+`DuelController` threads Unity's clock and tuning through to those commands and republishes its events;
+`DuelSession` is a thin view that turns Tab / gamepad Select into `SetMode` and draws the mode, score and
+verdict labels from the session's state. The mode is cycled only between rounds; changing it always starts
+a fresh match. A match is first to 2 wins (best of 3); ties and no-strike rounds award nobody. The
+scoreboard shows wins and each side's best reaction.
 
 AI reaction ranges (`AiOpponent.ReactionRange`): Easy 450–700 ms, Normal 300–450 ms, Hard 200–300 ms.
 
@@ -196,6 +204,11 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   only Canvas/Image/Text, drawn with Unity's own `UI/Default` shader, which ships with every pipeline;
   no shader or material in the repo names URP. Verified by a Windows Standalone build (`deploy.ps1`)
   that launches and renders the Duel scene.
+- ✅ Session and match flow moved to Core (UQD-T30, `MatchSessionTests`): `MatchSession` is now the one
+  authority over the round, mode and match, with `Strike`/`BeginRound`/`SetMode` each carrying a player id
+  (§4.3); `DuelController` and `DuelSession` are thin Unity views over it, covered by the existing PlayMode
+  suite (`DuelSceneTests`, `DuelSessionTests`, `DuelQuitTests`, `DuelInputTests`, `DuelTauntTests`,
+  `DuelAudioTests`, `DuelViewTests`).
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an

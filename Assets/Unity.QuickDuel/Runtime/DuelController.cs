@@ -4,9 +4,11 @@ using UnityEngine;
 
 namespace Unity.QuickDuel
 {
-    // Owns the current round. Every time it hands the Duel is on Time.realtimeSinceStartupAsDouble, the
-    // same clock Input System event timestamps use, so strikes are judged by when the key went down,
-    // not by which frame noticed it.
+    // The thin Unity-facing view of Core's MatchSession, the one authority over the round, mode and
+    // match (UQD-T30): this only threads Unity's clock and tuning through to its commands and republishes
+    // its events, the same way it hands the Duel Time.realtimeSinceStartupAsDouble, the same clock Input
+    // System event timestamps use, so strikes are judged by when the key went down, not by which frame
+    // noticed it.
     public sealed class DuelController : MonoBehaviour
     {
         [SerializeField] private bool beginOnStart;
@@ -23,19 +25,33 @@ namespace Unity.QuickDuel
         // The clock for Tick and for Begin. Leave it alone outside tests.
         public Func<double> Clock { get; set; } = () => Time.realtimeSinceStartupAsDouble;
 
-        public Duel Duel { get; private set; }
-        public int Round { get; private set; }
+        // The one authority over this round, the mode and the match; DuelSession is its only other reader.
+        // Built lazily (like Settings) rather than in Awake: DuelView and DuelSession read it from their
+        // own Awake, and Unity does not guarantee this component's Awake runs first.
+        public MatchSession Session => session ?? (session = new MatchSession(TuningStore.Profile.Ai, TuningStore.Profile.Match.WinsNeeded));
+
+        private MatchSession session;
+
+        public Duel Duel => Session.Duel;
+        public int Round => Session.Round;
 
         public double Now => Clock();
-        public DuelPhase Phase => Duel?.Phase ?? DuelPhase.Ready;
-        public DuelResult Result => Duel?.Result;
-        public double CountdownRemaining => Duel?.CountdownRemaining(Now) ?? 0;
-        public int CountdownNumber => Duel?.CountdownNumber(Now) ?? 0;
-        public bool CanBeginRound => Duel == null || Duel.Phase == DuelPhase.Resolved;
+        public DuelPhase Phase => Session.Phase;
+        public DuelResult Result => Session.Result;
+        public double CountdownRemaining => Session.CountdownRemaining(Now);
+        public int CountdownNumber => Session.CountdownNumber(Now);
+        public bool CanBeginRound => Session.CanBeginRound;
 
         public event Action RoundStarted;
         public event Action<DuelPhase> PhaseChanged;
         public event Action<DuelResult> Resolved;
+
+        private void Awake()
+        {
+            Session.RoundStarted += () => RoundStarted?.Invoke();
+            Session.PhaseChanged += phase => PhaseChanged?.Invoke(phase);
+            Session.Resolved += result => Resolved?.Invoke(result);
+        }
 
         private void Start()
         {
@@ -43,24 +59,14 @@ namespace Unity.QuickDuel
                 BeginRound();
         }
 
-        private void Update() => Duel?.Tick(Now);
+        private void Update() => Session.Tick(Now);
 
-        // Starts a fresh round; false while one is still running.
-        public bool BeginRound()
-        {
-            if (!CanBeginRound)
-                return false;
+        // Starts a fresh round on the local machine's behalf; false while one is still running.
+        public bool BeginRound() => Session.BeginRound(Settings, Now);
 
-            Duel = new Duel(Settings);
-            Duel.PhaseChanged += phase => PhaseChanged?.Invoke(phase);
-            Duel.Resolved += result => Resolved?.Invoke(result);
-            Round++;
-            RoundStarted?.Invoke();
-            Duel.Begin(Now);
-            return true;
-        }
-
-        // `at` is the strike's own timestamp on the controller's clock (an input event time).
-        public void Strike(Side side, double at) => Duel?.Strike(side, at);
+        // `at` is the strike's own timestamp on the controller's clock (an input event time). Side maps
+        // straight onto MatchSession's two fixed local seats (left = player 0, right = player 1).
+        public void Strike(Side side, double at) =>
+            Session.Strike(side == Side.Left ? MatchSession.LeftPlayerId : MatchSession.RightPlayerId, at);
     }
 }
