@@ -43,8 +43,8 @@ namespace Unity.QuickDuel.Tests
         {
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            controller.Strike(Side.Left, controller.Duel.CueAt + 0.2);
-            controller.Strike(Side.Right, controller.Duel.CueAt + 0.3);
+            controller.Strike(Side.Left, controller.CueAt + 0.2);
+            controller.Strike(Side.Right, controller.CueAt + 0.3);
 
             Assert.That(taunt.Current, Is.Empty);
         }

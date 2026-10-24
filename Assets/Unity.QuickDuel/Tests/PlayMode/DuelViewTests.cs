@@ -50,7 +50,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.CueText, Is.EqualTo("!"));
             Screenshots.Capture("04-cue");
 
-            var cue = controller.Duel.CueAt;
+            var cue = controller.CueAt;
             controller.Strike(Side.Left, cue + 0.312);
             controller.Strike(Side.Right, cue + 0.187);
             yield return DuelSceneTests.WaitUntil(() => view.LetterboxAmount < 0.01f);

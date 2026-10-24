@@ -35,7 +35,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            var cue = controller.Duel.CueAt;
+            var cue = controller.CueAt;
             // One keyboard delivers its events in time order (the Input System drops older ones).
             Press(keyboard.aKey, cue + 0.120);
             Press(keyboard.lKey, cue + 0.200);
@@ -58,7 +58,7 @@ namespace Unity.QuickDuel.Tests
             yield return null;
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            var cue = controller.Duel.CueAt;
+            var cue = controller.CueAt;
             Press(pad2.buttonSouth, cue + 0.150);
             Press(pad1.buttonSouth, cue + 0.300);
             yield return null;
@@ -78,7 +78,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            var cue = controller.Duel.CueAt;
+            var cue = controller.CueAt;
             Press(mouse.leftButton, cue + 0.180);
             yield return null;
 
@@ -94,7 +94,7 @@ namespace Unity.QuickDuel.Tests
             yield return Load();
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Standoff);
-            Press(keyboard.lKey, controller.Duel.CueAt - 0.05);
+            Press(keyboard.lKey, controller.CueAt - 0.05);
             yield return null;
 
             Assert.That(controller.Result.Outcome, Is.EqualTo(DuelOutcome.EarlyStrike));

@@ -16,7 +16,7 @@ namespace Unity.QuickDuel.Core.Tests
         };
 
         private static MatchSession NewSession(DuelMode mode = DuelMode.LocalPvp, int winsNeeded = 2) =>
-            new MatchSession(TestTuning.Profile.Ai, winsNeeded, mode);
+            new MatchSession(() => TestTuning.Profile.Ai, winsNeeded, mode);
 
         [Test]
         public void A_player_id_with_no_seat_cannot_issue_any_command()
@@ -196,9 +196,32 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
-        public void Constructor_rejects_a_null_ai_tuning()
+        public void Constructor_rejects_a_null_ai_tuning_provider()
         {
             Assert.Throws<ArgumentNullException>(() => new MatchSession(null, 2));
+        }
+
+        [Test]
+        public void The_ai_tuning_is_read_fresh_on_every_mode_change_not_captured_once()
+        {
+            // DuelSession used to call `new AiOpponent(Difficulty(mode), TuningStore.Profile.Ai)` inside
+            // SetMode itself, so a tuning profile swapped later still reached the next mode change.
+            // MatchSession must keep that: the AI's tuning is a provider, not a one-time snapshot.
+            var calls = 0;
+            AiTuning Provider()
+            {
+                calls++;
+                return TestTuning.Profile.Ai;
+            }
+
+            var session = new MatchSession(Provider, 2);   // LocalPvp: no AI yet, so the provider isn't called yet
+            Assert.That(calls, Is.Zero);
+
+            session.SetMode(MatchSession.LeftPlayerId, DuelMode.VsAiEasy);
+            Assert.That(calls, Is.EqualTo(1));
+
+            session.SetMode(MatchSession.LeftPlayerId, DuelMode.VsAiHard);
+            Assert.That(calls, Is.EqualTo(2), "a later mode change must read the tuning again, not reuse the first AiOpponent's");
         }
     }
 }

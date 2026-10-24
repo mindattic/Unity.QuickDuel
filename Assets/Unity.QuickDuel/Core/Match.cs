@@ -3,8 +3,22 @@ using System.Collections.Generic;
 
 namespace Unity.QuickDuel.Core
 {
+    // The read-only side of a Match: wins, the verdict and best reactions, with no way to Record a round.
+    // MatchSession hands this out (DuelSession.Match) so a view can read the score without being able to
+    // mutate it behind the one authority's back (UQD-T30).
+    public interface IMatchView
+    {
+        int WinsNeeded { get; }
+        bool IsOver { get; }
+        Side? Winner { get; }
+        int WinsOf(Side side);
+
+        // The smallest non-negative reaction this side has struck with across the match; null if none yet.
+        double? BestReactionOf(Side side);
+    }
+
     // First to WinsNeeded rounds (MatchTuning.WinsNeeded) takes the match; ties and no-strike rounds award nobody.
-    public sealed class Match
+    public sealed class Match : IMatchView
     {
         private readonly List<DuelResult> rounds = new List<DuelResult>();
         private int leftWins;

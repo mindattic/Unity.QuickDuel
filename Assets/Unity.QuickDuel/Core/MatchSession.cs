@@ -15,12 +15,14 @@ namespace Unity.QuickDuel.Core
         public const int LeftPlayerId = 0;
         public const int RightPlayerId = 1;
 
-        private readonly AiTuning aiTuning;
+        // A provider, not a snapshot: read fresh on every mode change (as DuelSession always used to), so a
+        // tuning profile swapped after construction still reaches the AI on the next SetMode/CycleMode.
+        private readonly Func<AiTuning> aiTuning;
         private readonly int winsNeeded;
         private AiOpponent ai;
         private double? aiStrikeAt;
 
-        public MatchSession(AiTuning aiTuning, int winsNeeded, DuelMode mode = DuelMode.LocalPvp)
+        public MatchSession(Func<AiTuning> aiTuning, int winsNeeded, DuelMode mode = DuelMode.LocalPvp)
         {
             this.aiTuning = aiTuning ?? throw new ArgumentNullException(nameof(aiTuning));
             this.winsNeeded = winsNeeded;
@@ -127,7 +129,7 @@ namespace Unity.QuickDuel.Core
         private void ApplyMode(DuelMode mode)
         {
             Mode = mode;
-            ai = AiPlaysRight ? new AiOpponent(DifficultyOf(mode), aiTuning) : null;
+            ai = AiPlaysRight ? new AiOpponent(DifficultyOf(mode), aiTuning()) : null;
             aiStrikeAt = null;
             Match = new Match(winsNeeded);
             ModeChanged?.Invoke(mode);

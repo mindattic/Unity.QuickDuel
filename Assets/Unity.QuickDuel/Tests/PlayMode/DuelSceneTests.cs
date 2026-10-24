@@ -50,7 +50,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
 
             yield return WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            var cue = controller.Duel.CueAt;
+            var cue = controller.CueAt;
             controller.Strike(Side.Right, cue + 0.250);
             controller.Strike(Side.Left, cue + 0.180);
 

@@ -48,7 +48,7 @@ namespace Unity.QuickDuel.Tests
             session.SetMode(DuelMode.VsAiEasy);
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            controller.Strike(Side.Left, controller.Duel.CueAt + 0.150);
+            controller.Strike(Side.Left, controller.CueAt + 0.150);
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved);
 
             Assert.That(controller.Result.Winner, Is.EqualTo(Side.Left));
@@ -62,8 +62,8 @@ namespace Unity.QuickDuel.Tests
             {
                 controller.BeginRound();
                 yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-                controller.Strike(Side.Left, controller.Duel.CueAt + 0.2 + round * 0.05);
-                controller.Strike(Side.Right, controller.Duel.CueAt + 0.4);
+                controller.Strike(Side.Left, controller.CueAt + 0.2 + round * 0.05);
+                controller.Strike(Side.Right, controller.CueAt + 0.4);
             }
 
             Assert.That(session.Match.IsOver, Is.True);

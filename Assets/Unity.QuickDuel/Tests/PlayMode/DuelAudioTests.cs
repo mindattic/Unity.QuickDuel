@@ -26,8 +26,8 @@ namespace Unity.QuickDuel.Tests
             Assert.That(audio.DrumrollPlaying, Is.True);
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             Assert.That(audio.DrumrollPlaying, Is.False);
-            controller.Strike(Side.Left, controller.Duel.CueAt + 0.2);
-            controller.Strike(Side.Right, controller.Duel.CueAt + 0.25);
+            controller.Strike(Side.Left, controller.CueAt + 0.2);
+            controller.Strike(Side.Right, controller.CueAt + 0.25);
 
             // Left struck faster, so determine_winner.gml's victory sting follows the slash.
             Assert.That(audio.Played, Is.EqualTo(new[]
@@ -50,8 +50,8 @@ namespace Unity.QuickDuel.Tests
 
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
-            controller.Strike(Side.Right, controller.Duel.CueAt + 0.2);
-            controller.Strike(Side.Left, controller.Duel.CueAt + 0.25);
+            controller.Strike(Side.Right, controller.CueAt + 0.2);
+            controller.Strike(Side.Left, controller.CueAt + 0.25);
 
             Assert.That(audio.Played, Does.Contain(DuelAudio.Defeat));
             Assert.That(audio.Played, Does.Not.Contain(DuelAudio.Victory));

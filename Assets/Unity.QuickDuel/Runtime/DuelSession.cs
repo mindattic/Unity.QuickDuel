@@ -26,7 +26,9 @@ namespace Unity.QuickDuel
         private MatchSession Session => controller.Session;
 
         public DuelMode Mode => Session.Mode;
-        public Match Match => Session.Match;
+
+        // Read-only: nothing outside MatchSession may Record a round (UQD-T30).
+        public IMatchView Match => Session.Match;
         public bool AiPlaysRight => Session.AiPlaysRight;
         public double? AiStrikeAt => Session.AiStrikeAt;
 
@@ -90,7 +92,9 @@ namespace Unity.QuickDuel
         // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP. Issued on the local machine's behalf.
         public bool CycleMode() => Session.CycleMode(MatchSession.LeftPlayerId);
 
-        public void SetMode(DuelMode mode) => Session.SetMode(MatchSession.LeftPlayerId, mode);
+        // False (and no-op) while a round is running, between rounds only -- the caller can tell it apart
+        // from a mode that was actually applied, unlike the old unconditional void SetMode.
+        public bool SetMode(DuelMode mode) => Session.SetMode(MatchSession.LeftPlayerId, mode);
 
         // Session already applied the mode (and reset the match, and wired up the AI) by the time this
         // fires; this only has to redraw the labels from its new state.

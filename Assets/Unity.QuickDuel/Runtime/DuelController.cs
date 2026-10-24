@@ -25,19 +25,25 @@ namespace Unity.QuickDuel
         // The clock for Tick and for Begin. Leave it alone outside tests.
         public Func<double> Clock { get; set; } = () => Time.realtimeSinceStartupAsDouble;
 
-        // The one authority over this round, the mode and the match; DuelSession is its only other reader.
+        // The one authority over this round, the mode and the match; DuelSession is its only other reader,
+        // and `internal` (rather than `public`) keeps it that way -- nothing outside this assembly can reach
+        // MatchSession.Duel or .Match to Strike, Tick or Record behind the player-id checks (UQD-T30).
         // Built lazily (like Settings) rather than in Awake: DuelView and DuelSession read it from their
-        // own Awake, and Unity does not guarantee this component's Awake runs first.
-        public MatchSession Session => session ?? (session = new MatchSession(TuningStore.Profile.Ai, TuningStore.Profile.Match.WinsNeeded));
+        // own Awake, and Unity does not guarantee this component's Awake runs first. The tuning is a
+        // provider, not a value read once, so a profile swapped later still reaches the next mode change.
+        internal MatchSession Session => session ?? (session = new MatchSession(() => TuningStore.Profile.Ai, TuningStore.Profile.Match.WinsNeeded));
 
         private MatchSession session;
 
-        public Duel Duel => Session.Duel;
         public int Round => Session.Round;
 
         public double Now => Clock();
         public DuelPhase Phase => Session.Phase;
         public DuelResult Result => Session.Result;
+
+        // The cue timestamp of the round in progress (or last played); 0 before the first round. The live
+        // Duel itself stays inside MatchSession so nothing outside it can Strike or Tick it directly.
+        public double CueAt => Session.Duel?.CueAt ?? 0;
         public double CountdownRemaining => Session.CountdownRemaining(Now);
         public int CountdownNumber => Session.CountdownNumber(Now);
         public bool CanBeginRound => Session.CanBeginRound;
