@@ -112,7 +112,10 @@ namespace Unity.QuickDuel
             var countingDown = phase == DuelPhase.Countdown;
             countdown.enabled = countingDown;
             if (countingDown)
-                countdown.text = Mathf.Max(1, Mathf.CeilToInt((float)controller.CountdownRemaining)).ToString();
+            {
+                var number = controller.CountdownNumber;
+                countdown.text = number > 0 ? number.ToString() : "";
+            }
 
             var tense = phase == DuelPhase.Standoff || phase == DuelPhase.Strike;
             letterbox = Mathf.MoveTowards(letterbox, tense ? 1f : 0f, dt * 3f);

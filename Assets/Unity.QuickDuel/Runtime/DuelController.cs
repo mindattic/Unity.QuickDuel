@@ -30,6 +30,7 @@ namespace Unity.QuickDuel
         public DuelPhase Phase => Duel?.Phase ?? DuelPhase.Ready;
         public DuelResult Result => Duel?.Result;
         public double CountdownRemaining => Duel?.CountdownRemaining(Now) ?? 0;
+        public int CountdownNumber => Duel?.CountdownNumber(Now) ?? 0;
         public bool CanBeginRound => Duel == null || Duel.Phase == DuelPhase.Resolved;
 
         public event Action RoundStarted;

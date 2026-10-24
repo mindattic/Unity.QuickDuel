@@ -28,7 +28,7 @@ updated: 2026-10-23
 | Phase (`mode`) | Original behaviour | Rebuild |
 | --- | --- | --- |
 | `startup` | 3 s (`startup_time = 3 * room_speed`) while the loading fade clears and both fighters fade in idle; the first key press skips to `countdown` | Ready phase, waits for Space / Start (deliberate) |
-| `countdown` | 4 s (`countdown_time`): "Get Ready" for the first quarter, then 3, 2, 1 at 25%, 50%, 75%, a beep on each, each number fading at 0.02 alpha per tick | 3 s countdown, 3-2-1 with a beep, no Get Ready (deliberate, UQD-T37 adds the banner and the fade) |
+| `countdown` | 4 s (`countdown_time`): "Get Ready" for the first quarter, then 3, 2, 1 at 25%, 50%, 75%, a beep on each, each number fading at 0.02 alpha per tick | 4 s countdown, nothing numbered for the first quarter, then 3-2-1 with a beep (UQD-T57; UQD-T37 adds the Get Ready banner and the fade) |
 | `drumroll` | `irandom_range(3 * room_speed, 6.5 * room_speed)` ticks, drumroll sound, `obj_letterbox` closes in 1 px per tick to 12% of the height | Same 3 to 6.5 s, drumroll, letterbox |
 | `action` | Drumroll stops, unsheath sound, `arena.inverted = true` (blend-mode invert of the whole backdrop), fighters switch to run sprites, a counting-up number shows, the computer opponent strikes at `ART + irandom(-LCK, LCK)` ticks | Cue, invert (a tint of UI boxes), unsheath, adaptive computer replaced by Easy / Normal / Hard ranges |
 | `clash` | Reactions within 3 ticks start a button-mash bar (`obj_clash`, `action_clash`) | Dropped on purpose; a dead heat is a tie that scores nobody |

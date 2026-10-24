@@ -100,8 +100,19 @@ namespace Unity.QuickDuel.Core
             Tick(now);
         }
 
-        // Seconds left in the 3-2-1 countdown, for display.
+        // Seconds left in the countdown, for display.
         public double CountdownRemaining(double now) => Math.Max(0, countdownEndsAt - now);
+
+        // The number the countdown shows: obj_gameclock's countdown is "Get Ready" for its first quarter, then 3, 2, 1
+        // as each further quarter begins (gameclock_countdown.gml). 0 means Get Ready, nothing numbered yet.
+        public int CountdownNumber(double now)
+        {
+            var length = settings.CountdownSeconds;
+            if (length <= 0)
+                return 0;
+            var quarter = (int)Math.Floor((length - CountdownRemaining(now)) / (length / 4));
+            return quarter < 1 ? 0 : Math.Max(1, 4 - Math.Min(quarter, 3));
+        }
 
         public void Tick(double now)
         {

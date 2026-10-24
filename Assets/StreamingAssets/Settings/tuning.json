@@ -1,13 +1,13 @@
 {
-  "_source": "Bushido Coda (GameMaker, 2013) and its Android build; see docs/RECONSTRUCTION.md. Figures the rebuild kept unchanged.",
+  "_source": "Bushido Coda (GameMaker, 2013) and its Android build (03-15-13); see docs/RECONSTRUCTION.md and the tuning provenance in docs/BIBLE.md. Each section below says which of its figures come from the original and which are the rebuild's own.",
   "format": "quickduel.tuning",
   "version": 1,
   "default": "standard",
   "profiles": {
     "standard": {
       "duel": {
-        "_source": "gameclock_countdown (3, 2, 1) and gameclock_drumroll irandom_range(3 * room_speed, 6.5 * room_speed); the timeout and settle window are the rebuild's own, for timestamped input.",
-        "countdownSeconds": 3.0,
+        "_source": "obj_gameclock countdown_time = 4 * room_speed (Get Ready for a quarter, then 3, 2, 1 at 25%, 50%, 75%) and drumroll_time = irandom_range(3 * room_speed, 6.5 * room_speed); the timeout and settle window are the rebuild's own, for timestamped input.",
+        "countdownSeconds": 4.0,
         "minStandoffSeconds": 3.0,
         "maxStandoffSeconds": 6.5,
         "strikeTimeoutSeconds": 3.0,

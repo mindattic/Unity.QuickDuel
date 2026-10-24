@@ -41,11 +41,11 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.Throws<SettingsException>(() => TuningRegistry.Load(Memory(text))).Errors.ToArray();
 
         [Test]
-        public void The_shipped_file_loads_with_the_figures_the_rebuild_always_had()
+        public void The_shipped_file_loads_with_the_figures_re_derived_from_the_original()
         {
             var p = TestTuning.Profile;
             Assert.That(p.Name, Is.EqualTo("standard"));
-            Assert.That(p.Duel.CountdownSeconds, Is.EqualTo(3.0));
+            Assert.That(p.Duel.CountdownSeconds, Is.EqualTo(4.0));
             Assert.That(p.Duel.MinStandoffSeconds, Is.EqualTo(3.0));
             Assert.That(p.Duel.MaxStandoffSeconds, Is.EqualTo(6.5));
             Assert.That(p.Duel.StrikeTimeoutSeconds, Is.EqualTo(3.0));

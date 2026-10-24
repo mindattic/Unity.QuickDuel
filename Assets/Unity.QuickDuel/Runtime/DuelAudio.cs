@@ -62,8 +62,8 @@ namespace Unity.QuickDuel
         {
             if (controller.Phase != DuelPhase.Countdown)
                 return;
-            var count = Mathf.Max(1, Mathf.CeilToInt((float)controller.CountdownRemaining));
-            if (count != lastCount)
+            var count = controller.CountdownNumber;
+            if (count != 0 && count != lastCount)
             {
                 lastCount = count;
                 Play(Beep, beep);

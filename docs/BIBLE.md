@@ -24,7 +24,7 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
   [ORIGINS](ORIGINS.md).
 - **Fair to the millisecond.** A strike is timed by its input event's own timestamp, not by the frame that
   noticed it, so frame rate can never decide a duel ([UQD-LAW-2](#UQD-LAW-2)).
-- **Unreadable cue.** The standoff is drawn uniformly from 3 to 6.5 seconds after the 3-2-1 countdown, so
+- **Unreadable cue.** The standoff is drawn uniformly from 3 to 6.5 seconds after the countdown, so
   the only way to win is to react, not to count.
 - **Patience is a skill.** Striking during the standoff loses the round outright, and the loser is taunted
   with a line from the old Android build ("Jumped the Gun", "Too Soon", ...).
@@ -66,7 +66,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | Phase | Lasts | On screen and in the ear |
 | --- | --- | --- |
 | `Ready` | until Space / Start | title and controls |
-| `Countdown` | `CountdownSeconds` (3) | 3-2-1, a beep on each number |
+| `Countdown` | `CountdownSeconds` (4) | Get Ready for the first quarter, then 3-2-1 at 25%, 50% and 75%, a beep on each number |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | colours invert, the cue, the blade unsheathed |
 | `Resolved` | until the next round | slash, the loser falls, reaction times in ms, headline |
@@ -155,11 +155,30 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   PlayMode tests under `Assets/Unity.QuickDuel/Tests/PlayMode`.
 - ✅ Tuning is data (UQD-T28, `TuningRegistryTests`): every number (round clock, AI reaction ranges, wins needed,
   human floor, online report grace, taunt lines) lives in `StreamingAssets/Settings/tuning.json` as named profiles
-  (`standard` holds the figures the rebuild has always had), validated on load with every problem named by file,
+  (`standard` holds figures re-derived from BushidoCoda.gmx, see the tuning provenance below), validated on load with every problem named by file,
   key and line, and read through `TuningRegistry` / `TuningStore`; Core has no number baked in. The
   `com.mindattic.unity.shared` package is in the manifest, ready for the player-profile work (the registry itself is
   Core code; nothing yet uses the package). `TuningStore` reads the file from disk, so it is desktop-only: Android
   and WebGL need a UnityWebRequest source before they ship.
+- ✅ Tuning provenance (UQD-T57, checked against `BushidoCoda.gmx` and the Android `BattleSystem.java`, 03-15-13):
+  - **Countdown, 4 s**: `obj_gameclock` `countdown_time = 4 * room_speed`, "Get Ready" for the first quarter, then
+    3, 2, 1 at `gameclock_countdown.gml`'s 25%, 50%, 75%. The rebuild had wrongly kept 3 s; fixed, and the
+    number shown follows the same quarters (`Duel.CountdownNumber`).
+  - **Standoff, 3 to 6.5 s**: `drumroll_time = irandom_range(3 * room_speed, 6.5 * room_speed)`; matches.
+  - **Taunts**: the ten lines of `RandomPrematureString` in the Android `BattleSystem.java`, drawn uniformly
+    (`GetRandomNumber(1, 10)`); matches exactly. (The GameMaker build shows only "Premature Strike!".)
+  - **AI reaction ranges (Easy 450-700, Normal 300-450, Hard 200-300 ms)**: the original has none. Its computer
+    strikes at `ART + irandom_range(-LCK, LCK)` ticks at 1000 fps with LCK 5 to 10, and ART starts at 15
+    (`obj_player`), set from the human's ART at `obj_game` creation and thereafter fed only by its own past
+    reactions (`calculate_art` averages them), so it never adapts to the human and always strikes in about
+    5 to 25 ms: unbeatable. **Fixed defect**: the rebuild's fixed difficulty ranges stand in; they are the
+    rebuild's own figures, not the original's.
+  - **Wins needed, 2**: the original has no rounds-to-win rule (an HP bar per side, `MAXHP = 50 + VIT * 10`,
+    damage from `calculate_damage` as `PWR * 2 + irandom_range(0, LCK)`, doubled on a 1-in-20-ish crit; not
+    from the reaction gap); best of 3 is the rebuild's own deliberate rule.
+  - **Human floor, 100 ms**: the original has none (it ran locally); the rebuild's own, for online reports only.
+  - **Strike timeout 3 s, settle window 50 ms, online report grace 2 s**: the rebuild's own, for timestamped
+    and online input; the original has no equivalent.
 - ✅ Standalone Windows build with `deploy.ps1` (UQD-T11).
 - ✅ Docs site on GitHub Pages via the shared pipeline (UQD-T10).
 - ✅ Online PvP protocol and transport over Unity.Multiplayer, per [§4.4](#UQD-§4.4) (UQD-T14):

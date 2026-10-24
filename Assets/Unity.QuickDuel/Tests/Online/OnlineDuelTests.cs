@@ -31,7 +31,8 @@ namespace Unity.QuickDuel.Online.Tests
                 MaxStandoffSeconds = 0.6,
                 StrikeTimeoutSeconds = 1.0,
                 SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
-            });
+            }, TuningStore.Profile.Match.WinsNeeded, TuningStore.Profile.Judge.HumanFloorSeconds,
+                TuningStore.Profile.Online.ReportGraceSeconds);
             var onClient = WaitForCopy(Client, onHost);
             yield return onClient;
             onHost.Seat(Server.LocalClientId, Client.LocalClientId);

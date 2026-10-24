@@ -4,7 +4,7 @@ Two duelists face each other and wait. The moment comes. Whoever strikes first w
 
 That's the whole game:
 
-1. A 3-2-1 countdown.
+1. A "Get Ready" beat and a 3-2-1 countdown.
 2. A standoff of unknown length (3 to 6.5 seconds).
 3. The cue: the screen flashes and a blade is drawn.
 4. Both players hit their key. The faster reaction wins.

@@ -33,7 +33,7 @@ namespace Unity.QuickDuel.Tests
                 CountdownSeconds = 1.5, MinStandoffSeconds = 0.4, MaxStandoffSeconds = 0.5, StrikeTimeoutSeconds = 2, SettleSeconds = TuningStore.Profile.Duel.SettleSeconds
             };
             controller.BeginRound();
-            yield return null;
+            yield return DuelSceneTests.WaitUntil(() => view.CountdownText == "2");
             Assert.That(view.CountdownText, Is.EqualTo("2"));
             Assert.That(view.PromptText, Is.Empty);
             Screenshots.Capture("02-countdown");

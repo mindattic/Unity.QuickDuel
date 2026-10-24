@@ -21,7 +21,7 @@ namespace Unity.QuickDuel.Core.Tests
             for (var seed = 0; seed < 200; seed++)
             {
                 StartedDuel(out var cue, seed);
-                Assert.That(cue, Is.InRange(3.0 + 3.0, 3.0 + 6.5));
+                Assert.That(cue, Is.InRange(4.0 + 3.0, 4.0 + 6.5));
             }
         }
 
@@ -30,10 +30,18 @@ namespace Unity.QuickDuel.Core.Tests
         {
             var duel = StartedDuel(out var cue);
             Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Countdown));
-            duel.Tick(3.0);
+            duel.Tick(4.0);
             Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Standoff));
             duel.Tick(cue);
             Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Strike));
+        }
+
+        [Test]
+        public void The_countdown_is_Get_Ready_for_a_quarter_then_3_2_1_as_in_gameclock_countdown()
+        {
+            var duel = StartedDuel(out _);
+            var shown = new[] { 0.0, 0.99, 1.0, 1.99, 2.0, 2.99, 3.0, 3.99 };
+            Assert.That(Array.ConvertAll(shown, duel.CountdownNumber), Is.EqualTo(new[] { 0, 0, 3, 3, 2, 2, 1, 1 }));
         }
 
         [Test]
