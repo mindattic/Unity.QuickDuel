@@ -50,13 +50,16 @@ Assets/Unity.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
                                                       MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
+  Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, credits)
   StreamingAssets/Settings/tuning.json                every tuning number, as data
+  Art/, Audio/, Fonts/  the original's files           copied by OriginalAssetGenerator, never edited by hand
+  Data/assets.json, Data/credits.txt                  the generated asset manifest and the original credits text
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
                                                       TuningStore
   Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present),
                                                       OnlineDuelLobby, OnlineDuelMenu, OnlineDuel.prefab, QuickDuelNetPrefabs
   Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), OnlineSceneBuilder,
-                                                      QuickDuelBuild
+                                                      QuickDuelBuild, OriginalAssetGenerator + OriginalAssetImportRules
   Tests/PlayMode/                                     scene, input, session, view, taunt and audio tests
   Tests/Online/                                       host + client over the Unity.Multiplayer test kit
 Tests/Core.Tests                                      NUnit tests of Core, run with `dotnet test Core.slnx`
@@ -255,6 +258,20 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   clock, both scenes show the host's verdict and score, and a leaver's seat empties while their scene goes back to
   local play); `OnlineDuelMenuTests` loads the generated scene and checks that it never hosts or serves by itself,
   that Host / Leave put it online and back, and that a bad address is refused with a reason.
+
+- ✅ The original's art, sound and fonts in the project (UQD-T32, `AssetManifestTests`): `OriginalAssetGenerator`
+  (menu *QuickDuel → Import Original Assets*, or `-executeMethod Unity.QuickDuel.EditorTools.OriginalAssetGenerator.Generate
+  -originalRoot <BushidoCoda.gmx>`) copies out of the GameMaker project the 76 sprites the parity tickets draw (the five
+  fighters' idle, run, attack and defeat frames, the 12 weapon and ground-weapon sprites, the 11 arenas `load_arenas.gml`
+  names, the 14 loading images, the title, four corner arts, the katana cursor, two blood drops, ten splatters and the
+  flash), the twelve duel, hit-ground, flick and click sounds, the five bitmap fonts (atlas plus GameMaker glyph table)
+  and the Old English TrueType face, plus `credits.txt`, and writes `Data/assets.json` from each sprite's
+  `.sprite.gmx` (size, origin, frames) and `load_arenas.gml` (names, descriptions). `OriginalAssetImportRules` applies
+  the import settings in code on every import: single sprite, 1 pixel per unit, point filter, no mipmaps, no
+  compression, pivot at the GameMaker origin. The copies and their `.meta` files are committed, so neither the game nor
+  CI needs the original; `AssetManifest` (Core) validates the manifest on load. The one exception is
+  `sfx_defeat.ogg`: the original's `.ogg` fails Unity's FMOD import, so the committed re-encode of its `.wav`
+  (UQD-T24) is kept and the generator never overwrites it.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

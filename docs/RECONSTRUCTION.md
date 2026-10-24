@@ -105,20 +105,20 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Group | Assets | Disposition |
 | --- | --- | --- |
-| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: missing, UQD-T32, T34, T35, T41; portraits, profiles, icons, silhouettes: dropped |
-| Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | missing, UQD-T33 |
-| Transitions | `spr_loading1` to `14` | missing, UQD-T42 |
-| Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | missing, UQD-T40 |
-| Frame and menu | `spr_titlescreen`, `spr_cornerart_left`, `left2`, `right`, `right2`, `spr_btn_left1` to `4`, `spr_btn_right1` to `4` (each with `_over`), `spr_katana_cursor`, `bg_black` | missing, UQD-T43, T45, T46 |
+| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), drawn by UQD-T34, T35, T41; portraits, profiles, icons, silhouettes: dropped |
+| Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | the 11 `load_arenas.gml` arenas imported with their names and descriptions (UQD-T32), drawn by UQD-T33. Defect for UQD-T33: `load_arenas.gml` gives Sozza's Point and South Ridge the same id (5), so South Ridge overwrites Sozza's Point and only 10 arenas can be chosen |
+| Transitions | `spr_loading1` to `14` | imported (UQD-T32), drawn by UQD-T42 |
+| Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | blood drops, splatters, flash imported (UQD-T32), drawn by UQD-T40 |
+| Frame and menu | `spr_titlescreen`, `spr_cornerart_left`, `left2`, `right`, `right2`, `spr_btn_left1` to `4`, `spr_btn_right1` to `4` (each with `_over`), `spr_katana_cursor`, `bg_black` | title, corner arts, cursor imported (UQD-T32), drawn by UQD-T43, T45, T46 |
 | Intro | `spr_cloud1` to `4` | missing, UQD-T44 |
 | Ambient | `spr_sand1`, `2`, `spr_butterfly` (6), `spr_snow1`, `2`, `spr_fly`, `fly2`, `spr_firefly`, `dark`, `strip`, `spr_rain`, `raindrop`, `rainemitter`, `spr_leaf1`, `2`, `spr_tree1`, `spr_spotlight` | sand, butterfly, snow, fog (`spr_cloud1`), fly: UQD-T49; the rest optional |
 | Results | `bg_victory`, `bg_gameover`, `spr_virtue_*` (7) | backgrounds UQD-T48; virtues dropped |
 | Stats and combat UI | health, focus, art, skill, stance, combo, clash, critical-hit, buff, descbox, selectbox, talk and map sprites | dropped |
-| Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | missing, UQD-T36 |
+| Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | the five bitmap fonts (atlas and glyph table) and `oldenglish.ttf` imported (UQD-T32), drawn by UQD-T36; the other ttfs came from the Android builds and are unused |
 | Sound: duel | `sfx_beep`, `sfx_drumroll`, `sfx_unsheath`, `sfx_slash`, `sfx_victory`, `sfx_defeat` | built (UQD-T5, T24) |
-| Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | missing, UQD-T41, T45 |
+| Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), played by UQD-T41, T45 |
 | Sound: dropped | `sfx_disabled`, `sfx_bomb`, `sfx_powerup_activate` (focus and skills); `music_*` x8 (no script plays them) | dropped |
-| Data | `datafiles/credits.txt` (arena photo credits) | missing, UQD-T47 |
+| Data | `datafiles/credits.txt` (arena photo credits) | imported as `Data/credits.txt` (UQD-T32), shown by UQD-T47 |
 | Project | `bushidocoda.ico`, splash images, `help.rtf`, `html` / `Install` web and installer pages | icon and product name: UQD-T50; the rest dropped |
 
 ## 3. The audit result

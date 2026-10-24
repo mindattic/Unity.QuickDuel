@@ -1,0 +1,102 @@
+using System.Collections.Generic;
+
+namespace Unity.QuickDuel.EditorTools
+{
+    /// <summary>
+    /// Which of the original's resources the rebuild uses (UQD-T32), by their GameMaker names, and where each
+    /// lands under <see cref="OriginalAssetGenerator.GameFolder"/>. Only what a parity ticket draws or plays is
+    /// listed (docs/RECONSTRUCTION.md section 2.4): the stats, skills, overworld, portrait and menu-button art
+    /// is dropped with the features it belonged to. Arenas are not listed here; they are read from
+    /// <c>load_arenas.gml</c> so the list matches the original exactly.
+    /// </summary>
+    public static class OriginalAssetCatalog
+    {
+        public static readonly string[] Fighters = { "exile", "gypsy", "myrmidon", "ronin", "vagabond" };
+        public static readonly string[] FighterStates = { "idle", "run", "attack", "defeat" };
+
+        /// <summary>One sprite to copy: its GameMaker name, its manifest group and the folder its frames go to.</summary>
+        public readonly struct SpriteEntry
+        {
+            public SpriteEntry(string id, string group, string folder)
+            {
+                Id = id;
+                Group = group;
+                Folder = folder;
+            }
+
+            public string Id { get; }
+            public string Group { get; }
+            public string Folder { get; }
+        }
+
+        /// <summary>Every sprite except the arenas, in manifest order.</summary>
+        public static List<SpriteEntry> Sprites()
+        {
+            var list = new List<SpriteEntry>();
+            foreach (var fighter in Fighters)
+                foreach (var state in FighterStates)
+                    list.Add(new SpriteEntry($"spr_character_{fighter}_{state}", "fighter", "Art/Fighters"));
+
+            // obj_weapon: the thrown weapon (weapon_asset) and where it lands (weapon_asset_ground); the
+            // Myrmidon also drops a shield (spawn_weapons.gml).
+            foreach (var fighter in Fighters)
+            {
+                list.Add(new SpriteEntry($"spr_weapon_{fighter}", "weapon", "Art/Weapons"));
+                list.Add(new SpriteEntry($"spr_weapon_{fighter}_ground", "weapon", "Art/Weapons"));
+            }
+            list.Add(new SpriteEntry("spr_weapon_myrmidon_shield", "weapon", "Art/Weapons"));
+            list.Add(new SpriteEntry("spr_weapon_myrmidon_shield_ground", "weapon", "Art/Weapons"));
+
+            // obj_fade_*: one of the 14 loading images per transition.
+            for (var i = 1; i <= 14; i++)
+                list.Add(new SpriteEntry($"spr_loading{i}", "loading", "Art/Loading"));
+
+            list.Add(new SpriteEntry("spr_titlescreen", "title", "Art/Frame"));
+            // obj_cornerart_left / right draw the "2" variants; the plain ones are their earlier cut.
+            foreach (var corner in new[] { "spr_cornerart_left", "spr_cornerart_left2", "spr_cornerart_right", "spr_cornerart_right2" })
+                list.Add(new SpriteEntry(corner, "cornerart", "Art/Frame"));
+            list.Add(new SpriteEntry("spr_katana_cursor", "cursor", "Art/Frame"));
+
+            // obj_blood_emitter, obj_splatter, obj_flash.
+            list.Add(new SpriteEntry("spr_blood_drop1", "blood", "Art/Aftermath"));
+            list.Add(new SpriteEntry("spr_blood_drop2", "blood", "Art/Aftermath"));
+            for (var i = 1; i <= 10; i++)
+                list.Add(new SpriteEntry($"spr_splatter{i}", "splatter", "Art/Aftermath"));
+            list.Add(new SpriteEntry("spr_flash", "flash", "Art/Aftermath"));
+            return list;
+        }
+
+        public const string ArenaFolder = "Art/Arenas";
+        public const string AudioFolder = "Audio";
+        public const string FontFolder = "Fonts";
+
+        /// <summary>
+        /// The duel sounds (already played, UQD-T5, T24), the four weapon hit-ground sounds obj_weapon chooses
+        /// from, and the menu buttons' hover flick and click.
+        /// </summary>
+        public static readonly string[] Sounds =
+        {
+            "sfx_beep", "sfx_drumroll", "sfx_unsheath", "sfx_slash", "sfx_victory", "sfx_defeat",
+            "sfx_hitground1", "sfx_hitground2", "sfx_hitground3", "sfx_hitground4",
+            "sfx_flick", "sfx_click",
+        };
+
+        /// <summary>
+        /// Sounds whose original <c>.ogg</c> Unity's FMOD importer cannot decode ("FSBTool ERROR: Internal error from
+        /// FMOD sub-system"). The committed copy is a re-encode of the original's own <c>.wav</c> (UQD-T24), so the
+        /// generator keeps it rather than copying the broken file over it.
+        /// </summary>
+        public static readonly string[] ReencodedSounds = { "sfx_defeat" };
+
+        /// <summary>Every bitmap font the original draws text with.</summary>
+        public static readonly string[] Fonts = { "fnt_basic", "fnt_mono", "fnt_oldenglish", "fnt_oldenglish_small", "fnt_tiny" };
+
+        /// <summary>
+        /// The TrueType Old English face shipped beside the project (<c>gmlBushidoCoda/fonts/oldenglish.ttf</c>,
+        /// Elfring "OldEnglish"). The headline fonts (fnt_oldenglish, fnt_oldenglish_small) were rendered from the
+        /// look-alike system face Old English Text MT, which cannot ship; this one lets outlined text be drawn at
+        /// any size. The other faces in that folder came from the Android builds and nothing here uses them.
+        /// </summary>
+        public static readonly string[] Typefaces = { "oldenglish" };
+    }
+}
