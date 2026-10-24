@@ -174,7 +174,7 @@ between-rounds mode toggle) is out of scope unless this Bible is changed first (
 
 ### UQD-LAW-4 — The scene is generated {#UQD-LAW-4}
 `Assets/Scenes/Duel.unity` is written by `DuelSceneBuilder` (menu *QuickDuel → Rebuild Duel Scene*, or
-batch mode); the UI is built in code by `DuelView`. Never hand-edit the scene YAML.
+batch mode); the UI Toolkit tree is built in code by `DuelView` (UQD-T31). Never hand-edit the scene YAML.
 
 ### UQD-LAW-5 — One home per fact {#UQD-LAW-5}
 Rules live here; history and the surveyed old builds live in [ORIGINS](ORIGINS.md); story and ticket status
@@ -226,16 +226,28 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   null). URP 17.4.0 is now in the manifest; `RenderPipelineBuilder` (menu *QuickDuel → Build Render
   Pipeline*, or batch mode, and run by `DuelSceneBuilder` before every scene rebuild) creates
   `Assets/Unity.QuickDuel/Rendering/QuickDuelURP.asset` (a forward Universal Renderer — the game has no
-  sprites or 2D lights, only UGUI, so the 2D renderer is not needed) and assigns it as the default
-  pipeline and on every quality level. The pipeline-agnostic layer is the whole game: `DuelView` builds
-  only Canvas/Image/Text, drawn with Unity's own `UI/Default` shader, which ships with every pipeline;
-  no shader or material in the repo names URP. Verified by a Windows Standalone build (`deploy.ps1`)
-  that launches and renders the Duel scene.
+  sprites or 2D lights, only UI, so the 2D renderer is not needed) and assigns it as the default
+  pipeline and on every quality level. The pipeline-agnostic layer is the whole game: `DuelView` draws
+  only a UI Toolkit tree (UQD-T31) over a camera backdrop; no shader or material in the repo names URP.
+  Verified by a Windows Standalone build (`deploy.ps1`) that launches and renders the Duel scene.
 - ✅ Session and match flow moved to Core (UQD-T30, `MatchSessionTests`): `MatchSession` is now the one
   authority over the round, mode and match, with `Strike`/`BeginRound`/`SetMode` each carrying a player id
   (§4.3); `DuelController` and `DuelSession` are thin Unity views over it, covered by the existing PlayMode
   suite (`DuelSceneTests`, `DuelSessionTests`, `DuelQuitTests`, `DuelInputTests`, `DuelTauntTests`,
   `DuelAudioTests`, `DuelViewTests`).
+- ✅ UI Toolkit, not legacy uGUI (UQD-T31, `DuelViewTests`/`DuelSessionTests`/`DuelTauntTests`): the UI was
+  `UnityEngine.UI.Text` off `Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")` drawn on a hand-built
+  `Canvas`/`CanvasScaler`, AGENTS.md rule 6's other standards gap ("UI Toolkit or the shared MindAttic UI
+  components"). `DuelView` now builds a `UIDocument`/`VisualElement` tree in code (the scene is still
+  generated, [UQD-LAW-4](#UQD-LAW-4)) through `Resources/UI/DuelPanelSettings.asset` (scale-with-screen-size,
+  1920x1080 reference — built once by `DuelPanelBuilder`, run by `DuelSceneBuilder` the same way
+  `RenderPipelineBuilder` is), `Resources/UI/Duel.uss` for its structural USS classes, and a font asset
+  (`Resources/UI/Fonts/Cinzel.ttf`, OFL-licensed, already vetted for MindAttic games in Unity.GridGame) set
+  on the root so every label inherits it. `DuelSession` and `DuelTaunt` build their own labels the same way
+  (`DuelView.CreateLabel`/`CreateEdgeLabel`), through the same `VisualElement` tree. The `DuelView` surface
+  the PlayMode tests read (`CountdownText`, `CueText`, `HeadlineText`, `PromptText`, `ReactionText`,
+  `HasFallen`, `Inverted`, `LetterboxAmount`, `FormatReaction`, `Headline`) is unchanged; `UnityEngine.UI`
+  is no longer a Runtime assembly reference.
 
 - ✅ Online PvP in the Duel scene (UQD-T21, [§4.4](#UQD-§4.4)): the Host / Join menu, and `DuelController`,
   `DuelSession` and `DuelView` driven by an `OnlineDuel` instead of the local `MatchSession`. `OnlineDuelSceneTests`

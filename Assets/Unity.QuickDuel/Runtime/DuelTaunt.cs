@@ -1,6 +1,6 @@
 using Unity.QuickDuel.Core;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Unity.QuickDuel
 {
@@ -12,18 +12,19 @@ namespace Unity.QuickDuel
         public static string[] Lines => TuningStore.Profile.Taunts;
 
         private DuelController controller;
-        private Text text;
+        private DuelView view;
+        private Label text;
 
-        public string Current => text.enabled ? text.text : "";
+        public string Current => text.style.display != DisplayStyle.None ? text.text : "";
 
         private void Start()
         {
             controller = GetComponent<DuelController>();
-            var view = GetComponent<DuelView>();
-            text = view.Label("Taunt", 72, new Vector2(0, 215f), new Color(0.75f, 0.08f, 0.08f), tint: false);
-            text.fontStyle = FontStyle.BoldAndItalic;
-            text.enabled = false;
-            controller.RoundStarted += () => text.enabled = false;
+            view = GetComponent<DuelView>();
+            text = view.CreateLabel("Taunt", 72, new Vector2(0, 215f), new Color(0.75f, 0.08f, 0.08f), tint: false);
+            text.style.unityFontStyleAndWeight = FontStyle.BoldAndItalic;
+            text.style.display = DisplayStyle.None;
+            controller.RoundStarted += () => text.style.display = DisplayStyle.None;
             controller.Resolved += OnResolved;
         }
 
@@ -34,8 +35,8 @@ namespace Unity.QuickDuel
 
             var loser = result.Winner.Value == Side.Left ? Side.Right : Side.Left;
             text.text = Lines[Random.Range(0, Lines.Length)];
-            text.rectTransform.anchoredPosition = new Vector2(loser == Side.Left ? -380f : 380f, 215f);
-            text.enabled = true;
+            view.Reposition(text, loser == Side.Left ? -380f : 380f, 215f);
+            text.style.display = DisplayStyle.Flex;
         }
     }
 }

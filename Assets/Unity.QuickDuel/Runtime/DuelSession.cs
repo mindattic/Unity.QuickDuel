@@ -1,7 +1,7 @@
 using Unity.QuickDuel.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Unity.QuickDuel
 {
@@ -18,10 +18,10 @@ namespace Unity.QuickDuel
         private DuelQuit quit;
         private DuelView view;
         private InputAction cycleMode;
-        private Text modeText;
-        private Text leftScore;
-        private Text rightScore;
-        private Text verdict;
+        private Label modeText;
+        private Label leftScore;
+        private Label rightScore;
+        private Label verdict;
 
         private MatchSession Session => controller.Session;
 
@@ -37,7 +37,7 @@ namespace Unity.QuickDuel
 
         public string ModeText => modeText.text;
         public string ScoreText(Side side) => (side == Side.Left ? leftScore : rightScore).text;
-        public string VerdictText => verdict.enabled ? verdict.text : "";
+        public string VerdictText => verdict.style.display != DisplayStyle.None ? verdict.text : "";
 
         private void Awake()
         {
@@ -68,27 +68,14 @@ namespace Unity.QuickDuel
         {
             view = GetComponent<DuelView>();
             var ink = new Color(0.10f, 0.08f, 0.08f);
-            modeText = view.Label("Mode", 40, new Vector2(0, 490f), ink);
-            leftScore = EdgeLabel(view, "LeftScore", 0f, ink);
-            rightScore = EdgeLabel(view, "RightScore", 1f, ink);
-            verdict = view.Label("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f), tint: false);
-            verdict.enabled = false;
+            modeText = view.CreateLabel("Mode", 40, new Vector2(0, 490f), ink);
+            leftScore = view.CreateEdgeLabel("LeftScore", 40, 0f, 490f, ink);
+            rightScore = view.CreateEdgeLabel("RightScore", 40, 1f, 490f, ink);
+            verdict = view.CreateLabel("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f), tint: false);
+            verdict.style.display = DisplayStyle.None;
 
             Session.ModeChanged += OnModeChanged;
             Redraw();
-        }
-
-        // Pinned to the left (x = 0) or right (x = 1) screen edge so it stays visible at any aspect.
-        private static Text EdgeLabel(DuelView view, string name, float edge, Color color)
-        {
-            var text = view.Label(name, 40, Vector2.zero, color);
-            text.alignment = edge < 0.5f ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
-            var rect = text.rectTransform;
-            rect.anchorMin = rect.anchorMax = new Vector2(edge, 0.5f);
-            rect.pivot = new Vector2(edge, 0.5f);
-            rect.sizeDelta = new Vector2(600, 48);
-            rect.anchoredPosition = new Vector2(edge < 0.5f ? 40f : -40f, 490f);
-            return text;
         }
 
         private void OnEnable() => cycleMode.Enable();
@@ -116,7 +103,7 @@ namespace Unity.QuickDuel
             modeText.text = controller.IsOnline ? OnlineModeText()
                 : (Session.AiPlaysRight ? $"vs AI ({MatchSession.DifficultyOf(Session.Mode)})" : "Local PvP")
                   + "  -  Tab / Select: mode";
-            verdict.enabled = false;
+            verdict.style.display = DisplayStyle.None;
             RefreshScore();
         }
 
@@ -129,7 +116,7 @@ namespace Unity.QuickDuel
 
         private void OnRoundStarted()
         {
-            if (verdict != null) verdict.enabled = false;
+            if (verdict != null) verdict.style.display = DisplayStyle.None;
             RefreshScore();
         }
 
@@ -141,7 +128,7 @@ namespace Unity.QuickDuel
             {
                 var winner = match.Winner == Side.Left ? "Left" : AiPlaysRight ? "The AI" : "Right";
                 verdict.text = $"{winner} takes the match {match.WinsOf(match.Winner.Value)}-{match.WinsOf(Other(match.Winner.Value))}";
-                verdict.enabled = true;
+                verdict.style.display = DisplayStyle.Flex;
             }
         }
 

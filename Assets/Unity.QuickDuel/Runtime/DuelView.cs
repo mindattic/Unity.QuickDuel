@@ -1,18 +1,22 @@
 using System.Collections.Generic;
 using Unity.QuickDuel.Core;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Unity.QuickDuel
 {
     // Draws the duel from the controller's phase and result; it never decides anything. The whole UI is
-    // built in code (placeholder silhouettes, no art assets), on a Screen Space - Camera canvas so the
-    // main camera's render is the full picture.
+    // built in code (placeholder silhouettes, no art assets) on UI Toolkit (UQD-T31): a UIDocument reads
+    // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size, 1920x1080 reference, built by
+    // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label shares the font asset
+    // Resources/UI/Fonts/Cinzel.ttf -- no more Resources.GetBuiltinResource("LegacyRuntime.ttf"). The panel
+    // renders as a screen-space overlay (UI Toolkit has no "Screen Space - Camera" mode); the main camera
+    // behind it only clears to its background colour, the way it always has.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
-        private const float ReferenceWidth = 1920f;
-        private const float ReferenceHeight = 1080f;
+        private const float StageWidth = 1920f;
+        private const float StageHeight = 1080f;
         private const float LetterboxHeight = 150f;
         private const float GroundY = -230f;
 
@@ -23,40 +27,41 @@ namespace Unity.QuickDuel
         private static readonly Color RightColor = new Color(0.14f, 0.20f, 0.45f);
         private static readonly Color Steel = new Color(0.80f, 0.82f, 0.86f);
 
-        private readonly List<(Graphic graphic, Color color)> tinted = new List<(Graphic, Color)>();
+        // (element, its un-inverted colour, whether that colour is text colour rather than background)
+        private readonly List<(VisualElement element, Color color, bool isText)> tinted = new List<(VisualElement, Color, bool)>();
         private DuelController controller;
+        private UIDocument document;
         private Font font;
-        private RectTransform letterboxTop;
-        private RectTransform letterboxBottom;
+        private VisualElement letterboxTop;
+        private VisualElement letterboxBottom;
         private Fighter left;
         private Fighter right;
-        private Text title;
-        private Text countdown;
-        private Text cue;
-        private Text headline;
-        private Text prompt;
-        private Text leftReaction;
-        private Text rightReaction;
+        private Label title;
+        private Label countdown;
+        private Label cue;
+        private Label headline;
+        private Label prompt;
+        private Label leftReaction;
+        private Label rightReaction;
         private float letterbox;
         private bool inverted;
 
         public bool Inverted => inverted;
         public float LetterboxAmount => letterbox;
-        public string CountdownText => countdown.enabled ? countdown.text : "";
-        public string CueText => cue.enabled ? cue.text : "";
-        public string HeadlineText => headline.enabled ? headline.text : "";
-        public string PromptText => prompt.enabled ? prompt.text : "";
+        public string CountdownText => IsVisible(countdown) ? countdown.text : "";
+        public string CueText => IsVisible(cue) ? cue.text : "";
+        public string HeadlineText => IsVisible(headline) ? headline.text : "";
+        public string PromptText => IsVisible(prompt) ? prompt.text : "";
         public string ReactionText(Side side) => (side == Side.Left ? leftReaction : rightReaction).text;
         public bool HasFallen(Side side) => (side == Side.Left ? left : right).Fallen;
 
-        // Other components (the taunt, a scoreboard) hang their own text off this canvas.
-        public RectTransform Root { get; private set; }
-        public Font Font => font;
+        // Other components (DuelSession, DuelTaunt) hang their own labels off this same tree.
+        public VisualElement Root { get; private set; }
 
         private void Awake()
         {
             controller = GetComponent<DuelController>();
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font = Resources.Load<Font>("UI/Fonts/Cinzel");
             Build();
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
@@ -110,7 +115,7 @@ namespace Unity.QuickDuel
             var phase = controller.Phase;
 
             var countingDown = phase == DuelPhase.Countdown;
-            countdown.enabled = countingDown;
+            SetVisible(countdown, countingDown);
             if (countingDown)
             {
                 var number = controller.CountdownNumber;
@@ -120,17 +125,17 @@ namespace Unity.QuickDuel
             var tense = phase == DuelPhase.Standoff || phase == DuelPhase.Strike;
             letterbox = Mathf.MoveTowards(letterbox, tense ? 1f : 0f, dt * 3f);
             if (dt == 0f) letterbox = tense ? 1f : 0f;
-            letterboxTop.sizeDelta = new Vector2(0, LetterboxHeight * letterbox);
-            letterboxBottom.sizeDelta = new Vector2(0, LetterboxHeight * letterbox);
+            letterboxTop.style.height = LetterboxHeight * letterbox;
+            letterboxBottom.style.height = LetterboxHeight * letterbox;
 
             SetInverted(phase == DuelPhase.Strike);
-            cue.enabled = phase == DuelPhase.Strike;
+            SetVisible(cue, phase == DuelPhase.Strike);
 
             var resolved = phase == DuelPhase.Resolved;
-            headline.enabled = resolved;
+            SetVisible(headline, resolved);
             if (resolved) headline.text = controller.Result != null ? Headline(controller.Result, RightName) : AwaitingVerdictText;
-            title.enabled = phase == DuelPhase.Ready;
-            prompt.enabled = phase == DuelPhase.Ready || resolved;
+            SetVisible(title, phase == DuelPhase.Ready);
+            SetVisible(prompt, phase == DuelPhase.Ready || resolved);
             prompt.text = controller.IsOnline ? OnlinePrompt(phase) : phase == DuelPhase.Ready
                 ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
                 : "Press Space or Start for the next round\nEsc / Select+Start: quit";
@@ -160,140 +165,176 @@ namespace Unity.QuickDuel
             return $"{seat}     {strike}\n{next}\nEsc / Select+Start: quit";
         }
 
+        private static bool IsVisible(VisualElement element) => element.style.display != DisplayStyle.None;
+
+        private static void SetVisible(VisualElement element, bool visible) =>
+            element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+
         private void SetInverted(bool value)
         {
             if (inverted == value) return;
             inverted = value;
-            foreach (var (graphic, color) in tinted)
-                graphic.color = value ? new Color(1 - color.r, 1 - color.g, 1 - color.b, color.a) : color;
+            foreach (var (element, color, isText) in tinted)
+            {
+                var shown = value ? new Color(1 - color.r, 1 - color.g, 1 - color.b, color.a) : color;
+                if (isText) element.style.color = shown;
+                else element.style.backgroundColor = shown;
+            }
         }
 
         private void Build()
         {
-            var canvasObject = new GameObject("DuelCanvas", typeof(RectTransform));
-            canvasObject.transform.SetParent(transform, false);
-            var canvas = canvasObject.AddComponent<Canvas>();
-            var camera = Camera.main;
-            if (camera != null)
-            {
-                canvas.renderMode = RenderMode.ScreenSpaceCamera;
-                canvas.worldCamera = camera;
-                canvas.planeDistance = 5f;
-            }
-            else
-            {
-                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            }
-            var scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
-            scaler.matchWidthOrHeight = 0.5f;
-            Root = (RectTransform)canvasObject.transform;
+            var documentObject = new GameObject("DuelDocument", typeof(UIDocument));
+            documentObject.transform.SetParent(transform, false);
+            document = documentObject.GetComponent<UIDocument>();
+            document.panelSettings = Resources.Load<PanelSettings>("UI/DuelPanelSettings");
 
-            Stretch(Box("Sky", Root, Paper));
+            Root = document.rootVisualElement;
+            Root.AddToClassList("duel-root");
+            if (font != null) Root.style.unityFontDefinition = FontDefinition.FromFont(font);
+            var styleSheet = Resources.Load<StyleSheet>("UI/Duel");
+            if (styleSheet != null) Root.styleSheets.Add(styleSheet);
+
+            Box("Sky", Root, Paper).AddToClassList("sky");
             var ground = Box("Ground", Root, Ground);
-            ground.anchorMin = new Vector2(0, 0);
-            ground.anchorMax = new Vector2(1, 0.5f);
-            ground.offsetMin = Vector2.zero;
-            ground.offsetMax = new Vector2(0, GroundY);
+            ground.AddToClassList("ground");
+            ground.style.height = StageHeight / 2f + GroundY;
 
             left = new Fighter(this, "Left", -380f, LeftColor, 1f);
             right = new Fighter(this, "Right", 380f, RightColor, -1f);
 
-            leftReaction = Label("LeftReaction", 56, new Vector2(-380f, GroundY - 80f), Ink);
-            rightReaction = Label("RightReaction", 56, new Vector2(380f, GroundY - 80f), Ink);
+            leftReaction = CreateLabel("LeftReaction", 56, new Vector2(-380f, GroundY - 80f), Ink);
+            rightReaction = CreateLabel("RightReaction", 56, new Vector2(380f, GroundY - 80f), Ink);
 
             letterboxTop = Box("LetterboxTop", Root, Color.black, tint: false);
-            letterboxTop.anchorMin = new Vector2(0, 1);
-            letterboxTop.anchorMax = new Vector2(1, 1);
-            letterboxTop.pivot = new Vector2(0.5f, 1);
+            letterboxTop.AddToClassList("letterbox");
+            letterboxTop.style.top = 0;
+            letterboxTop.style.height = 0;
             letterboxBottom = Box("LetterboxBottom", Root, Color.black, tint: false);
-            letterboxBottom.anchorMin = new Vector2(0, 0);
-            letterboxBottom.anchorMax = new Vector2(1, 0);
-            letterboxBottom.pivot = new Vector2(0.5f, 0);
+            letterboxBottom.AddToClassList("letterbox");
+            letterboxBottom.style.bottom = 0;
+            letterboxBottom.style.height = 0;
 
-            title = Label("Title", 150, new Vector2(0, 260f), Ink);
+            title = CreateLabel("Title", 150, new Vector2(0, 260f), Ink);
             title.text = "QUICKDUEL";
-            countdown = Label("Countdown", 320, new Vector2(0, 120f), Ink);
-            cue = Label("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f), tint: false);
+            countdown = CreateLabel("Countdown", 320, new Vector2(0, 120f), Ink);
+            cue = CreateLabel("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f), tint: false);
             cue.text = "!";
-            headline = Label("Headline", 120, new Vector2(0, 370f), Ink);
-            prompt = Label("Prompt", 44, new Vector2(0, -440f), Ink);
+            headline = CreateLabel("Headline", 120, new Vector2(0, 370f), Ink);
+            prompt = CreateLabel("Prompt", 44, new Vector2(0, -440f), Ink);
         }
 
-        internal RectTransform Box(string name, Transform parent, Color color, bool tint = true)
+        // A box tinted by its own colour (an untextured placeholder shape); position and size are set by
+        // the caller, same as the original RectTransform-based helper.
+        internal VisualElement Box(string name, VisualElement parent, Color color, bool tint = true)
         {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var image = go.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            if (tint) tinted.Add((image, color));
-            return (RectTransform)go.transform;
+            var element = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
+            element.style.position = Position.Absolute;
+            element.style.backgroundColor = color;
+            if (tint) tinted.Add((element, color, false));
+            parent.Add(element);
+            return element;
         }
 
-        public Text Label(string name, int size, Vector2 position, Color color, bool tint = true)
+        // A label centred on `position` (the original's canvas-centre-relative anchored position, y up);
+        // 1600 wide (as the original's fixed, overflow-allowed sizeDelta was) so long text never clips.
+        public Label CreateLabel(string name, int size, Vector2 position, Color color, bool tint = true)
         {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(Root, false);
-            var text = go.AddComponent<Text>();
-            text.font = font;
-            text.fontSize = size;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.color = color;
-            text.raycastTarget = false;
-            var rect = (RectTransform)go.transform;
-            rect.sizeDelta = new Vector2(1600, size * 1.2f);
-            rect.anchoredPosition = position;
-            if (tint) tinted.Add((text, color));
-            return text;
+            var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
+            label.AddToClassList("label");
+            label.style.fontSize = size;
+            label.style.color = color;
+            PlaceOnStage(label, position.x, position.y, 1600f, size * 1.2f);
+            if (tint) tinted.Add((label, color, true));
+            Root.Add(label);
+            return label;
         }
 
-        private static void Stretch(RectTransform rect)
+        // Pinned to the left (edge 0) or right (edge 1) screen edge so it stays visible at any aspect,
+        // the way the original anchored EdgeLabel to that edge instead of the canvas centre.
+        public Label CreateEdgeLabel(string name, int size, float edge, float y, Color color, bool tint = true)
         {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
+            label.AddToClassList("label");
+            label.AddToClassList(edge < 0.5f ? "label--edge-left" : "label--edge-right");
+            label.style.fontSize = size;
+            label.style.color = color;
+            var height = size * 1.2f;
+            label.style.position = Position.Absolute;
+            label.style.width = 600f;
+            label.style.height = height;
+            label.style.top = StageHeight / 2f - y - height / 2f;
+            if (edge < 0.5f) label.style.left = 40f; else label.style.right = 40f;
+            if (tint) tinted.Add((label, color, true));
+            Root.Add(label);
+            return label;
+        }
+
+        // Moves an already-placed (CreateLabel/CreateEdgeLabel) stage element to a new centre -- the same
+        // stage-centred, y-up coordinates PlaceOnStage took -- keeping the width/height it already has.
+        // DuelTaunt uses this to move its label to whichever side was tauntable, like the original moving
+        // the Text's own RectTransform.anchoredPosition.
+        public void Reposition(VisualElement element, float x, float y)
+        {
+            var width = element.resolvedStyle.width > 0f ? element.resolvedStyle.width : element.style.width.value.value;
+            var height = element.resolvedStyle.height > 0f ? element.resolvedStyle.height : element.style.height.value.value;
+            PlaceOnStage(element, x, y, width, height);
+        }
+
+        // Places an element on the 1920x1080 stage, `position` measured from the stage's centre with y up
+        // (as the original's canvas-centred anchoredPosition was), pivoted at its own centre.
+        private static void PlaceOnStage(VisualElement element, float x, float y, float width, float height)
+        {
+            element.style.position = Position.Absolute;
+            element.style.width = width;
+            element.style.height = height;
+            element.style.left = StageWidth / 2f + x - width / 2f;
+            element.style.top = StageHeight / 2f - y - height / 2f;
+        }
+
+        // Places an element relative to its own parent's origin (not the stage centre), y up, pivoted at
+        // (pivotX, pivotY) -- 0 is that edge of the element, 1 the opposite edge; (0.5, 0.5) is centred.
+        // Mirrors RectTransform's anchoredPosition + pivot for a parent anchored at its own (0, 0).
+        private static void PlacePivoted(VisualElement element, float x, float y, float width, float height, float pivotX, float pivotY)
+        {
+            element.style.position = Position.Absolute;
+            element.style.width = width;
+            element.style.height = height;
+            element.style.left = x - pivotX * width;
+            element.style.top = -y - (1f - pivotY) * height;
         }
 
         // A placeholder samurai: a body, a head and a drawn blade, pivoted at the feet so it can fall.
         private sealed class Fighter
         {
-            private readonly RectTransform root;
-            private readonly RectTransform blade;
+            private readonly VisualElement root;
+            private readonly VisualElement blade;
             private readonly float facing;
             private float targetAngle;
             private float bladeTarget;
+            private float angle;
+            private float bladeAngle;
 
             public Fighter(DuelView view, string name, float x, Color color, float facing)
             {
                 this.facing = facing;
-                root = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
-                root.SetParent(view.Root, false);
-                root.anchoredPosition = new Vector2(x, GroundY);
-                root.sizeDelta = Vector2.zero;
+                root = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
+                PlaceOnStage(root, x, GroundY, 0f, 0f);
+                view.Root.Add(root);
 
                 var body = view.Box("Body", root, color);
-                body.pivot = new Vector2(0.5f, 0);
-                body.sizeDelta = new Vector2(130, 250);
-                body.anchoredPosition = Vector2.zero;
+                PlacePivoted(body, 0f, 0f, 130f, 250f, 0.5f, 0f);
 
                 var head = view.Box("Head", root, color);
-                head.sizeDelta = new Vector2(96, 96);
-                head.anchoredPosition = new Vector2(0, 310);
+                PlacePivoted(head, 0f, 310f, 96f, 96f, 0.5f, 0.5f);
 
                 var topknot = view.Box("Topknot", root, color);
-                topknot.sizeDelta = new Vector2(30, 40);
-                topknot.anchoredPosition = new Vector2(-30 * facing, 370);
+                PlacePivoted(topknot, -30f * facing, 370f, 30f, 40f, 0.5f, 0.5f);
 
                 blade = view.Box("Blade", root, Steel);
-                blade.pivot = new Vector2(0.5f, 0);
-                blade.sizeDelta = new Vector2(14, 200);
-                blade.anchoredPosition = new Vector2(60 * facing, 150);
+                PlacePivoted(blade, 60f * facing, 150f, 14f, 200f, 0.5f, 0f);
+                blade.style.transformOrigin = new TransformOrigin(Length.Percent(50), Length.Percent(100));
+
                 Reset();
             }
 
@@ -303,8 +344,9 @@ namespace Unity.QuickDuel
             {
                 targetAngle = 0;
                 bladeTarget = 150f * facing;    // sheathed: pointing back and down
-                root.localRotation = Quaternion.identity;
-                blade.localRotation = Quaternion.Euler(0, 0, bladeTarget);
+                angle = 0;
+                bladeAngle = bladeTarget;
+                Apply();
             }
 
             public void Fall() => targetAngle = 90f * facing;
@@ -313,10 +355,18 @@ namespace Unity.QuickDuel
             public void Animate(float dt)
             {
                 var step = dt == 0f ? 360f : dt * 360f;
-                var angle = Mathf.MoveTowardsAngle(root.localEulerAngles.z, targetAngle, step);
-                root.localRotation = Quaternion.Euler(0, 0, angle);
-                var b = Mathf.MoveTowardsAngle(blade.localEulerAngles.z, bladeTarget, step * 2f);
-                blade.localRotation = Quaternion.Euler(0, 0, b);
+                angle = Mathf.MoveTowardsAngle(angle, targetAngle, step);
+                bladeAngle = Mathf.MoveTowardsAngle(bladeAngle, bladeTarget, step * 2f);
+                Apply();
+            }
+
+            // UI Toolkit's `rotate` turns clockwise for a positive angle (it is y-down, like CSS); the
+            // original's Z-euler turned counter-clockwise for a positive angle (it was y-up). Negating
+            // keeps every angle above (and every caller of Fall/Raise) reading exactly as it did there.
+            private void Apply()
+            {
+                root.style.rotate = new Rotate(Angle.Degrees(-angle));
+                blade.style.rotate = new Rotate(Angle.Degrees(-bladeAngle));
             }
         }
     }

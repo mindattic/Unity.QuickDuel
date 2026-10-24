@@ -1,0 +1,52 @@
+/* QuickDuel's UI Toolkit styling (UQD-T31). Colors are set from code (DuelView's palette drives both the
+   normal look and the Strike-phase inversion, and the label sizes vary per call site), so this file only
+   owns the structural roles that never change at runtime. Every label is bold, matching the original's
+   one-font, always-bold look; DuelView sets the shared font (an asset, Resources/UI/Fonts/Cinzel.ttf) on
+   the root so every label here inherits it. */
+
+.duel-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    -unity-font-style: bold;
+    overflow: hidden;
+}
+
+.sky {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.letterbox {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-color: rgb(0, 0, 0);
+}
+
+.label {
+    position: absolute;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    overflow: visible;
+}
+
+.label--edge-left {
+    -unity-text-align: middle-left;
+}
+
+.label--edge-right {
+    -unity-text-align: middle-right;
+}

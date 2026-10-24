@@ -10,9 +10,9 @@ namespace Unity.QuickDuel.EditorTools
     /// Builds QuickDuel's render pipeline (UQD-T29): the project had no render pipeline package at all
     /// (the default built-in pipeline, no URP in <c>Packages/manifest.json</c>), the one standards gap
     /// AGENTS.md rule 6 calls for ("Modern Unity only ... URP behind a pipeline-agnostic layer"). The
-    /// whole game is drawn by UGUI (<see cref="DuelView"/> builds Canvas/Image/Text in code) using
-    /// Unity's own <c>UI/Default</c> shader, which ships with every pipeline, so no game shader or
-    /// material is tied to URP; this creates <see cref="PipelinePath"/> with its renderer
+    /// whole game is UI (<see cref="DuelView"/> builds its UI Toolkit tree in code, UQD-T31) over a plain
+    /// camera backdrop; neither UI Toolkit's own shaders nor the camera's clear colour are tied to URP,
+    /// so no game shader or material in the repo names it; this creates <see cref="PipelinePath"/> with its renderer
     /// (<see cref="RendererPath"/>) and assigns it as the default pipeline and on every quality level.
     /// It only creates what is missing and only assigns what differs, so rerunning it (and every import
     /// after it) leaves the committed assets and settings untouched. Run from the menu or in batch mode
@@ -77,8 +77,8 @@ namespace Unity.QuickDuel.EditorTools
             {
                 // As URP's own "URP Asset (with Universal Renderer)" create menu does: the default
                 // post-process data, then the package's shaders and materials filled into every null
-                // resource slot. QuickDuel has no sprites or 2D lights (it is UGUI-only), so the plain
-                // forward Universal Renderer is used, not the 2D renderer.
+                // resource slot. QuickDuel has no sprites or 2D lights (its whole screen is UI Toolkit
+                // over a camera backdrop), so the plain forward Universal Renderer is used, not the 2D renderer.
                 renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
                 AssetDatabase.CreateAsset(renderer, RendererPath);
                 var serialized = new SerializedObject(renderer);
