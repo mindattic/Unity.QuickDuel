@@ -3,7 +3,9 @@
     "rootNamespace": "Unity.QuickDuel.EditorTools",
     "references": [
         "Unity.QuickDuel.Core",
-        "Unity.QuickDuel.Runtime"
+        "Unity.QuickDuel.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

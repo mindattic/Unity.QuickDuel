@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: bible
 status: living
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # Unity.QuickDuel — Project Bible
@@ -186,6 +186,16 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ The round headline names the AI in vs-AI mode (UQD-T17, `DuelSessionTests`).
 - ✅ End-to-end port check of the Windows build against `BushidoCoda.gmx`: every mode reached and
   played to a match verdict; the room-by-room map is in [ORIGINS](ORIGINS.md) (UQD-T19).
+- ✅ Render pipeline (UQD-T29, `RenderPipelineTests`): the project had no render pipeline package at all
+  (the built-in pipeline, no URP in `Packages/manifest.json`, `GraphicsSettings.defaultRenderPipeline`
+  null). URP 17.4.0 is now in the manifest; `RenderPipelineBuilder` (menu *QuickDuel → Build Render
+  Pipeline*, or batch mode, and run by `DuelSceneBuilder` before every scene rebuild) creates
+  `Assets/Unity.QuickDuel/Rendering/QuickDuelURP.asset` (a forward Universal Renderer — the game has no
+  sprites or 2D lights, only UGUI, so the 2D renderer is not needed) and assigns it as the default
+  pipeline and on every quality level. The pipeline-agnostic layer is the whole game: `DuelView` builds
+  only Canvas/Image/Text, drawn with Unity's own `UI/Default` shader, which ships with every pipeline;
+  no shader or material in the repo names URP. Verified by a Windows Standalone build (`deploy.ps1`)
+  that launches and renders the Duel scene.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an

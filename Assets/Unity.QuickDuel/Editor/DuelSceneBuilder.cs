@@ -14,6 +14,7 @@ namespace Unity.QuickDuel.EditorTools
         [MenuItem("QuickDuel/Rebuild Duel Scene")]
         public static void Build()
         {
+            RenderPipelineBuilder.Ensure();
             System.IO.Directory.CreateDirectory("Assets/Scenes");
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
