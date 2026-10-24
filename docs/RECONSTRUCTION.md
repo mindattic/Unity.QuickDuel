@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: reconstruction
 status: living
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # Unity.QuickDuel - Reconstruction (REA of the original)
@@ -69,7 +69,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Group | Objects | Disposition |
 | --- | --- | --- |
-| Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33); fighters UQD-T34, T35 |
+| Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33), `obj_player` as the cosmetic fighters standing, facing and fading in (UQD-T34); their motion UQD-T35 |
 | Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | missing, UQD-T40, T41 |
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen, intro and mainmenu fades missing, UQD-T42, T44, T45; the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | missing, UQD-T43, T45, T46, T50 |
@@ -90,10 +90,10 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `gameclock_clash`, `action_clash` | dropped |
 | `action_attack`, `determine_winner` | built as `Duel.Strike`, `DuelJudge` (the early-strike rule matches; the clash branch dropped) |
 | `add_reaction`, `calculate_art`, `random_luck` | dropped (adaptive AI replaced by `AiOpponent` ranges) |
-| `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | missing, UQD-T34, T35 |
+| `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | `set_state_idle` built (idle sprite at a quarter and three quarters of the width, UQD-T34); the rest missing, UQD-T35 |
 | `spawn_weapons` | missing, UQD-T41 |
 | `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (per round, all 11, UQD-T33); `setup_arena_properties` missing, UQD-T49 |
-| `load_characters`, `choose_opponent`, `set_character_description` | fighters as cosmetic data, UQD-T34; descriptions and stats dropped |
+| `load_characters`, `choose_opponent`, `set_character_description` | `load_characters` is `Data/assets.json`'s fighters (name and sprites only), `choose_opponent` is `FighterDraw` (both seats, drawn per match, since character select is dropped) (UQD-T34); stats, skills, portraits and descriptions dropped |
 | `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | intro text missing UQD-T44; the rest dropped |
 | `draw_text_outline`, `_alpha`, `_color`, `add_shadow`, `draw_light`, `create_lens`, `RGB` | outline text UQD-T36; lighting dropped |
 | `show_float_text`, `_color` | dropped (damage numbers) |
@@ -105,7 +105,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Group | Assets | Disposition |
 | --- | --- | --- |
-| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), drawn by UQD-T34, T35, T41; portraits, profiles, icons, silhouettes: dropped |
+| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), named per fighter in `Data/assets.json` and idle drawn (UQD-T34), the rest drawn by UQD-T35, T41; portraits, profiles, icons, silhouettes: dropped |
 | Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | the 11 `load_arenas.gml` arenas imported with their names and descriptions (UQD-T32), drawn by UQD-T33, one per round, behind everything. Fixed defect (UQD-T33): `load_arenas.gml` gives Sozza's Point and South Ridge the same id (5), so South Ridge overwrote Sozza's Point and only 10 arenas could be chosen; all 11 are drawn now |
 | Transitions | `spr_loading1` to `14` | imported (UQD-T32), drawn by UQD-T42 |
 | Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | blood drops, splatters, flash imported (UQD-T32), drawn by UQD-T40 |

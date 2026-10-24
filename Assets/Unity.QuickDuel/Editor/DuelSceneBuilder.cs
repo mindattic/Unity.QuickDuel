@@ -36,7 +36,9 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelController>();
             duel.AddComponent<DuelInput>();
             duel.AddComponent<DuelQuit>();
-            duel.AddComponent<DuelView>().SetArenas(Arenas());
+            var view = duel.AddComponent<DuelView>();
+            view.SetArenas(Arenas());
+            view.SetFighters(Fighters());
             duel.AddComponent<DuelTaunt>();
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
@@ -55,18 +57,50 @@ namespace Unity.QuickDuel.EditorTools
         // A manifest that fails validation stops the build rather than shipping a scene with a guess.
         public static List<ArenaBackdrop> Arenas()
         {
-            var manifest = AssetManifest.Load(new DirectorySettingsSource(
-                Path.GetFullPath(OriginalAssetGenerator.DataFolder)));
+            var manifest = Manifest();
             var arenas = new List<ArenaBackdrop>();
             foreach (var arena in manifest.Arenas)
+                arenas.Add(new ArenaBackdrop(arena.Id, arena.Name, arena.Description, Frames(manifest, arena.Sprite, $"arena '{arena.Id}'")[0]));
+            return arenas;
+        }
+
+        // The five original fighters (UQD-T34) as the asset manifest lists them (load_characters.gml's id order), each
+        // with its imported idle, run, attack, defeat and weapon sprites. Cosmetic only: no stats travel.
+        public static List<FighterLook> Fighters()
+        {
+            var manifest = Manifest();
+            var fighters = new List<FighterLook>();
+            foreach (var fighter in manifest.Fighters)
             {
-                var path = $"{OriginalAssetGenerator.GameFolder}/{manifest.Sprite(arena.Sprite).Frames[0]}";
+                var owner = $"fighter '{fighter.Id}'";
+                fighters.Add(new FighterLook(fighter.Id, fighter.Name,
+                    Frames(manifest, fighter.Idle, owner)[0],
+                    Frames(manifest, fighter.Run, owner)[0],
+                    Frames(manifest, fighter.Attack, owner),
+                    Frames(manifest, fighter.Defeat, owner),
+                    Frames(manifest, fighter.Weapon, owner)[0],
+                    Frames(manifest, fighter.GroundWeapon, owner)[0]));
+            }
+            return fighters;
+        }
+
+        // A manifest that fails validation stops the build rather than shipping a scene with a guess.
+        private static AssetManifest Manifest() =>
+            AssetManifest.Load(new DirectorySettingsSource(Path.GetFullPath(OriginalAssetGenerator.DataFolder)));
+
+        // Every imported frame of a manifest sprite, in order; a missing one stops the build.
+        private static List<Sprite> Frames(AssetManifest manifest, string spriteId, string owner)
+        {
+            var frames = new List<Sprite>();
+            foreach (var frame in manifest.Sprite(spriteId).Frames)
+            {
+                var path = $"{OriginalAssetGenerator.GameFolder}/{frame}";
                 var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
                 if (sprite == null)
-                    throw new InvalidOperationException($"QuickDuel: arena '{arena.Id}' has no sprite at {path}.");
-                arenas.Add(new ArenaBackdrop(arena.Id, arena.Name, arena.Description, sprite));
+                    throw new InvalidOperationException($"QuickDuel: {owner} has no sprite at {path}.");
+                frames.Add(sprite);
             }
-            return arenas;
+            return frames;
         }
 
         private static AudioClip Clip(string name)

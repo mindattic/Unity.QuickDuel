@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Unity.QuickDuel.Core;
+using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -101,6 +102,80 @@ namespace Unity.QuickDuel.Tests
             }
             Assert.That(shown.Count, Is.GreaterThan(1), "the arena is drawn again every round");
         }
+
+        // The five original fighters, cosmetic only (UQD-T34): the pair the match's fighter roll lands on stands at a
+        // quarter and three quarters of the stage, facing each other in their idle sprites, fading in from nothing at
+        // 0.6 alpha a second (0.01 per original 60 fps step).
+        [UnityTest]
+        public IEnumerator TheMatchsFightersFaceEachOtherAndFadeIn()
+        {
+            Assert.That(view.Fighters.Select(f => f.Name), Is.EqualTo(new[] { "Myrmidon", "Ronin", "Gypsy", "Vagabond", "Exile" }));
+            Assert.That(view.Fighters.All(f => f.Idle != null && f.Run != null && f.Weapon != null && f.GroundWeapon != null
+                && f.Attack.Count == 4 && f.Defeat.Count == 4 && f.Attack.All(s => s != null) && f.Defeat.All(s => s != null)), Is.True);
+
+            yield return null;
+            var roll = controller.FighterRoll;
+            foreach (var side in new[] { Side.Left, Side.Right })
+            {
+                Assert.That(view.FighterIn(side), Is.SameAs(view.Fighters[FighterDraw.Pick(roll, side, 5)]));
+                Assert.That(view.FighterElement(side).style.backgroundImage.value.sprite, Is.SameAs(view.FighterIn(side).Idle));
+            }
+            Assert.That(view.FighterAlpha(Side.Left), Is.LessThan(0.2f), "the fighters start faded out");
+            Assert.That(view.FighterElement(Side.Left).style.scale.value.value.x, Is.EqualTo(1f), "the left fighter faces right");
+            Assert.That(view.FighterElement(Side.Right).style.scale.value.value.x, Is.EqualTo(-1f), "the right fighter is mirrored to face left");
+
+            yield return new WaitForSecondsRealtime(0.5f);
+            var midway = view.FighterAlpha(Side.Right);
+            Assert.That(midway, Is.InRange(0.2f, 0.95f), "half a second in, part way through the 1.67 s fade");
+            Assert.That(view.FighterElement(Side.Right).style.opacity.value, Is.EqualTo(midway));
+
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.That(view.FighterAlpha(Side.Left), Is.EqualTo(1f));
+            Assert.That(view.FighterAlpha(Side.Right), Is.EqualTo(1f));
+
+            var stage = view.Root.Q("Stage").worldBound;
+            var left = view.FighterElement(Side.Left).worldBound;
+            var right = view.FighterElement(Side.Right).worldBound;
+            Assert.That(left.center.x - stage.xMin, Is.EqualTo(stage.width * 0.25f).Within(2f), "a quarter of the width");
+            Assert.That(right.center.x - stage.xMin, Is.EqualTo(stage.width * 0.75f).Within(2f), "three quarters of the width");
+            Assert.That(left.center.y - stage.yMin, Is.EqualTo(stage.height * 2f / 3f).Within(2f), "two thirds of the way down");
+            Assert.That(right.center.y, Is.EqualTo(left.center.y).Within(0.5f));
+            Screenshots.Capture("06-fighters");
+
+            // A round of the same match keeps the pair on the field, fully faded in.
+            controller.Settings = DuelSceneTests.FastSettings();
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return null;
+            Assert.That(controller.FighterRoll, Is.EqualTo(roll));
+            Assert.That(view.FighterAlpha(Side.Left), Is.EqualTo(1f));
+        }
+
+        // obj_game: when both seats hold the same fighter, the left one is drawn in color_red and the right in
+        // color_blue; otherwise neither is tinted. Each mode change starts a new match with a newly drawn pair.
+        [UnityTest]
+        public IEnumerator TheSameFighterTwiceIsTintedRedAndBlue()
+        {
+            var session = controller.GetComponent<DuelSession>();
+            yield return null;
+
+            for (var i = 0; i < 200 && FighterDraw.SameFighter(controller.FighterRoll, 5); i++)
+                Assert.That(session.CycleMode(), Is.True);
+            yield return null;
+            Assert.That(view.FighterIn(Side.Left), Is.Not.SameAs(view.FighterIn(Side.Right)));
+            Assert.That(Tint(Side.Left), Is.EqualTo(Color.white));
+            Assert.That(Tint(Side.Right), Is.EqualTo(Color.white));
+            Assert.That(view.FighterAlpha(Side.Left), Is.LessThan(0.2f), "a new pair fades in afresh");
+
+            for (var i = 0; i < 200 && !FighterDraw.SameFighter(controller.FighterRoll, 5); i++)
+                Assert.That(session.CycleMode(), Is.True);
+            yield return null;
+            Assert.That(view.FighterIn(Side.Left), Is.SameAs(view.FighterIn(Side.Right)));
+            Assert.That((Color32)Tint(Side.Left), Is.EqualTo(new Color32(196, 64, 64, 255)));
+            Assert.That((Color32)Tint(Side.Right), Is.EqualTo(new Color32(64, 64, 196, 255)));
+            Screenshots.Capture("07-same-fighter");
+        }
+
+        private Color Tint(Side side) => view.FighterElement(side).style.unityBackgroundImageTintColor.value;
 
         private static bool IsInvertFilter(VisualElement element)
         {

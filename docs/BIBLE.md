@@ -35,6 +35,11 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 - **NOT Bushido Coda.** No overworld, merchants, weather, items, stats (ART, LCK, PWR), focus bar, skill
   dials, combos, clash button-mash, or arenas and characters as gameplay. Those were dropped on purpose;
   adding any back needs a Bible change first.
+- **NOT a character game.** The original's five fighters (Myrmidon, Ronin, Gypsy, Vagabond, Exile) are
+  **cosmetic only** ([§4.5](#UQD-§4.5)): a name and the idle, run, attack, defeat and weapon art. They carry
+  no stats (PWR, VIT, SPD, LCK), no skills, no HP and no portrait or description, and which fighter stands in
+  a seat never changes how a round is timed, judged or scored. There is no character select: the authority
+  draws both seats' fighters for each match.
 - **NOT frame-timed.** The 2013 build ran its action phase at 1000 FPS to time reactions by frame.
   QuickDuel never does; see [UQD-LAW-2](#UQD-LAW-2).
 - **NOT a game where the AI cheats.** The AI draws a reaction time from its difficulty's range when the
@@ -50,13 +55,16 @@ Assets/Unity.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
                                                       MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
-  Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, credits),
-                                                      ArenaDraw (each round's arena roll and the arena it lands on)
+  Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, fighters, credits),
+                                                      ArenaDraw (each round's arena roll and the arena it lands on),
+                                                      FighterDraw (each match's fighter roll and the pair it lands on),
+                                                      FighterLineup (where the fighters stand, their fade and tint)
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Art/, Audio/, Fonts/  the original's files           copied by OriginalAssetGenerator, never edited by hand
   Data/assets.json, Data/credits.txt                  the generated asset manifest and the original credits text
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
-                                                      TuningStore, ArenaBackdrop (an arena as the scene carries it)
+                                                      TuningStore, ArenaBackdrop (an arena as the scene carries it),
+                                                      FighterLook (a fighter as the scene carries it)
   Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present),
                                                       OnlineDuelLobby, OnlineDuelMenu, OnlineDuel.prefab, QuickDuelNetPrefabs
   Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), OnlineSceneBuilder,
@@ -153,6 +161,32 @@ In the Duel scene (UQD-T21):
   NetKey, OnlineDuel, with its `GlobalObjectIdHash` filled in batch mode) and its `NetPrefabList`, networks the scene
   with Unity.Multiplayer's `NetSceneSetup`, and sets the `NetBootstrap` never to start by itself: no auto start, and
   above all no serving when headless, since batch-mode tests and builds load this scene too.
+
+### 4.5 The fighters {#UQD-§4.5}
+Cosmetic data only ([§3](#UQD-§3)). `Data/assets.json`'s `fighters` section, written by `OriginalAssetGenerator`
+from `load_characters.gml` (in its id order: Myrmidon, Ronin, Gypsy, Vagabond, Exile), gives each fighter its
+`character_name` and its `character_asset_idle/run/attack/defeat`, `weapon_asset` and `weapon_asset_ground` sprites;
+the stats, skills and portraits in the same script are not read. `AssetManifest.Fighters` validates it.
+
+- **Who stands where.** The authority draws one fighter roll per match (`MatchSession.FighterRoll` locally, on
+  construction, on a mode change and when a finished match is replaced; `OnlineDuelHost.FighterRoll` online, sent with
+  every `RoundBegan` so both peers agree), and `FighterDraw.Pick` maps it onto a fighter for each seat, both
+  independently and uniformly, so both seats can be the same fighter.
+- **On the field** (`FighterLineup`, from `globals.gml`): the left fighter stands at a quarter of the screen width
+  (`left_position_idle = room_width / 4`) facing right, the right one at three quarters
+  (`right_position_idle`) mirrored to face left (`image_xscale = -1`), both centred two thirds of the way down
+  (`vertical_position = room_height - room_height / 3`), drawn at the original's 640 x 480 scale (2.25x on the
+  1920 x 1080 stage).
+- **Fade in.** Each fighter starts invisible and fades in at `obj_player`'s `fadespeed`, 0.01 alpha per 60 fps tick
+  (1.67 s to full), whenever a new pair takes the field (the scene's first frame and every new match). It is timed
+  by the clock, 0.6 alpha a second, not counted per rendered frame ([UQD-LAW-2](#UQD-LAW-2)); a stalled frame
+  advances it by at most 50 ms, as the original's frame-locked fade would not have jumped either.
+- **Same fighter, two colours.** When both seats hold the same fighter, the left one is tinted `color_red`
+  (RGB 196, 64, 64) and the right one `color_blue` (64, 64, 196), as `obj_game` does with `image_blend`;
+  otherwise neither is tinted.
+- **Deliberate deviation**: the original's player chose a fighter on the character select screen (Myrmidon by
+  default) and its single-player opponent was `choose_opponent`'s random pick per location; both screens are
+  dropped, so the rebuild draws both seats at random for each match.
 
 ## 5. The Laws {#UQD-§5}
 
@@ -291,6 +325,14 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     all look alike (UQD-US-P2).
   - The display name keeps the original's spelling, "Harvest Cresent", as `load_arenas.gml` has it; the names and
     descriptions were only shown on the dropped overworld (`obj_locationart`), so nothing shows them yet.
+
+- ✅ The five original fighters, cosmetic only (UQD-T34, [§4.5](#UQD-§4.5); `FighterDrawTests`, `AssetManifestTests`,
+  `DuelViewTests`): Myrmidon, Ronin, Gypsy, Vagabond and Exile from `load_characters.gml` (name, idle, run, attack and
+  defeat strips, weapon and ground weapon; no stats) in `Data/assets.json`, carried into the scene by `DuelSceneBuilder`
+  as `DuelView`'s `FighterLook` list in place of the placeholder boxes. The authority draws a fighter roll per match
+  (sent with `RoundBegan` online); the pair stands in its idle sprites at a quarter and three quarters of the width,
+  facing each other, fades in at 0.01 alpha per original 60 fps step, and is tinted red and blue when both seats hold
+  the same fighter. The loser still topples as before; the run, attack and defeat strips are UQD-T35's.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

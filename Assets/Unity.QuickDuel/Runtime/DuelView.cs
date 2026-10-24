@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 namespace Unity.QuickDuel
 {
     // Draws the duel from the controller's phase and result; it never decides anything. The whole UI is
-    // built in code (placeholder fighters over the original arena art) on UI Toolkit (UQD-T31): a UIDocument reads
+    // built in code (the original fighters over the original arena art) on UI Toolkit (UQD-T31): a UIDocument reads
     // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size, 1920x1080 reference, built by
     // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label shares the font asset
     // Resources/UI/Fonts/Cinzel.ttf -- no more Resources.GetBuiltinResource("LegacyRuntime.ttf"). The panel
@@ -22,23 +22,38 @@ namespace Unity.QuickDuel
     // colours invert, as obj_arena did by drawing white over the view with an inverting blend
     // (draw_set_blend_mode_ext(bm_inv_dest_colour, bm_zero)): a real per-pixel invert, here a UI Toolkit invert
     // filter on the backdrop, not a recolouring of the boxes drawn over it.
+    //
+    // The two duelists are the original's cosmetic fighters (UQD-T34, BIBLE section 4.5): the pair the match's fighter
+    // roll lands on (FighterDraw, drawn by the authority each match), standing in their idle sprite at a quarter and
+    // three quarters of the stage width, two thirds of the way down, facing each other (the right one mirrored), drawn
+    // at the original's 640 x 480 scale, fading in at obj_player's 0.01 alpha per 60 fps tick whenever a new pair takes
+    // the field, and tinted red (left) and blue (right) when both are the same fighter (FighterLineup).
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
         private const float StageWidth = 1920f;
         private const float StageHeight = 1080f;
         private const float LetterboxHeight = 150f;
-        private const float GroundY = -230f;
+
+        // The original's 640 x 480 room drawn on the 1080-high stage: every original pixel is 2.25 stage pixels.
+        private const float PixelScale = StageHeight / FighterLineup.OriginalHeight;
+
+        // Where the fighters stand, y up from the stage centre: vertical_position, two thirds of the way down.
+        private static readonly float FighterY = StageHeight / 2f - (float)FighterLineup.Y * StageHeight;
+
+        // Below the fighters' feet (their 128-pixel sprites are centred on FighterY).
+        private const float ReactionY = -370f;
 
         // Shown behind the arena art, and in its place in a scene that carries no arenas.
         private static readonly Color Paper = new Color(0.93f, 0.88f, 0.78f);
         private static readonly Color Ink = new Color(0.10f, 0.08f, 0.08f);
-        private static readonly Color LeftColor = new Color(0.62f, 0.12f, 0.10f);
-        private static readonly Color RightColor = new Color(0.14f, 0.20f, 0.45f);
-        private static readonly Color Steel = new Color(0.80f, 0.82f, 0.86f);
 
         // The original arenas, in load_arenas.gml's order; written by DuelSceneBuilder from the asset manifest.
         [SerializeField] private List<ArenaBackdrop> arenas = new List<ArenaBackdrop>();
+
+        // The original fighters, in load_characters.gml's id order; written by DuelSceneBuilder from the asset manifest.
+        [SerializeField] private List<FighterLook> fighters = new List<FighterLook>();
+        private int? shownFighterRoll;
 
         private DuelController controller;
         private UIDocument document;
@@ -76,6 +91,24 @@ namespace Unity.QuickDuel
             arenas = new List<ArenaBackdrop>(backdrops ?? throw new ArgumentNullException(nameof(backdrops)));
             shownRoll = null;
         }
+
+        public IReadOnlyList<FighterLook> Fighters => fighters;
+
+        // The scene builder's way in: the fighters this view draws from.
+        public void SetFighters(IEnumerable<FighterLook> looks)
+        {
+            fighters = new List<FighterLook>(looks ?? throw new ArgumentNullException(nameof(looks)));
+            shownFighterRoll = null;
+        }
+
+        // The fighter standing in `side`'s seat; null in a scene that carries none.
+        public FighterLook FighterIn(Side side) => (side == Side.Left ? left : right).Look;
+
+        // That fighter's element (its sprite, opacity, tint and facing), for tests and screenshots.
+        public VisualElement FighterElement(Side side) => (side == Side.Left ? left : right).Image;
+
+        // How far that fighter has faded in, 0 to 1.
+        public float FighterAlpha(Side side) => (side == Side.Left ? left : right).Alpha;
         public float LetterboxAmount => letterbox;
         public string CountdownText => IsVisible(countdown) ? countdown.text : "";
         public string CueText => IsVisible(cue) ? cue.text : "";
@@ -115,7 +148,6 @@ namespace Unity.QuickDuel
             {
                 var winner = result.Winner.Value;
                 (winner == Side.Left ? right : left).Fall();
-                (winner == Side.Left ? left : right).Raise();
             }
         }
 
@@ -143,6 +175,7 @@ namespace Unity.QuickDuel
         {
             var phase = controller.Phase;
             ShowArena(controller.ArenaRoll);
+            ShowFighters(controller.FighterRoll);
 
             var countingDown = phase == DuelPhase.Countdown;
             SetVisible(countdown, countingDown);
@@ -211,6 +244,23 @@ namespace Unity.QuickDuel
                 : new StyleBackground(StyleKeyword.None);
         }
 
+        // The pair the match's fighter roll lands on (FighterDraw.Pick), put on the field only when the roll changes (a
+        // new match), each fading in from nothing, tinted red and blue when both seats hold the same fighter.
+        private void ShowFighters(int roll)
+        {
+            if (shownFighterRoll == roll) return;
+            shownFighterRoll = roll;
+            if (fighters.Count == 0)
+            {
+                left.Show(null, null);
+                right.Show(null, null);
+                return;
+            }
+            var same = FighterDraw.SameFighter(roll, fighters.Count);
+            left.Show(fighters[FighterDraw.Pick(roll, Side.Left, fighters.Count)], FighterLineup.Tint(Side.Left, same));
+            right.Show(fighters[FighterDraw.Pick(roll, Side.Right, fighters.Count)], FighterLineup.Tint(Side.Right, same));
+        }
+
         // A real colour invert of the whole backdrop (its art and the colour behind it), as obj_arena's
         // inverting blend over the view: every pixel becomes 1 - itself.
         private void SetInverted(bool value)
@@ -260,11 +310,11 @@ namespace Unity.QuickDuel
             stage.AddToClassList("stage");
             Root.Add(stage);
 
-            left = new Fighter(this, "Left", -380f, LeftColor, 1f);
-            right = new Fighter(this, "Right", 380f, RightColor, -1f);
+            left = new Fighter(this, Side.Left);
+            right = new Fighter(this, Side.Right);
 
-            leftReaction = CreateLabel("LeftReaction", 56, new Vector2(-380f, GroundY - 80f), Ink);
-            rightReaction = CreateLabel("RightReaction", 56, new Vector2(380f, GroundY - 80f), Ink);
+            leftReaction = CreateLabel("LeftReaction", 56, new Vector2(StageX(Side.Left), ReactionY), Ink);
+            rightReaction = CreateLabel("RightReaction", 56, new Vector2(StageX(Side.Right), ReactionY), Ink);
 
             letterboxTop = Box("LetterboxTop", Root, Color.black);
             letterboxTop.AddToClassList("letterbox");
@@ -363,70 +413,86 @@ namespace Unity.QuickDuel
             element.style.top = -y - (1f - pivotY) * height;
         }
 
-        // A placeholder samurai: a body, a head and a drawn blade, pivoted at the feet so it can fall.
+        // The x, from the stage centre, that `side`'s fighter stands at: a quarter or three quarters of the width.
+        private static float StageX(Side side) => ((float)FighterLineup.X(side) - 0.5f) * StageWidth;
+
+        // One of the original fighters on the field: its idle sprite at the original's scale, centred where obj_player
+        // stood (the sprites' origin is their centre), the right one mirrored to face left. The root sits at the
+        // sprite's feet so the loser can topple over them (until UQD-T35 plays the defeat strip instead).
         private sealed class Fighter
         {
             private readonly VisualElement root;
-            private readonly VisualElement blade;
             private readonly float facing;
             private float targetAngle;
-            private float bladeTarget;
             private float angle;
-            private float bladeAngle;
+            private float shownFor;
 
-            public Fighter(DuelView view, string name, float x, Color color, float facing)
+            public Fighter(DuelView view, Side side)
             {
-                this.facing = facing;
-                root = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
-                PlaceOnStage(root, x, GroundY, 0f, 0f);
+                facing = FighterLineup.Facing(side);
+                var size = OriginalSpriteSize * PixelScale;
+                root = new VisualElement { name = side == Side.Left ? "Left" : "Right", pickingMode = PickingMode.Ignore };
+                PlaceOnStage(root, StageX(side), FighterY - size / 2f, 0f, 0f);
                 view.stage.Add(root);
 
-                var body = view.Box("Body", root, color);
-                PlacePivoted(body, 0f, 0f, 130f, 250f, 0.5f, 0f);
+                Image = new VisualElement { name = "Sprite", pickingMode = PickingMode.Ignore };
+                PlacePivoted(Image, 0f, 0f, size, size, 0.5f, 0f);
+                Image.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100));
+                Image.style.scale = new Scale(new Vector2(facing, 1f));
+                root.Add(Image);
 
-                var head = view.Box("Head", root, color);
-                PlacePivoted(head, 0f, 310f, 96f, 96f, 0.5f, 0.5f);
-
-                var topknot = view.Box("Topknot", root, color);
-                PlacePivoted(topknot, -30f * facing, 370f, 30f, 40f, 0.5f, 0.5f);
-
-                blade = view.Box("Blade", root, Steel);
-                PlacePivoted(blade, 60f * facing, 150f, 14f, 200f, 0.5f, 0f);
-                blade.style.transformOrigin = new TransformOrigin(Length.Percent(50), Length.Percent(100));
-
+                Show(null, null);
                 Reset();
             }
 
+            // The original's fighter sprites are all 128 x 128 (Data/assets.json).
+            private const float OriginalSpriteSize = 128f;
+
+            public VisualElement Image { get; }
+            public FighterLook Look { get; private set; }
+            public float Alpha => (float)FighterLineup.Alpha(shownFor);
             public bool Fallen => Mathf.Abs(targetAngle) > 1f;
+
+            // Puts `look` on the field in its idle sprite, faded out, with `tint` as its image_blend (null: none).
+            public void Show(FighterLook look, Rgb? tint)
+            {
+                Look = look;
+                shownFor = 0f;
+                Image.style.backgroundImage = look?.Idle != null
+                    ? new StyleBackground(look.Idle)
+                    : new StyleBackground(StyleKeyword.None);
+                Image.style.unityBackgroundImageTintColor = tint.HasValue
+                    ? (Color)new Color32(tint.Value.R, tint.Value.G, tint.Value.B, 255)
+                    : Color.white;
+                Image.style.opacity = Alpha;
+            }
 
             public void Reset()
             {
                 targetAngle = 0;
-                bladeTarget = 150f * facing;    // sheathed: pointing back and down
                 angle = 0;
-                bladeAngle = bladeTarget;
                 Apply();
             }
 
             public void Fall() => targetAngle = 90f * facing;
-            public void Raise() => bladeTarget = -20f * facing;
+
+            // A hitch (a scene load, a stalled frame) advances the fade by at most this much, as the original's
+            // frame-locked fade would not have jumped either; at any frame rate above 20 fps it is pure clock time.
+            private const float MaxFadeStep = 0.05f;
 
             public void Animate(float dt)
             {
+                shownFor += Mathf.Min(dt, MaxFadeStep);
+                Image.style.opacity = Alpha;
                 var step = dt == 0f ? 360f : dt * 360f;
                 angle = Mathf.MoveTowardsAngle(angle, targetAngle, step);
-                bladeAngle = Mathf.MoveTowardsAngle(bladeAngle, bladeTarget, step * 2f);
                 Apply();
             }
 
             // UI Toolkit's `rotate` turns clockwise for a positive angle (it is y-down, like CSS); the
             // original's Z-euler turned counter-clockwise for a positive angle (it was y-up). Negating
-            // keeps every angle above (and every caller of Fall/Raise) reading exactly as it did there.
-            private void Apply()
-            {
-                root.style.rotate = new Rotate(Angle.Degrees(-angle));
-                blade.style.rotate = new Rotate(Angle.Degrees(-bladeAngle));
-            }
+            // keeps every angle above (and every caller of Fall) reading exactly as it did there.
+            private void Apply() => root.style.rotate = new Rotate(Angle.Degrees(-angle));
         }
     }
 }

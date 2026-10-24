@@ -114,12 +114,15 @@ namespace Unity.QuickDuel.Core.Tests
   ""format"": ""quickduel.assets"",
   ""version"": 1,
   ""sprites"": {
-    ""spr_a"": { ""group"": ""arena"", ""width"": 10, ""height"": 10, ""originX"": 0, ""originY"": 0, ""frames"": [ ""Art/a_0.png"" ] }
+    ""spr_a"": { ""group"": ""arena"", ""width"": 10, ""height"": 10, ""originX"": 0, ""originY"": 0, ""frames"": [ ""Art/a_0.png"" ] },
+    ""spr_f"": { ""group"": ""fighter"", ""width"": 10, ""height"": 10, ""originX"": 5, ""originY"": 5, ""frames"": [ ""Art/f_0.png"" ] },
+    ""spr_w"": { ""group"": ""weapon"", ""width"": 10, ""height"": 10, ""originX"": 5, ""originY"": 5, ""frames"": [ ""Art/w_0.png"" ] }
   },
   ""sounds"": { ""sfx_a"": { ""path"": ""Audio/sfx_a.ogg"" } },
   ""fonts"": { ""fnt_a"": { ""face"": ""A"", ""size"": 10, ""atlas"": ""Fonts/fnt_a.png"", ""glyphs"": ""Fonts/fnt_a.glyphs.xml"" } },
   ""typefaces"": { ""a"": { ""path"": ""Fonts/a.ttf"" } },
   ""arenas"": { ""a"": { ""name"": ""A"", ""description"": ""An arena."", ""sprite"": ""spr_a"" } },
+  ""fighters"": { ""f"": { ""name"": ""F"", ""idle"": ""spr_f"", ""run"": ""spr_f"", ""attack"": ""spr_f"", ""defeat"": ""spr_f"", ""weapon"": ""spr_w"", ""groundWeapon"": ""spr_w"" } },
   ""credits"": ""Data/credits.txt""
 }".Replace("\r\n", "\n");
 
@@ -134,7 +137,8 @@ namespace Unity.QuickDuel.Core.Tests
         {
             var m = Load(Good);
             Assert.That(m.Sprite("spr_a").Frames, Is.EqualTo(new[] { "Art/a_0.png" }));
-            Assert.That(m.Files(), Is.EqualTo(new[] { "Art/a_0.png", "Audio/sfx_a.ogg", "Fonts/fnt_a.png", "Fonts/fnt_a.glyphs.xml", "Fonts/a.ttf", "Data/credits.txt" }));
+            Assert.That(m.Fighters.Single().Weapon, Is.EqualTo("spr_w"));
+            Assert.That(m.Files(), Is.EqualTo(new[] { "Art/a_0.png", "Art/f_0.png", "Art/w_0.png", "Audio/sfx_a.ogg", "Fonts/fnt_a.png", "Fonts/fnt_a.glyphs.xml", "Fonts/a.ttf", "Data/credits.txt" }));
             Assert.Throws<System.Collections.Generic.KeyNotFoundException>(() => m.Sprite("spr_missing"));
         }
 
@@ -155,6 +159,47 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(errors, Has.Some.Contains("'sprite' must name a sprite"));
             Assert.That(errors, Has.Some.Contains("'version' must be 1"));
             Assert.That(errors, Has.Some.Contains("unknown key 'extra'"));
+        }
+
+        // The fighters are cosmetic data (UQD-T34): a name and sprites of the right group, and nothing else -- a stat
+        // like the original's PWR is an unknown key, not a field.
+        [Test]
+        public void A_bad_fighter_reports_every_problem()
+        {
+            var bad = Good
+                .Replace("\"idle\": \"spr_f\"", "\"idle\": \"spr_missing\"")
+                .Replace("\"run\": \"spr_f\"", "\"run\": \"spr_w\"")
+                .Replace("\"groundWeapon\": \"spr_w\"", "\"groundWeapon\": \"spr_w\", \"PWR\": 6")
+                .Replace("\"name\": \"F\"", "\"name\": \"\"");
+            var errors = Errors(bad);
+            Assert.That(errors, Has.Some.Contains("'idle' must name a sprite in 'sprites'").And.Contains("spr_missing"));
+            Assert.That(errors, Has.Some.Contains("'run' must name a 'fighter' sprite"));
+            Assert.That(errors, Has.Some.Contains("unknown key 'PWR'"));
+            Assert.That(errors, Has.Some.Contains("'name'"));
+
+            var none = Good.Replace(
+                "\"f\": { \"name\": \"F\", \"idle\": \"spr_f\", \"run\": \"spr_f\", \"attack\": \"spr_f\", \"defeat\": \"spr_f\", \"weapon\": \"spr_w\", \"groundWeapon\": \"spr_w\" }",
+                string.Empty);
+            Assert.That(Errors(none), Has.Some.Contains("must hold at least one fighter"));
+        }
+
+        [Test]
+        public void The_shipped_manifest_lists_the_five_fighters_as_cosmetic_data()
+        {
+            var m = Shipped.Value;
+            Assert.That(m.Fighters.Select(f => f.Name), Is.EqualTo(new[] { "Myrmidon", "Ronin", "Gypsy", "Vagabond", "Exile" }),
+                "load_characters.gml's id order");
+            foreach (var fighter in m.Fighters)
+            {
+                Assert.That(fighter.Idle, Is.EqualTo($"spr_character_{fighter.Id}_idle"));
+                Assert.That(fighter.Run, Is.EqualTo($"spr_character_{fighter.Id}_run"));
+                Assert.That(fighter.Attack, Is.EqualTo($"spr_character_{fighter.Id}_attack"));
+                Assert.That(fighter.Defeat, Is.EqualTo($"spr_character_{fighter.Id}_defeat"));
+                Assert.That(fighter.Weapon, Is.EqualTo($"spr_weapon_{fighter.Id}"));
+                Assert.That(fighter.GroundWeapon, Is.EqualTo($"spr_weapon_{fighter.Id}_ground"));
+                Assert.That(m.Sprite(fighter.Attack).Frames, Has.Count.EqualTo(4));
+                Assert.That(m.Sprite(fighter.Defeat).Frames, Has.Count.EqualTo(4));
+            }
         }
 
         [Test]

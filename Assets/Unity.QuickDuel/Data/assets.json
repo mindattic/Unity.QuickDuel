@@ -118,5 +118,12 @@
     "pineforest": { "name": "Tu'verone Forest", "description": "A coniferous forest.", "sprite": "spr_arena_pineforest" },
     "farmland": { "name": "Harvest Cresent", "description": "A fertile farmland.", "sprite": "spr_arena_farmland" }
   },
+  "fighters": {
+    "myrmidon": { "name": "Myrmidon", "idle": "spr_character_myrmidon_idle", "run": "spr_character_myrmidon_run", "attack": "spr_character_myrmidon_attack", "defeat": "spr_character_myrmidon_defeat", "weapon": "spr_weapon_myrmidon", "groundWeapon": "spr_weapon_myrmidon_ground" },
+    "ronin": { "name": "Ronin", "idle": "spr_character_ronin_idle", "run": "spr_character_ronin_run", "attack": "spr_character_ronin_attack", "defeat": "spr_character_ronin_defeat", "weapon": "spr_weapon_ronin", "groundWeapon": "spr_weapon_ronin_ground" },
+    "gypsy": { "name": "Gypsy", "idle": "spr_character_gypsy_idle", "run": "spr_character_gypsy_run", "attack": "spr_character_gypsy_attack", "defeat": "spr_character_gypsy_defeat", "weapon": "spr_weapon_gypsy", "groundWeapon": "spr_weapon_gypsy_ground" },
+    "vagabond": { "name": "Vagabond", "idle": "spr_character_vagabond_idle", "run": "spr_character_vagabond_run", "attack": "spr_character_vagabond_attack", "defeat": "spr_character_vagabond_defeat", "weapon": "spr_weapon_vagabond", "groundWeapon": "spr_weapon_vagabond_ground" },
+    "exile": { "name": "Exile", "idle": "spr_character_exile_idle", "run": "spr_character_exile_run", "attack": "spr_character_exile_attack", "defeat": "spr_character_exile_defeat", "weapon": "spr_weapon_exile", "groundWeapon": "spr_weapon_exile_ground" }
+  },
   "credits": "Data/credits.txt"
 }

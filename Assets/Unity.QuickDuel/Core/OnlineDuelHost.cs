@@ -36,7 +36,7 @@ namespace Unity.QuickDuel.Core
             this.random = random ?? new Random();
             this.winsNeeded = winsNeeded;
             HumanFloorSeconds = humanFloorSeconds;
-            Match = new Match(winsNeeded);
+            NewMatch();
         }
 
         public double HumanFloorSeconds { get; }
@@ -56,7 +56,11 @@ namespace Unity.QuickDuel.Core
         // shows the same arena.
         public int ArenaRoll { get; private set; }
 
-        // (round, countdownSeconds, standoffSeconds): send to every client, with ArenaRoll.
+        // The current match's fighter roll (FighterDraw): which cosmetic fighter stands in each seat. Drawn with every
+        // new match; send it with RoundBegan so every peer shows the same pair.
+        public int FighterRoll { get; private set; }
+
+        // (round, countdownSeconds, standoffSeconds): send to every client, with ArenaRoll and FighterRoll.
         public event Action<int, double, double> RoundBegan;
 
         // (round, result): send to every client; the result is already recorded in Match.
@@ -68,7 +72,7 @@ namespace Unity.QuickDuel.Core
             if (RoundOpen)
                 throw new InvalidOperationException("The current round has not been judged yet.");
             if (Match.IsOver)
-                Match = new Match(winsNeeded);
+                NewMatch();
 
             Round++;
             RoundOpen = true;
@@ -112,6 +116,12 @@ namespace Unity.QuickDuel.Core
         {
             if (RoundOpen && now >= deadline)
                 Judge();
+        }
+
+        private void NewMatch()
+        {
+            Match = new Match(winsNeeded);
+            FighterRoll = FighterDraw.Roll(random);
         }
 
         private void Judge()

@@ -26,6 +26,9 @@ namespace Unity.QuickDuel.Core
         // The host's arena roll (ArenaDraw) for the round being played; 0 before the first.
         public int ArenaRoll { get; private set; }
 
+        // The host's fighter roll (FighterDraw) for the match being played; 0 before the first round.
+        public int FighterRoll { get; private set; }
+
         // This round's local duel, for the view; null before the first round.
         public Duel Duel { get; private set; }
 
@@ -35,8 +38,8 @@ namespace Unity.QuickDuel.Core
         // (round, reaction): send to the host. Seconds from the local cue, negative before it, null for no strike.
         public event Action<int, double?> ReactionReady;
 
-        // Starts `round` with the host's lengths and arena roll. A round no newer than the current one is stale and ignored.
-        public bool Begin(int round, double countdownSeconds, double standoffSeconds, double now, int arenaRoll = 0)
+        // Starts `round` with the host's lengths, arena roll and fighter roll. A round no newer than the current one is stale and ignored.
+        public bool Begin(int round, double countdownSeconds, double standoffSeconds, double now, int arenaRoll = 0, int fighterRoll = 0)
         {
             if (round <= Round)
                 return false;
@@ -57,6 +60,7 @@ namespace Unity.QuickDuel.Core
             Round = round;
             StandoffSeconds = standoffSeconds;
             ArenaRoll = arenaRoll;
+            FighterRoll = fighterRoll;
             Duel = duel;
             reported = false;
             RoundBegan?.Invoke(duel);

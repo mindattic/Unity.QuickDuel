@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &150785366
+--- !u!1 &312843355
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,15 +127,15 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 150785375}
-  - component: {fileID: 150785374}
-  - component: {fileID: 150785373}
-  - component: {fileID: 150785372}
-  - component: {fileID: 150785371}
-  - component: {fileID: 150785370}
-  - component: {fileID: 150785369}
-  - component: {fileID: 150785368}
-  - component: {fileID: 150785367}
+  - component: {fileID: 312843364}
+  - component: {fileID: 312843363}
+  - component: {fileID: 312843362}
+  - component: {fileID: 312843361}
+  - component: {fileID: 312843360}
+  - component: {fileID: 312843359}
+  - component: {fileID: 312843358}
+  - component: {fileID: 312843357}
+  - component: {fileID: 312843356}
   m_Layer: 0
   m_Name: Duel
   m_TagString: Untagged
@@ -143,27 +143,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &150785367
+--- !u!114 &312843356
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5f0349deb0efac449a677acf8a55804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Online::Unity.QuickDuel.Online.OnlineDuelMenu
-  bootstrap: {fileID: 1647985595}
+  bootstrap: {fileID: 946855017}
   duelPrefab: {fileID: 1509400829402567012, guid: 921ec5f4af09ae24b9028c0ecfc50f4e, type: 3}
---- !u!114 &150785368
+--- !u!114 &312843357
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94e132ac7b61d624daa4cc533b78158e, type: 3}
@@ -175,37 +175,37 @@ MonoBehaviour:
   slash: {fileID: 8300000, guid: 1ae6e585b1a719249bb5d09d0cffb909, type: 3}
   victory: {fileID: 8300000, guid: fac9becb8cbf46ef93df464ad5a2b52b, type: 3}
   defeat: {fileID: 8300000, guid: c91a3d22c4fd4377826109f71a2347d5, type: 3}
---- !u!114 &150785369
+--- !u!114 &312843358
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8dc41b04246775746820a508c7bca2b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelSession
---- !u!114 &150785370
+--- !u!114 &312843359
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b93f2042426adf4d985d17922f6fe54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelTaunt
---- !u!114 &150785371
+--- !u!114 &312843360
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a649e1c5ac9652449b881defc613274e, type: 3}
@@ -266,50 +266,131 @@ MonoBehaviour:
     name: Harvest Cresent
     description: A fertile farmland.
     sprite: {fileID: 21300000, guid: 6fffaafb098e36e4581d43bb7ea4172d, type: 3}
---- !u!114 &150785372
+  fighters:
+  - id: myrmidon
+    name: Myrmidon
+    idle: {fileID: 21300000, guid: 235d0b2c08f888a43b5d420451a7f227, type: 3}
+    run: {fileID: 21300000, guid: c94085d1d0cbc0f4083333b7363bda20, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 016260079840cdd4daa1059c80d2f15d, type: 3}
+    - {fileID: 21300000, guid: 3ef5f587776b99c4c9c358660e590c18, type: 3}
+    - {fileID: 21300000, guid: da9dbc29d139de7408b605ca761fec20, type: 3}
+    - {fileID: 21300000, guid: c8e4b465d30d7e0418a8eeb443fe29f0, type: 3}
+    defeat:
+    - {fileID: 21300000, guid: a45090ee73d0e8943b821da70f6060ca, type: 3}
+    - {fileID: 21300000, guid: f0e4f30cbd770c94d8d60f6175217c45, type: 3}
+    - {fileID: 21300000, guid: 7aa89fae5642ea74aa4b1592fb9809bc, type: 3}
+    - {fileID: 21300000, guid: e419ea5867073a645a93cc3cb733e4aa, type: 3}
+    weapon: {fileID: 21300000, guid: 965b506911c811e4fb05032a89e44203, type: 3}
+    groundWeapon: {fileID: 21300000, guid: 0f847c0c563067842a61a687ed38421c, type: 3}
+  - id: ronin
+    name: Ronin
+    idle: {fileID: 21300000, guid: 8e75db1edd8030d4197b3954a4befadb, type: 3}
+    run: {fileID: 21300000, guid: 470ae75a268766d4489978a9b0dc6d93, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 3c0df7a8415f51f44bc5b786d54c80d7, type: 3}
+    - {fileID: 21300000, guid: 4de4bdd0a185598468b965ab4f953f07, type: 3}
+    - {fileID: 21300000, guid: 1affb7d195b7db34db9ed719c4d15904, type: 3}
+    - {fileID: 21300000, guid: 63433e37e459c514eb1c1b14a3d98732, type: 3}
+    defeat:
+    - {fileID: 21300000, guid: a398595907bfef341b86ea987e4e7953, type: 3}
+    - {fileID: 21300000, guid: f746c0f55c834cc41a60a95e66d829a3, type: 3}
+    - {fileID: 21300000, guid: 391d890afb16d5645bb18b9326d64116, type: 3}
+    - {fileID: 21300000, guid: 3aea0287f7e02634394dd7e0c3b2390b, type: 3}
+    weapon: {fileID: 21300000, guid: 914cdba90e142154bb0fe04bfdb67aa1, type: 3}
+    groundWeapon: {fileID: 21300000, guid: d13030a0c94b4ac4f8986bb736ed3d14, type: 3}
+  - id: gypsy
+    name: Gypsy
+    idle: {fileID: 21300000, guid: f57fd9e40c8d55a40b9388b87e07fcaa, type: 3}
+    run: {fileID: 21300000, guid: 503b0d7a58f97f84d99d9a438859241c, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 824116caeacfdd4469be089d353a38a5, type: 3}
+    - {fileID: 21300000, guid: 8969cfdfbaab5744ea640407892f1020, type: 3}
+    - {fileID: 21300000, guid: 1fae29d349d25bf459c692e484834d90, type: 3}
+    - {fileID: 21300000, guid: ad5bf84cbbc5fb6488c05b6fdf3b4efe, type: 3}
+    defeat:
+    - {fileID: 21300000, guid: 06abfb3a2cafc704282ebfa8ea6f044b, type: 3}
+    - {fileID: 21300000, guid: e77a4b6c22e19454d919074efd61cfb4, type: 3}
+    - {fileID: 21300000, guid: 25d82403d6529da4aaa3b7524bb64451, type: 3}
+    - {fileID: 21300000, guid: 34915fd5939363141a86e0f388616613, type: 3}
+    weapon: {fileID: 21300000, guid: 0d89d57b394335548adcbc2b94d2e99a, type: 3}
+    groundWeapon: {fileID: 21300000, guid: 06a52a9cd2a177a47a84f4f2230a2441, type: 3}
+  - id: vagabond
+    name: Vagabond
+    idle: {fileID: 21300000, guid: 866392a76892e9f41996bd60c9127b10, type: 3}
+    run: {fileID: 21300000, guid: 91e94fe051552b24b8422a56e02b377f, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 10a4a54160d50a04985671787c521d38, type: 3}
+    - {fileID: 21300000, guid: 559dacccb7880174894e67a0de104836, type: 3}
+    - {fileID: 21300000, guid: 1bf07fa12ecfcea40b4e3c7fa6d5226d, type: 3}
+    - {fileID: 21300000, guid: 8d9a041fe2db55b41a5d30630721f61c, type: 3}
+    defeat:
+    - {fileID: 21300000, guid: 5036246ca3e44c041a22f51ee4aab3ef, type: 3}
+    - {fileID: 21300000, guid: 03af5e23808abc6468663784b9324533, type: 3}
+    - {fileID: 21300000, guid: 8171ba0593087ad48a0341af2c1af7fe, type: 3}
+    - {fileID: 21300000, guid: 2513291f34e1ad844aecd2eb74018cf1, type: 3}
+    weapon: {fileID: 21300000, guid: df2f01d943b8468489ab28870affda1e, type: 3}
+    groundWeapon: {fileID: 21300000, guid: 69f9eafad9c316841ad7b1bc0a26d921, type: 3}
+  - id: exile
+    name: Exile
+    idle: {fileID: 21300000, guid: 83f65c4a999a0014aa1372134235d44f, type: 3}
+    run: {fileID: 21300000, guid: 5514d9bd2553c0d4a909964d76c009bd, type: 3}
+    attack:
+    - {fileID: 21300000, guid: 277b7af8e73fe2441a836c4161dfbf47, type: 3}
+    - {fileID: 21300000, guid: 231b2a8b45853464eaaace4b5eb28a55, type: 3}
+    - {fileID: 21300000, guid: 74eda240676c10444935fd7d45be7f85, type: 3}
+    - {fileID: 21300000, guid: f088b98ef218f8b4092a6e83d935656c, type: 3}
+    defeat:
+    - {fileID: 21300000, guid: 6ddc1032b6d0fb74dbb7c07a4aa264dc, type: 3}
+    - {fileID: 21300000, guid: 1c27bcf2244fb3b44b95c6933eebb9a7, type: 3}
+    - {fileID: 21300000, guid: e8aeb292d484454428e52be61ded88a3, type: 3}
+    - {fileID: 21300000, guid: 779721dabc773a44d8f49ef4224b46c9, type: 3}
+    weapon: {fileID: 21300000, guid: 621905c35a2ec0c4bbf689b1714583d0, type: 3}
+    groundWeapon: {fileID: 21300000, guid: 2b9755b8c7d16fb4c981732c6635f564, type: 3}
+--- !u!114 &312843361
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07a8cdc72a646094ba85043c2e1cd999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelQuit
---- !u!114 &150785373
+--- !u!114 &312843362
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1413a94f247b3924b972aad8ddaa8482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelInput
---- !u!114 &150785374
+--- !u!114 &312843363
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6390f47276889048840429824c37610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelController
   beginOnStart: 0
---- !u!4 &150785375
+--- !u!4 &312843364
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 150785366}
+  m_GameObject: {fileID: 312843355}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -318,7 +399,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &775635548
+--- !u!1 &721239123
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -326,9 +407,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 775635551}
-  - component: {fileID: 775635550}
-  - component: {fileID: 775635549}
+  - component: {fileID: 721239126}
+  - component: {fileID: 721239125}
+  - component: {fileID: 721239124}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -336,21 +417,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &775635549
+--- !u!81 &721239124
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 775635548}
+  m_GameObject: {fileID: 721239123}
   m_Enabled: 1
---- !u!20 &775635550
+--- !u!20 &721239125
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 775635548}
+  m_GameObject: {fileID: 721239123}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -395,13 +476,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &775635551
+--- !u!4 &721239126
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 775635548}
+  m_GameObject: {fileID: 721239123}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
@@ -410,7 +491,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1647985594
+--- !u!1 &946855016
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -418,10 +499,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1647985598}
-  - component: {fileID: 1647985597}
-  - component: {fileID: 1647985596}
-  - component: {fileID: 1647985595}
+  - component: {fileID: 946855020}
+  - component: {fileID: 946855019}
+  - component: {fileID: 946855018}
+  - component: {fileID: 946855017}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -429,13 +510,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1647985595
+--- !u!114 &946855017
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1647985594}
+  m_GameObject: {fileID: 946855016}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: db5a901dbab43234895a013e6bafc116, type: 3}
@@ -473,13 +554,13 @@ MonoBehaviour:
   readCommandLine: 1
   applyHeadlessSettings: 1
   runServerPackage: 1
---- !u!114 &1647985596
+--- !u!114 &946855018
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1647985594}
+  m_GameObject: {fileID: 946855016}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
@@ -504,13 +585,13 @@ MonoBehaviour:
     PacketDelayMS: 0
     PacketJitterMS: 0
     PacketDropRate: 0
---- !u!114 &1647985597
+--- !u!114 &946855019
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1647985594}
+  m_GameObject: {fileID: 946855016}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
@@ -519,7 +600,7 @@ MonoBehaviour:
   NetworkManagerExpanded: 0
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 1647985596}
+    NetworkTransport: {fileID: 946855018}
     PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
@@ -546,13 +627,13 @@ MonoBehaviour:
     OldPrefabList: []
   RunInBackground: 1
   LogLevel: 1
---- !u!4 &1647985598
+--- !u!4 &946855020
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1647985594}
+  m_GameObject: {fileID: 946855016}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -565,6 +646,6 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 775635551}
-  - {fileID: 150785375}
-  - {fileID: 1647985598}
+  - {fileID: 721239126}
+  - {fileID: 312843364}
+  - {fileID: 946855020}

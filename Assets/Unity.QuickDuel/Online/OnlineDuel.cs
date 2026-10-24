@@ -70,6 +70,7 @@ namespace Unity.QuickDuel.Online
         Duel IOnlineDuelSource.Round => Local?.Duel;
         int IOnlineDuelSource.RoundNumber => Local?.Round ?? 0;
         int IOnlineDuelSource.ArenaRoll => Local?.ArenaRoll ?? 0;
+        int IOnlineDuelSource.FighterRoll => Local?.FighterRoll ?? 0;
         int IOnlineDuelSource.JudgedRound => LastJudgedRound;
         DuelResult IOnlineDuelSource.Verdict => LastResult;
         IMatchView IOnlineDuelSource.Match => Match;
@@ -80,10 +81,11 @@ namespace Unity.QuickDuel.Online
         private void OnSeatChanged(ulong previous, ulong current) => SeatsChanged?.Invoke();
 
         // host -> every peer: a new round, with the host's countdown and standoff lengths in seconds, its arena roll
-        // (ArenaDraw, so every peer shows the same arena) and who duels in it (the seating travels with the round, so
-        // a re-seat just before it can never race it).
+        // (ArenaDraw, so every peer shows the same arena), the match's fighter roll (FighterDraw, so every peer shows
+        // the same cosmetic fighters) and who duels in it (the seating travels with the round, so a re-seat just
+        // before it can never race it).
         [ToClients]
-        public partial void RoundBegan(int round, double countdownSeconds, double standoffSeconds, int arenaRoll, ulong leftClient, ulong rightClient);
+        public partial void RoundBegan(int round, double countdownSeconds, double standoffSeconds, int arenaRoll, int fighterRoll, ulong leftClient, ulong rightClient);
 
         // duelist -> host: this side's reaction for `round`, seconds from its own cue (negative before it); struck is
         // false for no strike. Any connection may call it; the host keeps only the two seated duelists' reports.
@@ -170,7 +172,7 @@ namespace Unity.QuickDuel.Online
         {
             var host = new OnlineDuelHost(HostSettings, winsNeeded, HumanFloorSeconds, ReportGraceSeconds);
             Host = host;
-            Host.RoundBegan += (round, countdown, standoff) => RoundBegan(round, countdown, standoff, host.ArenaRoll, LeftClient, RightClient);
+            Host.RoundBegan += (round, countdown, standoff) => RoundBegan(round, countdown, standoff, host.ArenaRoll, host.FighterRoll, LeftClient, RightClient);
             Host.RoundJudged += SendVerdict;
             WinsNeeded = winsNeeded;
             Match = new Match(winsNeeded);
@@ -192,7 +194,7 @@ namespace Unity.QuickDuel.Online
                 result.RightReaction.HasValue, result.RightReaction ?? 0);
         }
 
-        private void OnRoundBegan(int round, double countdownSeconds, double standoffSeconds, int arenaRoll, ulong leftClient, ulong rightClient)
+        private void OnRoundBegan(int round, double countdownSeconds, double standoffSeconds, int arenaRoll, int fighterRoll, ulong leftClient, ulong rightClient)
         {
             var me = Session != null ? Session.LocalClientId : NoClient;
             var side = me == leftClient ? Side.Left : me == rightClient ? Side.Right : (Side?)null;
@@ -206,7 +208,7 @@ namespace Unity.QuickDuel.Online
                 Local = new OnlineDuelClient(side.Value, Tuning.Duel.ToSettings());
                 Local.ReactionReady += (r, reaction) => ReportReaction(r, reaction.HasValue, reaction ?? 0);
             }
-            if (Local.Begin(round, countdownSeconds, standoffSeconds, Now, arenaRoll))
+            if (Local.Begin(round, countdownSeconds, standoffSeconds, Now, arenaRoll, fighterRoll))
                 LocalRoundBegan?.Invoke(Local.Duel);
         }
 

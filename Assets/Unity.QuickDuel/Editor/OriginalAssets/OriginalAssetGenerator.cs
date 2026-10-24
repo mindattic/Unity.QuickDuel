@@ -40,7 +40,7 @@ namespace Unity.QuickDuel.EditorTools
             {
                 var manifest = Run(ResolveRoot());
                 Debug.Log($"QuickDuel original assets: {manifest.Sprites.Count} sprites, {manifest.Sounds.Count} sounds, " +
-                          $"{manifest.Fonts.Count} fonts, {manifest.Typefaces.Count} typefaces, {manifest.Arenas.Count} arenas -> {ManifestPath}");
+                          $"{manifest.Fonts.Count} fonts, {manifest.Typefaces.Count} typefaces, {manifest.Arenas.Count} arenas, {manifest.Fighters.Count} fighters -> {ManifestPath}");
                 ok = true;
             }
             catch (Exception e)
@@ -82,6 +82,8 @@ namespace Unity.QuickDuel.EditorTools
             // Keep the manifest in the group order AssetManifest.SpriteGroups lists.
             sprites.InsertRange(sprites.FindIndex(s => s.Group == "loading"), arenaSprites);
 
+            var fighters = ReadFighters(Path.Combine(root, "scripts", "load_characters.gml"));
+
             var sounds = new List<KeyValuePair<string, string>>();
             foreach (var sound in OriginalAssetCatalog.Sounds)
             {
@@ -112,7 +114,7 @@ namespace Unity.QuickDuel.EditorTools
 
             Copy(Path.Combine(root, "datafiles", "credits.txt"), CreditsFile);
 
-            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, CreditsFile);
+            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, fighters, CreditsFile);
             Directory.CreateDirectory(Full(DataFolder));
             File.WriteAllText(Full(ManifestPath), text, new UTF8Encoding(false));
 
@@ -235,10 +237,68 @@ namespace Unity.QuickDuel.EditorTools
             return arenas;
         }
 
-        private static string Literal(string value)
+        private static readonly Regex FighterId = new Regex(
+            @"^\s*globalvar\s+id_(\w+)\s*;\s*id_\w+\s*=\s*(\d+)\s*;", RegexOptions.Compiled);
+
+        private static readonly Regex FighterLine = new Regex(
+            @"^\s*(character_name|character_asset_idle|character_asset_run|character_asset_attack|character_asset_defeat|weapon_asset|weapon_asset_ground)\[id_(\w+)\]\s*=\s*(.+?)\s*;\s*$",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// The fighters load_characters.gml defines (UQD-T34), cosmetic data only, in its id order (id_myrmidon = 0 ..
+        /// id_exile = 4): each one's character_name and its idle, run, attack, defeat, weapon and ground-weapon sprites.
+        /// Only ids that have a character_name are fighters (id_shield is a weapon, not a fighter); the stats, skills
+        /// and portraits in the same script are deliberately not read (BIBLE section 3).
+        /// </summary>
+        public static List<FighterRecord> ReadFighters(string script)
+        {
+            var order = new Dictionary<string, int>();
+            var byId = new Dictionary<string, FighterRecord>();
+            foreach (var line in File.ReadAllLines(script))
+            {
+                var id = FighterId.Match(line);
+                if (id.Success)
+                {
+                    order[id.Groups[1].Value] = int.Parse(id.Groups[2].Value, CultureInfo.InvariantCulture);
+                    continue;
+                }
+
+                var match = FighterLine.Match(line);
+                if (!match.Success)
+                    continue;
+                var key = match.Groups[2].Value;
+                if (!byId.TryGetValue(key, out var fighter))
+                    byId[key] = fighter = new FighterRecord { Id = key };
+                var value = match.Groups[3].Value;
+                switch (match.Groups[1].Value)
+                {
+                    case "character_name": fighter.Name = Literal(value, "load_characters.gml"); break;
+                    case "character_asset_idle": fighter.Idle = value; break;
+                    case "character_asset_run": fighter.Run = value; break;
+                    case "character_asset_attack": fighter.Attack = value; break;
+                    case "character_asset_defeat": fighter.Defeat = value; break;
+                    case "weapon_asset": fighter.Weapon = value; break;
+                    default: fighter.GroundWeapon = value; break;
+                }
+            }
+
+            var fighters = new List<FighterRecord>();
+            foreach (var fighter in byId.Values)
+            {
+                if (fighter.Name == null)
+                    continue;
+                if (!order.ContainsKey(fighter.Id))
+                    throw new InvalidDataException($"load_characters.gml names fighter id_{fighter.Id} but never numbers it.");
+                fighters.Add(fighter);
+            }
+            fighters.Sort((a, b) => order[a.Id].CompareTo(order[b.Id]));
+            return fighters;
+        }
+
+        private static string Literal(string value, string script = "load_arenas.gml")
         {
             if (value.Length < 2 || value[0] != '"' || value[value.Length - 1] != '"')
-                throw new InvalidDataException($"Expected a quoted string in load_arenas.gml, found {value}");
+                throw new InvalidDataException($"Expected a quoted string in {script}, found {value}");
             return value.Substring(1, value.Length - 2);
         }
 
@@ -292,6 +352,18 @@ namespace Unity.QuickDuel.EditorTools
             public string Glyphs;
         }
 
+        public sealed class FighterRecord
+        {
+            public string Id;
+            public string Name;
+            public string Idle;
+            public string Run;
+            public string Attack;
+            public string Defeat;
+            public string Weapon;
+            public string GroundWeapon;
+        }
+
         public sealed class ArenaRecord
         {
             public string Id;
@@ -306,7 +378,8 @@ namespace Unity.QuickDuel.EditorTools
             private readonly StringBuilder sb = new StringBuilder();
 
             public string Write(List<SpriteRecord> sprites, List<KeyValuePair<string, string>> sounds,
-                List<FontRecord> fonts, List<KeyValuePair<string, string>> typefaces, List<ArenaRecord> arenas, string credits)
+                List<FontRecord> fonts, List<KeyValuePair<string, string>> typefaces, List<ArenaRecord> arenas,
+                List<FighterRecord> fighters, string credits)
             {
                 sb.Append("{\n");
                 Line(1, $"\"format\": {Str(AssetManifest.Format)},");
@@ -349,6 +422,15 @@ namespace Unity.QuickDuel.EditorTools
                 {
                     var a = arenas[i];
                     Line(2, $"{Str(a.Id)}: {{ \"name\": {Str(a.Name)}, \"description\": {Str(a.Description)}, \"sprite\": {Str(a.Sprite)} }}{Comma(i, arenas.Count)}");
+                }
+                Line(1, "},");
+
+                Line(1, "\"fighters\": {");
+                for (var i = 0; i < fighters.Count; i++)
+                {
+                    var f = fighters[i];
+                    Line(2, $"{Str(f.Id)}: {{ \"name\": {Str(f.Name)}, \"idle\": {Str(f.Idle)}, \"run\": {Str(f.Run)}, \"attack\": {Str(f.Attack)}, " +
+                            $"\"defeat\": {Str(f.Defeat)}, \"weapon\": {Str(f.Weapon)}, \"groundWeapon\": {Str(f.GroundWeapon)} }}{Comma(i, fighters.Count)}");
                 }
                 Line(1, "},");
 

@@ -38,6 +38,10 @@ namespace Unity.QuickDuel.Core
         // and once on construction so the screen before the first round has an arena too.
         public int ArenaRoll { get; private set; }
 
+        // The fighter roll (FighterDraw) of the match in progress: which cosmetic fighter stands in each seat. Drawn
+        // afresh with every new match (on construction, on a mode change, and when a finished match is replaced).
+        public int FighterRoll { get; private set; }
+
         // The round in progress (or last played); null before the first BeginRound.
         public Duel Duel { get; private set; }
         public Match Match { get; private set; }
@@ -78,7 +82,7 @@ namespace Unity.QuickDuel.Core
                 return false;
 
             if (Match.IsOver)
-                Match = new Match(winsNeeded);
+                NewMatch();
 
             Duel = new Duel(settings);
             Duel.PhaseChanged += OnDuelPhaseChanged;
@@ -139,8 +143,14 @@ namespace Unity.QuickDuel.Core
             Mode = mode;
             ai = AiPlaysRight ? new AiOpponent(DifficultyOf(mode), aiTuning()) : null;
             aiStrikeAt = null;
-            Match = new Match(winsNeeded);
+            NewMatch();
             ModeChanged?.Invoke(mode);
+        }
+
+        private void NewMatch()
+        {
+            Match = new Match(winsNeeded);
+            FighterRoll = FighterDraw.Roll(random);
         }
 
         private void OnDuelPhaseChanged(DuelPhase phase)

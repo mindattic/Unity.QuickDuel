@@ -26,13 +26,14 @@ namespace Unity.QuickDuel.Core
         private readonly Dictionary<string, OriginalFont> fontsById = new Dictionary<string, OriginalFont>();
 
         private AssetManifest(List<OriginalSprite> sprites, List<OriginalSound> sounds, List<OriginalFont> fonts,
-            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, string credits)
+            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, List<OriginalFighter> fighters, string credits)
         {
             Sprites = sprites;
             Sounds = sounds;
             Fonts = fonts;
             Typefaces = typefaces;
             Arenas = arenas;
+            Fighters = fighters;
             Credits = credits;
             foreach (var sprite in sprites)
                 spritesById[sprite.Id] = sprite;
@@ -53,6 +54,10 @@ namespace Unity.QuickDuel.Core
 
         // The arenas load_arenas.gml defines, in its order.
         public IReadOnlyList<OriginalArena> Arenas { get; }
+
+        // The fighters load_characters.gml defines, in its id order (Myrmidon, Ronin, Gypsy, Vagabond, Exile):
+        // cosmetic data only, a name and sprites; the original's stats and skills are not carried (BIBLE section 3).
+        public IReadOnlyList<OriginalFighter> Fighters { get; }
 
         // The credits text (the arena photo sources, datafiles/credits.txt).
         public string Credits { get; }
@@ -223,11 +228,46 @@ namespace Unity.QuickDuel.Core
             }
             arenaReader.Done();
 
+            var spriteGroups = new Dictionary<string, string>();
+            foreach (var sprite in sprites)
+                spriteGroups[sprite.Id] = sprite.Group;
+
+            var fighters = new List<OriginalFighter>();
+            var fighterReader = reader.Section("fighters");
+            foreach (var entry in fighterReader.Sections())
+            {
+                var r = entry.Value;
+                var name = r.Text("name");
+                var idle = FighterSprite(r, "idle", "fighter", spriteGroups);
+                var run = FighterSprite(r, "run", "fighter", spriteGroups);
+                var attack = FighterSprite(r, "attack", "fighter", spriteGroups);
+                var defeat = FighterSprite(r, "defeat", "fighter", spriteGroups);
+                var weapon = FighterSprite(r, "weapon", "weapon", spriteGroups);
+                var groundWeapon = FighterSprite(r, "groundWeapon", "weapon", spriteGroups);
+                r.Done();
+                fighters.Add(new OriginalFighter(entry.Key, name, idle, run, attack, defeat, weapon, groundWeapon));
+            }
+            fighterReader.Check(fighters.Count > 0, "fighters", "must hold at least one fighter");
+            fighterReader.Done();
+
             var credits = reader.Text("credits");
             CheckPath(reader, "credits", credits, ".txt");
             reader.Done();
 
-            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, credits);
+            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, fighters, credits);
+        }
+
+        // A fighter's sprite: the id of a sprite in 'sprites' of the expected group.
+        private static string FighterSprite(SettingsReader reader, string key, string group, Dictionary<string, string> spriteGroups)
+        {
+            var id = reader.Text(key);
+            if (id.Length == 0)
+                return id; // already reported as empty
+            if (!spriteGroups.TryGetValue(id, out var actual))
+                reader.Check(false, key, $"must name a sprite in 'sprites' (is \"{id}\")");
+            else
+                reader.Check(actual == group, key, $"must name a '{group}' sprite (\"{id}\" is '{actual}')");
+            return id;
         }
 
         // A relative, forward-slash path inside the asset folder with the expected extension.
@@ -342,5 +382,34 @@ namespace Unity.QuickDuel.Core
         public string Name { get; }
         public string Description { get; }
         public string Sprite { get; }
+    }
+
+    // A fighter as load_characters.gml defines it, cosmetic data only (UQD-T34): its character_name, its idle, run,
+    // attack and defeat strips (character_asset_*) and its weapon in hand and on the ground (weapon_asset,
+    // weapon_asset_ground), each the id of a sprite in the manifest. The original's stats, skills and portrait are
+    // not carried (BIBLE section 3).
+    public sealed class OriginalFighter
+    {
+        public OriginalFighter(string id, string name, string idle, string run, string attack, string defeat,
+            string weapon, string groundWeapon)
+        {
+            Id = id;
+            Name = name;
+            Idle = idle;
+            Run = run;
+            Attack = attack;
+            Defeat = defeat;
+            Weapon = weapon;
+            GroundWeapon = groundWeapon;
+        }
+
+        public string Id { get; }
+        public string Name { get; }
+        public string Idle { get; }
+        public string Run { get; }
+        public string Attack { get; }
+        public string Defeat { get; }
+        public string Weapon { get; }
+        public string GroundWeapon { get; }
     }
 }

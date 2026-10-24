@@ -29,6 +29,9 @@ namespace Unity.QuickDuel
         // The host's arena roll (ArenaDraw) for that round, so every peer shows the same arena; 0 before the first.
         int ArenaRoll { get; }
 
+        // The host's fighter roll (FighterDraw) for that round's match, so every peer shows the same fighters; 0 before the first.
+        int FighterRoll { get; }
+
         // The newest round the host has judged, and its verdict (null before the first).
         int JudgedRound { get; }
         DuelResult Verdict { get; }

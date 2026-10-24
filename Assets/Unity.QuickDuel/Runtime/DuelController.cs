@@ -81,6 +81,10 @@ namespace Unity.QuickDuel
         // host's, so every peer draws the same arena. Changes with every round.
         public int ArenaRoll => online != null ? online.ArenaRoll : Session.ArenaRoll;
 
+        // The fighter roll (FighterDraw) of the match in progress: the local session's, or online the host's, so every
+        // peer draws the same cosmetic fighters. Changes with every new match.
+        public int FighterRoll => online != null ? online.FighterRoll : Session.FighterRoll;
+
         // Online, a round shows Resolved only once the host's verdict for it is in; until then it shows the local
         // round's own phase, or Resolved with no Result yet (AwaitingVerdict) once this side's part of it is over.
         public DuelPhase Phase
