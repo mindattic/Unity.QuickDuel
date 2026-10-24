@@ -50,12 +50,13 @@ Assets/Unity.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
                                                       MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
-  Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, credits)
+  Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, credits),
+                                                      ArenaDraw (each round's arena roll and the arena it lands on)
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Art/, Audio/, Fonts/  the original's files           copied by OriginalAssetGenerator, never edited by hand
   Data/assets.json, Data/credits.txt                  the generated asset manifest and the original credits text
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
-                                                      TuningStore
+                                                      TuningStore, ArenaBackdrop (an arena as the scene carries it)
   Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present),
                                                       OnlineDuelLobby, OnlineDuelMenu, OnlineDuel.prefab, QuickDuelNetPrefabs
   Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), OnlineSceneBuilder,
@@ -73,7 +74,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Ready` | until Space / Start | title and controls |
 | `Countdown` | `CountdownSeconds` (4) | Get Ready for the first quarter, then 3-2-1 at 25%, 50% and 75%, a beep on each number |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
-| `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | colours invert, the cue, the blade unsheathed |
+| `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed |
 | `Resolved` | until the next round | slash, the loser falls, reaction times in ms, headline |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
@@ -272,6 +273,24 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   CI needs the original; `AssetManifest` (Core) validates the manifest on load. The one exception is
   `sfx_defeat.ogg`: the original's `.ogg` fails Unity's FMOD import, so the committed re-encode of its `.wav`
   (UQD-T24) is kept and the generator never overwrites it.
+
+- ✅ The 11 arenas and a real invert (UQD-T33, `ArenaDrawTests`, `DuelViewTests`): every round is fought on one of
+  `load_arenas.gml`'s arenas (Wastes of Nod, Pastel Fields, Frozen Tundra, The Fumaroles, Dusty Junction, Sozza's Point,
+  South Ridge, Arid Plains, Interior Sea, Tu'verone Forest, Harvest Cresent), read from the data file
+  `Data/assets.json` (name, description, backdrop sprite) by `DuelSceneBuilder` into `DuelView`'s serialized arena list.
+  The authority draws an arena roll with each round (`MatchSession.ArenaRoll` locally, `OnlineDuelHost.ArenaRoll`
+  online, sent in the `RoundBegan` RPC so both peers show the same arena) and `ArenaDraw.Pick` maps it onto the list;
+  the backdrop covers the screen behind everything else. On the cue the whole backdrop inverts with a UI Toolkit
+  `invert` filter, the same per-pixel `1 - colour` as `obj_arena`'s `draw_set_blend_mode_ext(10, 1)` (inverse
+  destination colour) rectangle over the view; the old tint of the placeholder boxes and labels is gone, and as in
+  the original only the backdrop inverts, not what is drawn over it.
+  - **Fixed defect**: `load_arenas.gml` gives South Ridge Sozza's Point's id (5), so South Ridge overwrote it and
+    `irandom_range(0, 9)` could only ever draw 10 arenas; every one of the 11 is drawn now.
+  - **Deliberate deviation**: the original rolled the arena once per game (`load_arenas.gml` and
+    `choose_random_arena.gml`, kept by `obj_game`); the rebuild draws one per round, so the duels of a match do not
+    all look alike (UQD-US-P2).
+  - The display name keeps the original's spelling, "Harvest Cresent", as `load_arenas.gml` has it; the names and
+    descriptions were only shown on the dropped overworld (`obj_locationart`), so nothing shows them yet.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

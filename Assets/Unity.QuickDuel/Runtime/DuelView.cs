@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.QuickDuel.Core;
 using UnityEngine;
@@ -6,15 +7,21 @@ using UnityEngine.UIElements;
 namespace Unity.QuickDuel
 {
     // Draws the duel from the controller's phase and result; it never decides anything. The whole UI is
-    // built in code (placeholder silhouettes, no art assets) on UI Toolkit (UQD-T31): a UIDocument reads
+    // built in code (placeholder fighters over the original arena art) on UI Toolkit (UQD-T31): a UIDocument reads
     // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size, 1920x1080 reference, built by
     // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label shares the font asset
     // Resources/UI/Fonts/Cinzel.ttf -- no more Resources.GetBuiltinResource("LegacyRuntime.ttf"). The panel
     // renders as a screen-space overlay (UI Toolkit has no "Screen Space - Camera" mode); the main camera
     // behind it only clears to its background colour, the way it always has. Centre-anchored content (the
     // fighters, every CreateLabel) lives on a fixed 1920x1080 "stage" kept centred in Root (see Build()),
-    // so it stays centred at any aspect; screen-edge content (sky, ground, letterbox, the edge score
+    // so it stays centred at any aspect; screen-edge content (the arena backdrop, letterbox, the edge score
     // labels) is positioned by percentage straight off Root, which does track the real aspect.
+    //
+    // The backdrop is one of the original's 11 arenas (UQD-T33), the one the round's arena roll lands on
+    // (ArenaDraw, drawn by the authority each round), scaled to cover the screen. On the cue the whole backdrop's
+    // colours invert, as obj_arena did by drawing white over the view with an inverting blend
+    // (draw_set_blend_mode_ext(bm_inv_dest_colour, bm_zero)): a real per-pixel invert, here a UI Toolkit invert
+    // filter on the backdrop, not a recolouring of the boxes drawn over it.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
@@ -23,19 +30,22 @@ namespace Unity.QuickDuel
         private const float LetterboxHeight = 150f;
         private const float GroundY = -230f;
 
+        // Shown behind the arena art, and in its place in a scene that carries no arenas.
         private static readonly Color Paper = new Color(0.93f, 0.88f, 0.78f);
-        private static readonly Color Ground = new Color(0.55f, 0.42f, 0.30f);
         private static readonly Color Ink = new Color(0.10f, 0.08f, 0.08f);
         private static readonly Color LeftColor = new Color(0.62f, 0.12f, 0.10f);
         private static readonly Color RightColor = new Color(0.14f, 0.20f, 0.45f);
         private static readonly Color Steel = new Color(0.80f, 0.82f, 0.86f);
 
-        // (element, its un-inverted colour, whether that colour is text colour rather than background)
-        private readonly List<(VisualElement element, Color color, bool isText)> tinted = new List<(VisualElement, Color, bool)>();
+        // The original arenas, in load_arenas.gml's order; written by DuelSceneBuilder from the asset manifest.
+        [SerializeField] private List<ArenaBackdrop> arenas = new List<ArenaBackdrop>();
+
         private DuelController controller;
         private UIDocument document;
         private Font font;
         private VisualElement stage;
+        private VisualElement backdrop;
+        private int? shownRoll;
         private VisualElement letterboxTop;
         private VisualElement letterboxBottom;
         private Fighter left;
@@ -51,6 +61,21 @@ namespace Unity.QuickDuel
         private bool inverted;
 
         public bool Inverted => inverted;
+
+        public IReadOnlyList<ArenaBackdrop> Arenas => arenas;
+
+        // The arena on screen; null in a scene that carries none.
+        public ArenaBackdrop Arena { get; private set; }
+
+        // The backdrop element, whose filter carries the cue's invert.
+        public VisualElement Backdrop => backdrop;
+
+        // The scene builder's way in: the arenas this view draws from.
+        public void SetArenas(IEnumerable<ArenaBackdrop> backdrops)
+        {
+            arenas = new List<ArenaBackdrop>(backdrops ?? throw new ArgumentNullException(nameof(backdrops)));
+            shownRoll = null;
+        }
         public float LetterboxAmount => letterbox;
         public string CountdownText => IsVisible(countdown) ? countdown.text : "";
         public string CueText => IsVisible(cue) ? cue.text : "";
@@ -117,6 +142,7 @@ namespace Unity.QuickDuel
         private void Refresh(float dt)
         {
             var phase = controller.Phase;
+            ShowArena(controller.ArenaRoll);
 
             var countingDown = phase == DuelPhase.Countdown;
             SetVisible(countdown, countingDown);
@@ -174,15 +200,32 @@ namespace Unity.QuickDuel
         private static void SetVisible(VisualElement element, bool visible) =>
             element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
 
+        // The arena the roll lands on (ArenaDraw.Pick), redrawn only when the roll changes.
+        private void ShowArena(int roll)
+        {
+            if (shownRoll == roll) return;
+            shownRoll = roll;
+            Arena = arenas.Count > 0 ? arenas[ArenaDraw.Pick(roll, arenas.Count)] : null;
+            backdrop.style.backgroundImage = Arena?.Sprite != null
+                ? new StyleBackground(Arena.Sprite)
+                : new StyleBackground(StyleKeyword.None);
+        }
+
+        // A real colour invert of the whole backdrop (its art and the colour behind it), as obj_arena's
+        // inverting blend over the view: every pixel becomes 1 - itself.
         private void SetInverted(bool value)
         {
             if (inverted == value) return;
             inverted = value;
-            foreach (var (element, color, isText) in tinted)
+            if (value)
             {
-                var shown = value ? new Color(1 - color.r, 1 - color.g, 1 - color.b, color.a) : color;
-                if (isText) element.style.color = shown;
-                else element.style.backgroundColor = shown;
+                var invert = new FilterFunction(FilterFunctionType.Invert);
+                invert.AddParameter(new FilterParameter(1f));
+                backdrop.style.filter = new List<FilterFunction> { invert };
+            }
+            else
+            {
+                backdrop.style.filter = StyleKeyword.Null;
             }
         }
 
@@ -204,17 +247,18 @@ namespace Unity.QuickDuel
             // a fixed-size, always-centred "stage" is what gives centre-anchored content (the fighters,
             // every CreateLabel) a true 1920x1080, any-aspect-safe coordinate space -- the same way the
             // original's canvas-centre anchors kept them centred regardless of the real canvas rect size.
-            // Things that must reach the real screen edges at any aspect (sky, ground, letterbox, the edge
+            // Things that must reach the real screen edges at any aspect (the backdrop, letterbox, the edge
             // score labels) stay on Root itself instead, sized/positioned by percentage, not by the stage.
+            // The backdrop goes first so everything else draws over it.
+            backdrop = Box("Backdrop", Root, Paper);
+            backdrop.AddToClassList("backdrop");
+            backdrop.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+            backdrop.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Center);
+            backdrop.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center);
+
             stage = new VisualElement { name = "Stage", pickingMode = PickingMode.Ignore };
             stage.AddToClassList("stage");
             Root.Add(stage);
-
-            Box("Sky", Root, Paper).AddToClassList("sky");
-            var ground = Box("Ground", Root, Ground);
-            ground.AddToClassList("ground");
-            ground.style.top = Length.Percent(50);
-            ground.style.marginTop = -GroundY;
 
             left = new Fighter(this, "Left", -380f, LeftColor, 1f);
             right = new Fighter(this, "Right", 380f, RightColor, -1f);
@@ -222,11 +266,11 @@ namespace Unity.QuickDuel
             leftReaction = CreateLabel("LeftReaction", 56, new Vector2(-380f, GroundY - 80f), Ink);
             rightReaction = CreateLabel("RightReaction", 56, new Vector2(380f, GroundY - 80f), Ink);
 
-            letterboxTop = Box("LetterboxTop", Root, Color.black, tint: false);
+            letterboxTop = Box("LetterboxTop", Root, Color.black);
             letterboxTop.AddToClassList("letterbox");
             letterboxTop.style.top = 0;
             letterboxTop.style.height = 0;
-            letterboxBottom = Box("LetterboxBottom", Root, Color.black, tint: false);
+            letterboxBottom = Box("LetterboxBottom", Root, Color.black);
             letterboxBottom.AddToClassList("letterbox");
             letterboxBottom.style.bottom = 0;
             letterboxBottom.style.height = 0;
@@ -234,34 +278,32 @@ namespace Unity.QuickDuel
             title = CreateLabel("Title", 150, new Vector2(0, 260f), Ink);
             title.text = "QUICKDUEL";
             countdown = CreateLabel("Countdown", 320, new Vector2(0, 120f), Ink);
-            cue = CreateLabel("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f), tint: false);
+            cue = CreateLabel("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f));
             cue.text = "!";
             headline = CreateLabel("Headline", 120, new Vector2(0, 370f), Ink);
             prompt = CreateLabel("Prompt", 44, new Vector2(0, -440f), Ink);
         }
 
-        // A box tinted by its own colour (an untextured placeholder shape); position and size are set by
+        // A box filled with its own colour (an untextured placeholder shape); position and size are set by
         // the caller, same as the original RectTransform-based helper.
-        internal VisualElement Box(string name, VisualElement parent, Color color, bool tint = true)
+        internal VisualElement Box(string name, VisualElement parent, Color color)
         {
             var element = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
             element.style.position = Position.Absolute;
             element.style.backgroundColor = color;
-            if (tint) tinted.Add((element, color, false));
             parent.Add(element);
             return element;
         }
 
         // A label centred on `position` (the original's canvas-centre-relative anchored position, y up);
         // 1600 wide (as the original's fixed, overflow-allowed sizeDelta was) so long text never clips.
-        public Label CreateLabel(string name, int size, Vector2 position, Color color, bool tint = true)
+        public Label CreateLabel(string name, int size, Vector2 position, Color color)
         {
             var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
             label.AddToClassList("label");
             label.style.fontSize = size;
             label.style.color = color;
             PlaceOnStage(label, position.x, position.y, 1600f, size * 1.2f);
-            if (tint) tinted.Add((label, color, true));
             stage.Add(label);
             return label;
         }
@@ -269,7 +311,7 @@ namespace Unity.QuickDuel
         // Pinned to the left (edge 0) or right (edge 1) screen edge so it stays visible at any aspect,
         // the way the original anchored EdgeLabel to that edge (of the real canvas rect, not the fixed
         // stage) instead of the canvas centre; `top: 50%` finds Root's real vertical centre at any aspect.
-        public Label CreateEdgeLabel(string name, int size, float edge, float y, Color color, bool tint = true)
+        public Label CreateEdgeLabel(string name, int size, float edge, float y, Color color)
         {
             var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
             label.AddToClassList("label");
@@ -283,7 +325,6 @@ namespace Unity.QuickDuel
             label.style.top = Length.Percent(50);
             label.style.marginTop = -(y + height / 2f);
             if (edge < 0.5f) label.style.left = 40f; else label.style.right = 40f;
-            if (tint) tinted.Add((label, color, true));
             Root.Add(label);
             return label;
         }

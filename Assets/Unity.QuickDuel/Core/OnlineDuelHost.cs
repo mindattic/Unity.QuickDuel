@@ -52,7 +52,11 @@ namespace Unity.QuickDuel.Core
         public double CountdownSeconds => settings.CountdownSeconds;
         public double StandoffSeconds { get; private set; }
 
-        // (round, countdownSeconds, standoffSeconds): send to every client.
+        // The current round's arena roll (ArenaDraw), drawn with its lengths; send it with RoundBegan so every peer
+        // shows the same arena.
+        public int ArenaRoll { get; private set; }
+
+        // (round, countdownSeconds, standoffSeconds): send to every client, with ArenaRoll.
         public event Action<int, double, double> RoundBegan;
 
         // (round, result): send to every client; the result is already recorded in Match.
@@ -72,6 +76,7 @@ namespace Unity.QuickDuel.Core
             leftReported = rightReported = false;
             StandoffSeconds = settings.MinStandoffSeconds
                 + random.NextDouble() * (settings.MaxStandoffSeconds - settings.MinStandoffSeconds);
+            ArenaRoll = ArenaDraw.Roll(random);
             deadline = now + settings.CountdownSeconds + StandoffSeconds + settings.StrikeTimeoutSeconds
                 + settings.SettleSeconds + ReportGraceSeconds;
             RoundBegan?.Invoke(Round, settings.CountdownSeconds, StandoffSeconds);

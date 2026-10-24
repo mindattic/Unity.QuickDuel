@@ -71,7 +71,7 @@ namespace Unity.QuickDuel
             modeText = view.CreateLabel("Mode", 40, new Vector2(0, 490f), ink);
             leftScore = view.CreateEdgeLabel("LeftScore", 40, 0f, 490f, ink);
             rightScore = view.CreateEdgeLabel("RightScore", 40, 1f, 490f, ink);
-            verdict = view.CreateLabel("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f), tint: false);
+            verdict = view.CreateLabel("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f));
             verdict.style.display = DisplayStyle.None;
 
             Session.ModeChanged += OnModeChanged;

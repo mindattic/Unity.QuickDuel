@@ -77,6 +77,10 @@ namespace Unity.QuickDuel
 
         public double Now => Clock();
 
+        // The arena roll (ArenaDraw) of the round in progress or last played: the local session's, or online the
+        // host's, so every peer draws the same arena. Changes with every round.
+        public int ArenaRoll => online != null ? online.ArenaRoll : Session.ArenaRoll;
+
         // Online, a round shows Resolved only once the host's verdict for it is in; until then it shows the local
         // round's own phase, or Resolved with no Result yet (AwaitingVerdict) once this side's part of it is over.
         public DuelPhase Phase

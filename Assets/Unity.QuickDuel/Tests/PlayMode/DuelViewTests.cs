@@ -1,6 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Unity.QuickDuel.Core;
+using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
@@ -47,6 +50,7 @@ namespace Unity.QuickDuel.Tests
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             yield return null;
             Assert.That(view.Inverted, Is.True);
+            Assert.That(IsInvertFilter(view.Backdrop), Is.True, "the cue inverts the whole backdrop");
             Assert.That(view.CueText, Is.EqualTo("!"));
             Screenshots.Capture("04-cue");
 
@@ -64,6 +68,45 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.HasFallen(Side.Right), Is.False);
             Assert.That(view.PromptText, Does.Contain("next round"));
             Screenshots.Capture("05-resolved");
+        }
+
+        // The scene carries the 11 original arenas, each with its art, and draws the one the round's roll lands on,
+        // afresh every round (UQD-T33).
+        [UnityTest]
+        public IEnumerator EachRoundIsFoughtOnTheArenaItsRollLandsOn()
+        {
+            Assert.That(view.Arenas, Has.Count.EqualTo(11));
+            Assert.That(view.Arenas.Select(a => a.Name), Is.EqualTo(new[]
+            {
+                "Wastes of Nod", "Pastel Fields", "Frozen Tundra", "The Fumaroles", "Dusty Junction", "Sozza's Point",
+                "South Ridge", "Arid Plains", "Interior Sea", "Tu'verone Forest", "Harvest Cresent",
+            }));
+            Assert.That(view.Arenas.All(a => a.Sprite != null && !string.IsNullOrEmpty(a.Description)), Is.True);
+
+            yield return null;
+            Assert.That(view.Arena, Is.SameAs(view.Arenas[ArenaDraw.Pick(controller.ArenaRoll, 11)]), "an arena before the first round");
+            Assert.That(view.Backdrop.style.backgroundImage.value.sprite, Is.SameAs(view.Arena.Sprite));
+
+            controller.Settings = DuelSceneTests.FastSettings();
+            var shown = new HashSet<string>();
+            for (var round = 0; round < 8; round++)
+            {
+                Assert.That(controller.BeginRound(), Is.True);
+                yield return null;
+                Assert.That(view.Arena, Is.SameAs(view.Arenas[ArenaDraw.Pick(controller.ArenaRoll, 11)]));
+                Assert.That(view.Backdrop.style.backgroundImage.value.sprite, Is.SameAs(view.Arena.Sprite));
+                Assert.That(IsInvertFilter(view.Backdrop), Is.False);
+                shown.Add(view.Arena.Id);
+                yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved, 3f);
+            }
+            Assert.That(shown.Count, Is.GreaterThan(1), "the arena is drawn again every round");
+        }
+
+        private static bool IsInvertFilter(VisualElement element)
+        {
+            var filter = element.style.filter;
+            return filter.keyword == StyleKeyword.Undefined && filter.value != null
+                && filter.value.Any(f => f.type == FilterFunctionType.Invert);
         }
 
         [Test]

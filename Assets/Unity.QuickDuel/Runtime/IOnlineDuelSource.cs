@@ -26,6 +26,9 @@ namespace Unity.QuickDuel
         // That round's number, from 1; 0 before the first.
         int RoundNumber { get; }
 
+        // The host's arena roll (ArenaDraw) for that round, so every peer shows the same arena; 0 before the first.
+        int ArenaRoll { get; }
+
         // The newest round the host has judged, and its verdict (null before the first).
         int JudgedRound { get; }
         DuelResult Verdict { get; }

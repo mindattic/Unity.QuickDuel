@@ -19,17 +19,24 @@ namespace Unity.QuickDuel.Core
         // tuning profile swapped after construction still reaches the AI on the next SetMode/CycleMode.
         private readonly Func<AiTuning> aiTuning;
         private readonly int winsNeeded;
+        private readonly Random random;
         private AiOpponent ai;
         private double? aiStrikeAt;
 
-        public MatchSession(Func<AiTuning> aiTuning, int winsNeeded, DuelMode mode = DuelMode.LocalPvp)
+        public MatchSession(Func<AiTuning> aiTuning, int winsNeeded, DuelMode mode = DuelMode.LocalPvp, Random random = null)
         {
             this.aiTuning = aiTuning ?? throw new ArgumentNullException(nameof(aiTuning));
             this.winsNeeded = winsNeeded;
+            this.random = random ?? new Random();
+            ArenaRoll = ArenaDraw.Roll(this.random);
             ApplyMode(mode);
         }
 
         public DuelMode Mode { get; private set; }
+
+        // The arena roll (ArenaDraw) of the round in progress or last played; drawn afresh by every BeginRound,
+        // and once on construction so the screen before the first round has an arena too.
+        public int ArenaRoll { get; private set; }
 
         // The round in progress (or last played); null before the first BeginRound.
         public Duel Duel { get; private set; }
@@ -77,6 +84,7 @@ namespace Unity.QuickDuel.Core
             Duel.PhaseChanged += OnDuelPhaseChanged;
             Duel.Resolved += OnDuelResolved;
             Round++;
+            ArenaRoll = ArenaDraw.Roll(random);
             aiStrikeAt = null;
             RoundStarted?.Invoke();
             Duel.Begin(now);

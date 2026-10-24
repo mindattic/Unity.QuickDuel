@@ -30,7 +30,7 @@ updated: 2026-10-23
 | `startup` | 3 s (`startup_time = 3 * room_speed`) while the loading fade clears and both fighters fade in idle; the first key press skips to `countdown` | Ready phase, waits for Space / Start (deliberate) |
 | `countdown` | 4 s (`countdown_time`): "Get Ready" for the first quarter, then 3, 2, 1 at 25%, 50%, 75%, a beep on each, each number fading at 0.02 alpha per tick | 4 s countdown, nothing numbered for the first quarter, then 3-2-1 with a beep (UQD-T57; UQD-T37 adds the Get Ready banner and the fade) |
 | `drumroll` | `irandom_range(3 * room_speed, 6.5 * room_speed)` ticks, drumroll sound, `obj_letterbox` closes in 1 px per tick to 12% of the height | Same 3 to 6.5 s, drumroll, letterbox |
-| `action` | Drumroll stops, unsheath sound, `arena.inverted = true` (blend-mode invert of the whole backdrop), fighters switch to run sprites, a counting-up number shows, the computer opponent strikes at `ART + irandom(-LCK, LCK)` ticks | Cue, invert (a tint of UI boxes), unsheath, adaptive computer replaced by Easy / Normal / Hard ranges |
+| `action` | Drumroll stops, unsheath sound, `arena.inverted = true` (blend-mode invert of the whole backdrop), fighters switch to run sprites, a counting-up number shows, the computer opponent strikes at `ART + irandom(-LCK, LCK)` ticks | Cue, a real colour invert of the arena backdrop (UQD-T33), unsheath, adaptive computer replaced by Easy / Normal / Hard ranges |
 | `clash` | Reactions within 3 ticks start a button-mash bar (`obj_clash`, `action_clash`) | Dropped on purpose; a dead heat is a tie that scores nobody |
 | `aftermath` | Letterbox exits, slash sound, blood emitter, 6 to 12 splatters, white flash, `determine_winner`, loser's weapon(s) thrown, winner reaction number slides, 3 s, then a loading-art fade and the next `startup` | Slash, loser falls, reaction times and headline; no blood, splatter, flash, weapons or fade |
 | Premature strike | `action_attack` during `drumroll`: the striker loses outright (`reaction_time = opponent ART + 1 to 50`), "Premature Strike!" shown | Early strike loses; Android taunt list shown (UQD-T6) |
@@ -69,7 +69,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Group | Objects | Disposition |
 | --- | --- | --- |
-| Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, invert as tint); arena, fighters UQD-T33, T34, T35 |
+| Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33); fighters UQD-T34, T35 |
 | Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | missing, UQD-T40, T41 |
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen, intro and mainmenu fades missing, UQD-T42, T44, T45; the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | missing, UQD-T43, T45, T46, T50 |
@@ -92,7 +92,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `add_reaction`, `calculate_art`, `random_luck` | dropped (adaptive AI replaced by `AiOpponent` ranges) |
 | `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | missing, UQD-T34, T35 |
 | `spawn_weapons` | missing, UQD-T41 |
-| `load_arenas`, `choose_random_arena`, `setup_arena_properties` | missing, UQD-T33, T49 |
+| `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (per round, all 11, UQD-T33); `setup_arena_properties` missing, UQD-T49 |
 | `load_characters`, `choose_opponent`, `set_character_description` | fighters as cosmetic data, UQD-T34; descriptions and stats dropped |
 | `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | intro text missing UQD-T44; the rest dropped |
 | `draw_text_outline`, `_alpha`, `_color`, `add_shadow`, `draw_light`, `create_lens`, `RGB` | outline text UQD-T36; lighting dropped |
@@ -106,7 +106,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Group | Assets | Disposition |
 | --- | --- | --- |
 | Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), drawn by UQD-T34, T35, T41; portraits, profiles, icons, silhouettes: dropped |
-| Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | the 11 `load_arenas.gml` arenas imported with their names and descriptions (UQD-T32), drawn by UQD-T33. Defect for UQD-T33: `load_arenas.gml` gives Sozza's Point and South Ridge the same id (5), so South Ridge overwrites Sozza's Point and only 10 arenas can be chosen |
+| Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | the 11 `load_arenas.gml` arenas imported with their names and descriptions (UQD-T32), drawn by UQD-T33, one per round, behind everything. Fixed defect (UQD-T33): `load_arenas.gml` gives Sozza's Point and South Ridge the same id (5), so South Ridge overwrote Sozza's Point and only 10 arenas could be chosen; all 11 are drawn now |
 | Transitions | `spr_loading1` to `14` | imported (UQD-T32), drawn by UQD-T42 |
 | Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | blood drops, splatters, flash imported (UQD-T32), drawn by UQD-T40 |
 | Frame and menu | `spr_titlescreen`, `spr_cornerart_left`, `left2`, `right`, `right2`, `spr_btn_left1` to `4`, `spr_btn_right1` to `4` (each with `_over`), `spr_katana_cursor`, `bg_black` | title, corner arts, cursor imported (UQD-T32), drawn by UQD-T43, T45, T46 |
