@@ -27,9 +27,12 @@ namespace Unity.QuickDuel
 
         public DuelMode Mode => Session.Mode;
 
-        // Read-only: nothing outside MatchSession may Record a round (UQD-T30).
-        public IMatchView Match => Session.Match;
-        public bool AiPlaysRight => Session.AiPlaysRight;
+        // Read-only: nothing outside MatchSession may Record a round (UQD-T30). Online it is this peer's copy
+        // of the host's match (UQD-T21).
+        public IMatchView Match => controller.Match;
+
+        // Online the right seat is always the other player, never the AI, whatever local mode is set.
+        public bool AiPlaysRight => !controller.IsOnline && Session.AiPlaysRight;
         public double? AiStrikeAt => Session.AiStrikeAt;
 
         public string ModeText => modeText.text;
@@ -51,11 +54,14 @@ namespace Unity.QuickDuel
             {
                 if (quit != null && quit.ConsumeChord())
                     return;
+                if (UiFocus.IsTyping)
+                    return;
                 CycleMode();
             };
 
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
+            controller.OnlineChanged += Redraw;
         }
 
         private void Start()
@@ -69,7 +75,7 @@ namespace Unity.QuickDuel
             verdict.enabled = false;
 
             Session.ModeChanged += OnModeChanged;
-            OnModeChanged(Session.Mode);
+            Redraw();
         }
 
         // Pinned to the left (x = 0) or right (x = 1) screen edge so it stays visible at any aspect.
@@ -90,23 +96,35 @@ namespace Unity.QuickDuel
         private void OnDestroy() => cycleMode.Dispose();
 
         // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP. Issued on the local machine's behalf.
-        public bool CycleMode() => Session.CycleMode(MatchSession.LeftPlayerId);
+        // Refused online: the mode is the local game's, and an online duel is always player against player.
+        public bool CycleMode() => !controller.IsOnline && Session.CycleMode(MatchSession.LeftPlayerId);
 
         // False (and no-op) while a round is running, between rounds only -- the caller can tell it apart
-        // from a mode that was actually applied, unlike the old unconditional void SetMode.
-        public bool SetMode(DuelMode mode) => Session.SetMode(MatchSession.LeftPlayerId, mode);
+        // from a mode that was actually applied, unlike the old unconditional void SetMode. Refused online.
+        public bool SetMode(DuelMode mode) => !controller.IsOnline && Session.SetMode(MatchSession.LeftPlayerId, mode);
 
         // Session already applied the mode (and reset the match, and wired up the AI) by the time this
         // fires; this only has to redraw the labels from its new state.
-        private void OnModeChanged(DuelMode mode)
+        private void OnModeChanged(DuelMode mode) => Redraw();
+
+        // Redraws the labels from the session's state, or online from the online duel's (UQD-T21).
+        private void Redraw()
         {
-            if (input != null) input.RightIsHuman = !Session.AiPlaysRight;
-            if (view != null) view.RightName = Session.AiPlaysRight ? "AI" : "Right";
+            if (input != null) input.RightIsHuman = !AiPlaysRight;
+            if (view != null) view.RightName = AiPlaysRight ? "AI" : "Right";
             if (modeText == null) return;
-            modeText.text = (Session.AiPlaysRight ? $"vs AI ({MatchSession.DifficultyOf(mode)})" : "Local PvP")
-                + "  -  Tab / Select: mode";
+            modeText.text = controller.IsOnline ? OnlineModeText()
+                : (Session.AiPlaysRight ? $"vs AI ({MatchSession.DifficultyOf(Session.Mode)})" : "Local PvP")
+                  + "  -  Tab / Select: mode";
             verdict.enabled = false;
             RefreshScore();
+        }
+
+        private string OnlineModeText()
+        {
+            var online = controller.Online;
+            var role = online.IsHost ? "hosting" : "joined";
+            return online.Seated ? $"Online PvP ({role})" : $"Online PvP ({role}) - waiting for a player";
         }
 
         private void OnRoundStarted()
@@ -118,10 +136,10 @@ namespace Unity.QuickDuel
         private void OnResolved(DuelResult result)
         {
             RefreshScore();
-            var match = Session.Match;
+            var match = Match;
             if (match.IsOver && verdict != null)
             {
-                var winner = match.Winner == Side.Left ? "Left" : Session.AiPlaysRight ? "The AI" : "Right";
+                var winner = match.Winner == Side.Left ? "Left" : AiPlaysRight ? "The AI" : "Right";
                 verdict.text = $"{winner} takes the match {match.WinsOf(match.Winner.Value)}-{match.WinsOf(Other(match.Winner.Value))}";
                 verdict.enabled = true;
             }
@@ -130,13 +148,16 @@ namespace Unity.QuickDuel
         private void RefreshScore()
         {
             if (leftScore == null) return;
-            leftScore.text = Score("Left", Side.Left);
-            rightScore.text = Score(Session.AiPlaysRight ? "AI" : "Right", Side.Right);
+            leftScore.text = Score(SeatName("Left", Side.Left), Side.Left);
+            rightScore.text = Score(SeatName(AiPlaysRight ? "AI" : "Right", Side.Right), Side.Right);
         }
+
+        // Online, the seat this machine plays is marked as the player's own.
+        private string SeatName(string name, Side side) => controller.LocalSide == side ? name + " (you)" : name;
 
         private string Score(string name, Side side)
         {
-            var match = Session.Match;
+            var match = Match;
             var best = match.BestReactionOf(side);
             return $"{name}  {match.WinsOf(side)}/{match.WinsNeeded}   best {(best.HasValue ? DuelView.FormatReaction(best) : "-")}";
         }

@@ -6,7 +6,9 @@
         "Unity.QuickDuel.Runtime",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
-        "Unity.Netcode.Runtime"
+        "Unity.Netcode.Runtime",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

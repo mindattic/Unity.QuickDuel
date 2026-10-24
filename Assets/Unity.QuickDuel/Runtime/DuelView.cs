@@ -128,15 +128,36 @@ namespace Unity.QuickDuel
 
             var resolved = phase == DuelPhase.Resolved;
             headline.enabled = resolved;
-            if (resolved) headline.text = Headline(controller.Result, RightName);
+            if (resolved) headline.text = controller.Result != null ? Headline(controller.Result, RightName) : AwaitingVerdictText;
             title.enabled = phase == DuelPhase.Ready;
             prompt.enabled = phase == DuelPhase.Ready || resolved;
-            prompt.text = phase == DuelPhase.Ready
+            prompt.text = controller.IsOnline ? OnlinePrompt(phase) : phase == DuelPhase.Ready
                 ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
                 : "Press Space or Start for the next round\nEsc / Select+Start: quit";
 
             left.Animate(dt);
             right.Animate(dt);
+        }
+
+        // The headline while this side's round is over but the host's verdict is still on its way (online only).
+        public const string AwaitingVerdictText = "...";
+
+        // Online, one seat is this machine's and only the host starts rounds, so the prompt says whose move it is.
+        private string OnlinePrompt(DuelPhase phase)
+        {
+            var side = controller.LocalSide;
+            var seat = side.HasValue ? $"You are {(side == Side.Left ? "Left" : "Right")}" : "Watching";
+            const string strike = "Strike: A / L / gamepad / click";
+            string next;
+            if (controller.AwaitingVerdict)
+                next = "Waiting for the verdict";
+            else if (controller.CanBeginOnlineRound)
+                next = phase == DuelPhase.Ready ? "Press Space or Start to duel" : "Press Space or Start for the next round";
+            else if (controller.Online.IsHost && !controller.Online.Seated)
+                next = "Waiting for a player to join";
+            else
+                next = "Waiting for the host to start the round";
+            return $"{seat}     {strike}\n{next}\nEsc / Select+Start: quit";
         }
 
         private void SetInverted(bool value)

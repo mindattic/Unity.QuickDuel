@@ -12,13 +12,16 @@ namespace Unity.QuickDuel.Online
     // own clock and reports only its reaction time (ReportReaction); the host judges the pair with DuelJudge and sends
     // the verdict (RoundJudged), which every peer records in its own copy of the Match. Latency only shifts when a
     // player's round starts, never the reaction it reports, so it cannot decide a duel.
-    public partial class OnlineDuel : NetEntity
+    //
+    // It is also the Duel scene's IOnlineDuelSource (UQD-T21): set as DuelController.Online, it drives DuelView and
+    // DuelSession in place of the local MatchSession.
+    public partial class OnlineDuel : NetEntity, IOnlineDuelSource
     {
         // Client ids of the two duelists; NoClient until the server seats them.
         public const ulong NoClient = ulong.MaxValue;
 
-        [Synced] private ulong _leftClient = ulong.MaxValue;
-        [Synced] private ulong _rightClient = ulong.MaxValue;
+        [Synced(OnChanged = nameof(OnSeatChanged))] private ulong _leftClient = ulong.MaxValue;
+        [Synced(OnChanged = nameof(OnSeatChanged))] private ulong _rightClient = ulong.MaxValue;
 
         // Server only: the round lengths, match length, human floor and report grace; change them with Configure between rounds.
         public DuelSettings HostSettings { get; private set; }
@@ -37,7 +40,11 @@ namespace Unity.QuickDuel.Online
 
         // The local player's half when this peer is one of the two duelists, else null (a spectator, a dedicated server).
         public OnlineDuelClient Local { get; private set; }
-        public Side? LocalSide => Local?.Side;
+        // This peer's seat: the side its local duelist plays, or before its first round the seat its connection holds.
+        public Side? LocalSide => Local?.Side ?? SeatOf(Session != null ? Session.LocalClientId : NoClient);
+
+        private Side? SeatOf(ulong client) =>
+            client == NoClient ? (Side?)null : client == LeftClient ? Side.Left : client == RightClient ? Side.Right : (Side?)null;
 
         // Every peer's copy of the match, built from the host's verdicts.
         public Match Match { get; private set; }
@@ -46,6 +53,30 @@ namespace Unity.QuickDuel.Online
 
         // Every peer: a round the host judged, after it is recorded in Match.
         public event Action<int, DuelResult> Judged;
+
+        // A duelist's peer: a new round began here, as this local Duel.
+        public event Action<Duel> LocalRoundBegan;
+
+        // Every peer: who sits in either seat changed.
+        public event Action SeatsChanged;
+
+        // Both seats are taken.
+        public bool Seated => LeftClient != NoClient && RightClient != NoClient;
+
+        // Server: whether the next round can begin now (both seats taken, no round open).
+        public bool CanBeginRound => IsServer && Host != null && Seated && !Host.RoundOpen;
+
+        bool IOnlineDuelSource.IsHost => IsServer;
+        Duel IOnlineDuelSource.Round => Local?.Duel;
+        int IOnlineDuelSource.RoundNumber => Local?.Round ?? 0;
+        int IOnlineDuelSource.JudgedRound => LastJudgedRound;
+        DuelResult IOnlineDuelSource.Verdict => LastResult;
+        IMatchView IOnlineDuelSource.Match => Match;
+
+        // The scene's Space / Start: refused (false) rather than thrown on a client, with a seat empty, or mid-round.
+        bool IOnlineDuelSource.BeginRound() => CanBeginRound && BeginRound();
+
+        private void OnSeatChanged(ulong previous, ulong current) => SeatsChanged?.Invoke();
 
         // host -> every peer: a new round, with the host's countdown and standoff lengths in seconds and who duels
         // in it (the seating travels with the round, so a re-seat just before it can never race it).
@@ -70,6 +101,15 @@ namespace Unity.QuickDuel.Online
                 throw new ArgumentException("The two duelists must be different connections.");
             LeftClient = left;
             RightClient = right;
+        }
+
+        // Server: empties the seat a connection held (it left). A round it was playing is judged as it never struck.
+        public void Unseat(ulong client)
+        {
+            if (!IsServer)
+                throw new InvalidOperationException("Only the server seats the duelists.");
+            if (LeftClient == client) LeftClient = NoClient;
+            if (RightClient == client) RightClient = NoClient;
         }
 
         // Server: opens the next round and sends its lengths out. False while a round is still being played.
@@ -163,7 +203,8 @@ namespace Unity.QuickDuel.Online
                 Local = new OnlineDuelClient(side.Value, Tuning.Duel.ToSettings());
                 Local.ReactionReady += (r, reaction) => ReportReaction(r, reaction.HasValue, reaction ?? 0);
             }
-            Local.Begin(round, countdownSeconds, standoffSeconds, Now);
+            if (Local.Begin(round, countdownSeconds, standoffSeconds, Now))
+                LocalRoundBegan?.Invoke(Local.Duel);
         }
 
         private void OnReportReaction(int round, bool struck, double reaction, NetSender sender)

@@ -97,9 +97,11 @@ namespace Unity.QuickDuel
 
             // determine_winner.gml: sfx_victory for the left duelist's win, sfx_defeat for the right's.
             // Silent on NoStrike and Tie, where Winner is null.
-            if (result.Winner == Side.Left)
+            // Heard from this machine's seat: online that is the side it plays (UQD-T21), locally the left.
+            var me = controller.LocalSide ?? Side.Left;
+            if (result.Winner == me)
                 Play(Victory, victory);
-            else if (result.Winner == Side.Right)
+            else if (result.Winner.HasValue)
                 Play(Defeat, defeat);
         }
 

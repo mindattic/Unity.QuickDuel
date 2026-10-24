@@ -41,14 +41,17 @@ namespace Unity.QuickDuel
             nextRound.AddBinding("<Keyboard>/space");
             nextRound.AddBinding("<Gamepad>/start");
 
-            leftKey.performed += ctx => controller.Strike(Side.Left, ctx.time);
-            rightKey.performed += ctx => { if (RightIsHuman) controller.Strike(Side.Right, ctx.time); };
+            // Keys typed into the online menu's address field, and clicks on its buttons, are the menu's (UQD-T21).
+            leftKey.performed += ctx => { if (!UiFocus.IsTyping) controller.Strike(Side.Left, ctx.time); };
+            rightKey.performed += ctx => { if (RightIsHuman && !UiFocus.IsTyping) controller.Strike(Side.Right, ctx.time); };
             padStrike.performed += OnPadStrike;
-            pointerStrike.performed += ctx => controller.Strike(Side.Left, ctx.time);
+            pointerStrike.performed += ctx => { if (!UiFocus.PointerOverUi) controller.Strike(Side.Left, ctx.time); };
             // A Start press is "next round", unless Select is held with it — that chord is DuelQuit's.
             nextRound.performed += ctx =>
             {
                 if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
+                    return;
+                if (ctx.control.device is Keyboard && UiFocus.IsTyping)
                     return;
                 controller.BeginRound();
             };

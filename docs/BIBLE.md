@@ -53,8 +53,10 @@ Assets/Unity.QuickDuel/
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
                                                       TuningStore
-  Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present)
-  Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), QuickDuelBuild
+  Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present),
+                                                      OnlineDuelLobby, OnlineDuelMenu, OnlineDuel.prefab, QuickDuelNetPrefabs
+  Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), OnlineSceneBuilder,
+                                                      QuickDuelBuild
   Tests/PlayMode/                                     scene, input, session, view, taunt and audio tests
   Tests/Online/                                       host + client over the Unity.Multiplayer test kit
 Tests/Core.Tests                                      NUnit tests of Core, run with `dotnet test Core.slnx`
@@ -122,6 +124,31 @@ Built as (UQD-T14):
   `ReportReaction(round, struck, reaction)`, reports from any other connection are dropped, and
   `RoundJudged` carries the verdict to every peer, which records it in its own `Match`. A local strike is
   `OnlineDuel.Strike(eventTime)`.
+
+In the Duel scene (UQD-T21):
+
+- **Host / Join menu** (`OnlineDuelMenu`, built in code on `DuelView`'s canvas, left edge under the left score,
+  shown between rounds only). **Host** starts a listen server on the scene's `NetBootstrap`; this player duels on
+  the left. **Join** dials the typed address (`192.168.1.20` or `192.168.1.20:7777`, parsed by
+  Unity.Multiplayer's `HostAddress`); that player duels on the right. **Leave** ends either. Two players at most,
+  joined by address; no join-code service is set up. Typing in the address field and clicking the menu never
+  strikes, begins a round or cycles the mode (`UiFocus`).
+- **`OnlineDuelLobby`** (Online) is the session flow, apart from the menu: on the host it spawns the one
+  `OnlineDuel` (network key `quickduel.duel`) once the session is up, seats the host on the left and the first
+  player to join on the right, and empties that seat when the player leaves (`OnlineDuel.Unseat`); on every peer
+  it hands the `OnlineDuel` to `DuelController.Online` once it arrives and takes it back when the session ends.
+- **`DuelController.Online`** (an `IOnlineDuelSource`, Runtime's seam that `OnlineDuel` implements, since Runtime
+  cannot name Online) drives the scene instead of the local `MatchSession`, which stands idle and resumes unchanged
+  afterwards. The phase is this machine's own round's, but `Resolved` (and `Result`, the slash, the fall, the
+  headline, the score) waits for the host's verdict: the local round saw only this side's strike, so its own
+  result is never shown. Between this side's report and the verdict the headline reads `...`. Only the host's
+  Space / Start begins a round, and only with both seats taken; every strike key strikes for this machine's seat;
+  Tab / Select does nothing online. The scoreboard marks the player's own seat `(you)` and the victory / defeat
+  sting is heard from it.
+- **Scene generation**: `OnlineSceneBuilder` (run by `DuelSceneBuilder`) makes `OnlineDuel.prefab` (NetworkObject,
+  NetKey, OnlineDuel, with its `GlobalObjectIdHash` filled in batch mode) and its `NetPrefabList`, networks the scene
+  with Unity.Multiplayer's `NetSceneSetup`, and sets the `NetBootstrap` never to start by itself: no auto start, and
+  above all no serving when headless, since batch-mode tests and builds load this scene too.
 
 ## 5. The Laws {#UQD-§5}
 
@@ -210,9 +237,14 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   suite (`DuelSceneTests`, `DuelSessionTests`, `DuelQuitTests`, `DuelInputTests`, `DuelTauntTests`,
   `DuelAudioTests`, `DuelViewTests`).
 
+- ✅ Online PvP in the Duel scene (UQD-T21, [§4.4](#UQD-§4.4)): the Host / Join menu, and `DuelController`,
+  `DuelSession` and `DuelView` driven by an `OnlineDuel` instead of the local `MatchSession`. `OnlineDuelSceneTests`
+  plays a host's and a joined client's scene over real loopback (the host starts the round, each strikes on its own
+  clock, both scenes show the host's verdict and score, and a leaver's seat empties while their scene goes back to
+  local play); `OnlineDuelMenuTests` loads the generated scene and checks that it never hosts or serves by itself,
+  that Host / Leave put it online and back, and that a bad address is refused with a reason.
+
 ## 7. Frontier {#UQD-§7}
-- ⬜ Online PvP in the Duel scene: a Host / Join menu, and `DuelSession` / `DuelView` driven by an
-  `OnlineDuel` instead of a local `Duel` (UQD-T21).
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
   (UQD-T22); Escape quits the player (UQD-T23); the victory / defeat sting (UQD-T24); a mouse /
   touch strike for the left duelist (UQD-T25).

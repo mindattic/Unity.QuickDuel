@@ -4,6 +4,11 @@
     "references": [
         "Unity.QuickDuel.Core",
         "Unity.QuickDuel.Runtime",
+        "Unity.QuickDuel.Online",
+        "Unity.Multiplayer",
+        "Unity.Multiplayer.Core",
+        "Unity.Multiplayer.Editor",
+        "Unity.Netcode.Runtime",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Universal.Runtime"
     ],
@@ -16,6 +21,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.mindattic.unity.multiplayer",
+            "expression": "2.0.0",
+            "define": "QUICKDUEL_MULTIPLAYER"
+        }
+    ],
     "noEngineReferences": false
 }

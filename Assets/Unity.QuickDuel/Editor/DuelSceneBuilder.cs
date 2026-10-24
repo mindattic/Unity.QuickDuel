@@ -36,6 +36,9 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));
+#if QUICKDUEL_MULTIPLAYER
+            OnlineSceneBuilder.Build(scene, duel);
+#endif
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);

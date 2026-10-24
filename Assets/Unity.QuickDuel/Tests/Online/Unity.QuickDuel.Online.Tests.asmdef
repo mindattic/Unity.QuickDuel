@@ -5,6 +5,7 @@
         "Unity.QuickDuel.Core",
         "Unity.QuickDuel.Runtime",
         "Unity.QuickDuel.Online",
+        "Unity.QuickDuel.PlayMode.Tests",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer.Testing",
