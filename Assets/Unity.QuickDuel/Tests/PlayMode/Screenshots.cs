@@ -34,5 +34,19 @@ namespace Unity.QuickDuel.Tests
             Debug.Log($"QuickDuel screenshot: {path}");
             return path;
         }
+
+        // Writes pixels already read back (a render texture's) to a PNG in the same folder, synchronously.
+        public static string Save(string name, Texture2D pixels)
+        {
+            var dir = Environment.GetEnvironmentVariable("QUICKDUEL_SHOTS");
+            if (string.IsNullOrEmpty(dir) || pixels == null)
+                return null;
+
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, name + ".png");
+            File.WriteAllBytes(path, pixels.EncodeToPNG());
+            Debug.Log($"QuickDuel screenshot: {path}");
+            return path;
+        }
     }
 }

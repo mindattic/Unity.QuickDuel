@@ -297,7 +297,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   generated, [UQD-LAW-4](#UQD-LAW-4)) through `Resources/UI/DuelPanelSettings.asset` (scale-with-screen-size,
   1920x1080 reference — built once by `DuelPanelBuilder`, run by `DuelSceneBuilder` the same way
   `RenderPipelineBuilder` is), `Resources/UI/Duel.uss` for its structural USS classes, and a font asset
-  (`Resources/UI/Fonts/Cinzel.ttf`, OFL-licensed, already vetted for MindAttic games in Unity.GridGame) set
+  (`Resources/UI/Fonts/Cinzel.ttf`, OFL-licensed, already vetted for MindAttic games in Unity.GridGame; replaced by
+  the original's own bitmap fonts in UQD-T36) set
   on the root so every label inherits it. `DuelSession` and `DuelTaunt` build their own labels the same way
   (`DuelView.CreateLabel`/`CreateEdgeLabel`), through the same `VisualElement` tree. The `DuelView` surface
   the PlayMode tests read (`CountdownText`, `CueText`, `HeadlineText`, `PromptText`, `ReactionText`,
@@ -354,6 +355,25 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   from 40% and 60% of the width, creeping together 0.01 pixel a 1000 fps step; the winner dashes from the middle on to
   the loser's mark (easing `1 + 0.1` of the gap a 60 fps step) playing its attack strip in front, the loser plays its
   defeat strip at the middle, and three seconds on the winner returns to idle. The loser no longer topples.
+- ✅ The original's type (UQD-T36, `OriginalTypeTests`, `OriginalTextTests`): the five GameMaker bitmap fonts are UI
+  Toolkit font assets (`Resources/UI/Fonts/fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`,
+  `fnt_tiny`), built in code by `OriginalFontBuilder` (menu *QuickDuel → Build Original Font Assets*, rerun by the asset
+  generator and, when missing, by `DuelSceneBuilder`) from each font's committed atlas and glyph table
+  (`BitmapGlyphTable`, Core): static TextCore assets whose glyphs are GameMaker's own cells (atlas rect, offset, shift,
+  cell top at the line top), on an Alpha8 copy of the atlas so the text colour tints them, point-filtered, at the
+  original's pixel scale (2.25 stage pixels a pixel). Every piece of duel text is `OutlinedText`, the one shared style:
+  `draw_text_outline`'s black copies at each offset of the (2t + 1) square, then the fill on top, white unless a colour
+  is given. `OriginalType` (Core) says which font and thickness each kind of text takes, as the original drew it:
+  banners, the countdown and the reaction count in Old English outlined 1 (`obj_gameclock`), the title outlined 2 like
+  "Game Over", the winner's name in the small Old English, the intro in the mono face outlined 2 (`obj_typewriter`), the
+  HUD and buttons in the basic face, the tiny face for small readouts. The root carries the basic face, so the online
+  menu's controls use it too. Cinzel, the placeholder font of UQD-T31, is gone.
+  - **Deliberate decision**: the ticket named the `oldenglish`, `sansation`, `cyberia`, `gnuolane`, `infinity` and
+    `junction` TrueType files. The GameMaker original never draws with any of them: all five of its fonts were baked
+    into bitmap atlases from the system faces Old English Text MT, Monotype Corsiva and Estrangelo Edessa, and the
+    other five `.ttf` files belong to the Android builds (§2.4 of RECONSTRUCTION). The rebuild therefore draws the
+    original's own baked glyphs, pixel for pixel, rather than re-rasterising look-alike faces; `oldenglish.ttf` stays
+    imported (UQD-T32) and the Android faces are not brought in.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

@@ -134,6 +134,9 @@ namespace Unity.QuickDuel.EditorTools
                     missing.Add(file);
             if (missing.Count > 0)
                 throw new InvalidOperationException("The manifest names files that were not copied: " + string.Join(", ", missing));
+
+            // The fonts' atlases or glyph tables may have changed: rebuild their UI Toolkit font assets (UQD-T36).
+            OriginalFontBuilder.Build();
             return manifest;
         }
 

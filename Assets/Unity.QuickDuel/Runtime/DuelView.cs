@@ -9,8 +9,8 @@ namespace Unity.QuickDuel
     // Draws the duel from the controller's phase and result; it never decides anything. The whole UI is
     // built in code (the original fighters over the original arena art) on UI Toolkit (UQD-T31): a UIDocument reads
     // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size, 1920x1080 reference, built by
-    // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label shares the font asset
-    // Resources/UI/Fonts/Cinzel.ttf -- no more Resources.GetBuiltinResource("LegacyRuntime.ttf"). The panel
+    // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label is the original's outlined text (OutlinedText,
+    // UQD-T36) in one of its five bitmap fonts (Resources/UI/Fonts/fnt_*.asset, OriginalType says which). The panel
     // renders as a screen-space overlay (UI Toolkit has no "Screen Space - Camera" mode); the main camera
     // behind it only clears to its background colour, the way it always has. Centre-anchored content (the
     // fighters, every CreateLabel) lives on a fixed 1920x1080 "stage" kept centred in Root (see Build()),
@@ -52,7 +52,6 @@ namespace Unity.QuickDuel
 
         // Shown behind the arena art, and in its place in a scene that carries no arenas.
         private static readonly Color Paper = new Color(0.93f, 0.88f, 0.78f);
-        private static readonly Color Ink = new Color(0.10f, 0.08f, 0.08f);
 
         // The original arenas, in load_arenas.gml's order; written by DuelSceneBuilder from the asset manifest.
         [SerializeField] private List<ArenaBackdrop> arenas = new List<ArenaBackdrop>();
@@ -63,7 +62,6 @@ namespace Unity.QuickDuel
 
         private DuelController controller;
         private UIDocument document;
-        private Font font;
         private VisualElement stage;
         private VisualElement backdrop;
         private int? shownRoll;
@@ -71,13 +69,13 @@ namespace Unity.QuickDuel
         private VisualElement letterboxBottom;
         private Fighter left;
         private Fighter right;
-        private Label title;
-        private Label countdown;
-        private Label cue;
-        private Label headline;
-        private Label prompt;
-        private Label leftReaction;
-        private Label rightReaction;
+        private OutlinedText title;
+        private OutlinedText countdown;
+        private OutlinedText cue;
+        private OutlinedText headline;
+        private OutlinedText prompt;
+        private OutlinedText leftReaction;
+        private OutlinedText rightReaction;
         private float letterbox;
         private bool inverted;
 
@@ -134,7 +132,6 @@ namespace Unity.QuickDuel
         private void Awake()
         {
             controller = GetComponent<DuelController>();
-            font = Resources.Load<Font>("UI/Fonts/Cinzel");
             Build();
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
@@ -315,7 +312,9 @@ namespace Unity.QuickDuel
 
             Root = document.rootVisualElement;
             Root.AddToClassList("duel-root");
-            if (font != null) Root.style.unityFontDefinition = FontDefinition.FromFont(font);
+            // Anything not drawn as OutlinedText (the online menu's controls) inherits the original's basic face.
+            var basic = OriginalFonts.Load(OriginalType.Basic);
+            if (basic != null) Root.style.unityFontDefinition = FontDefinition.FromSDFFont(basic);
             var styleSheet = Resources.Load<StyleSheet>("UI/Duel");
             if (styleSheet != null) Root.styleSheets.Add(styleSheet);
 
@@ -340,8 +339,9 @@ namespace Unity.QuickDuel
             left = new Fighter(this, Side.Left);
             right = new Fighter(this, Side.Right);
 
-            leftReaction = CreateLabel("LeftReaction", 56, new Vector2(StageX(Side.Left), ReactionY), Ink);
-            rightReaction = CreateLabel("RightReaction", 56, new Vector2(StageX(Side.Right), ReactionY), Ink);
+            // The aftermath's reaction count, in obj_gameclock's fnt_oldenglish.
+            leftReaction = CreateLabel("LeftReaction", OriginalType.Countdown, new Vector2(StageX(Side.Left), ReactionY));
+            rightReaction = CreateLabel("RightReaction", OriginalType.Countdown, new Vector2(StageX(Side.Right), ReactionY));
 
             letterboxTop = Box("LetterboxTop", Root, Color.black);
             letterboxTop.AddToClassList("letterbox");
@@ -352,13 +352,16 @@ namespace Unity.QuickDuel
             letterboxBottom.style.bottom = 0;
             letterboxBottom.style.height = 0;
 
-            title = CreateLabel("Title", 150, new Vector2(0, 260f), Ink);
-            title.text = "QUICKDUEL";
-            countdown = CreateLabel("Countdown", 320, new Vector2(0, 120f), Ink);
-            cue = CreateLabel("Cue", 420, new Vector2(0, 120f), new Color(0.85f, 0.10f, 0.10f));
+            // The original's type (UQD-T36): banners and the countdown in Old English, the title outlined 2 like
+            // "Game Over", the prompt in the basic face the original's buttons and HUD used.
+            title = CreateLabel("Title", OriginalType.Title, new Vector2(0, 260f));
+            title.text = "QuickDuel";
+            countdown = CreateLabel("Countdown", OriginalType.Countdown, new Vector2(0, 120f));
+            // Not the original's (its cue is the invert alone): kept at twice the banner's scale so it reads at once.
+            cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, 120f), CueRed, 2f);
             cue.text = "!";
-            headline = CreateLabel("Headline", 120, new Vector2(0, 370f), Ink);
-            prompt = CreateLabel("Prompt", 44, new Vector2(0, -440f), Ink);
+            headline = CreateLabel("Headline", OriginalType.Banner, new Vector2(0, 370f));
+            prompt = CreateLabel("Prompt", OriginalType.Hud, new Vector2(0, -440f));
         }
 
         // A box filled with its own colour (an untextured placeholder shape); position and size are set by
@@ -372,30 +375,36 @@ namespace Unity.QuickDuel
             return element;
         }
 
-        // A label centred on `position` (the original's canvas-centre-relative anchored position, y up);
-        // 1600 wide (as the original's fixed, overflow-allowed sizeDelta was) so long text never clips.
-        public Label CreateLabel(string name, int size, Vector2 position, Color color)
+        // The cue's colour (not the original's; see Build).
+        public static readonly Color CueRed = new Color(0.85f, 0.10f, 0.10f);
+
+        // Outlined text (UQD-T36) in `style`'s original font and outline, centred on `position` (the stage-centre-relative
+        // position, y up); 1600 wide so long text never clips. White unless `fill` says otherwise, as draw_text_outline;
+        // `scale` multiplies the original's pixel size.
+        public OutlinedText CreateLabel(string name, TypeStyle style, Vector2 position, Color? fill = null, float scale = 1f)
         {
-            var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
-            label.AddToClassList("label");
-            label.style.fontSize = size;
-            label.style.color = color;
-            PlaceOnStage(label, position.x, position.y, 1600f, size * 1.2f);
+            var label = Outlined(name, style, fill, scale);
+            PlaceOnStage(label, position.x, position.y, 1600f, label.LineHeight * 1.2f);
             stage.Add(label);
+            return label;
+        }
+
+        private static OutlinedText Outlined(string name, TypeStyle style, Color? fill, float scale)
+        {
+            var label = new OutlinedText(style, scale) { name = name };
+            label.AddToClassList("label");
+            if (fill.HasValue) label.Fill = fill.Value;
             return label;
         }
 
         // Pinned to the left (edge 0) or right (edge 1) screen edge so it stays visible at any aspect,
         // the way the original anchored EdgeLabel to that edge (of the real canvas rect, not the fixed
         // stage) instead of the canvas centre; `top: 50%` finds Root's real vertical centre at any aspect.
-        public Label CreateEdgeLabel(string name, int size, float edge, float y, Color color)
+        public OutlinedText CreateEdgeLabel(string name, TypeStyle style, float edge, float y, Color? fill = null)
         {
-            var label = new Label { name = name, text = "", pickingMode = PickingMode.Ignore };
-            label.AddToClassList("label");
+            var label = Outlined(name, style, fill, 1f);
             label.AddToClassList(edge < 0.5f ? "label--edge-left" : "label--edge-right");
-            label.style.fontSize = size;
-            label.style.color = color;
-            var height = size * 1.2f;
+            var height = label.LineHeight * 1.2f;
             label.style.position = Position.Absolute;
             label.style.width = 600f;
             label.style.height = height;

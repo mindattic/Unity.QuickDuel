@@ -20,6 +20,7 @@ namespace Unity.QuickDuel.EditorTools
         {
             RenderPipelineBuilder.Ensure();
             DuelPanelBuilder.Ensure();
+            OriginalFontBuilder.Ensure();
             System.IO.Directory.CreateDirectory("Assets/Scenes");
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 

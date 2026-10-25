@@ -95,7 +95,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (per round, all 11, UQD-T33); `setup_arena_properties` missing, UQD-T49 |
 | `load_characters`, `choose_opponent`, `set_character_description` | `load_characters` is `Data/assets.json`'s fighters (name and sprites only), `choose_opponent` is `FighterDraw` (both seats, drawn per match, since character select is dropped) (UQD-T34); stats, skills, portraits and descriptions dropped |
 | `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | intro text missing UQD-T44; the rest dropped |
-| `draw_text_outline`, `_alpha`, `_color`, `add_shadow`, `draw_light`, `create_lens`, `RGB` | outline text UQD-T36; lighting dropped |
+| `draw_text_outline`, `_alpha`, `_color`, `add_shadow`, `draw_light`, `create_lens`, `RGB` | outline text built as `OutlinedText` and `OriginalType` (UQD-T36); lighting dropped |
 | `show_float_text`, `_color` | dropped (damage numbers) |
 | `calculate_damage`, `check_regen`, `focus_percent`, `skill_*`, `reset_combos`, `reset_selectboxes` | dropped |
 | `ai_fly`, `ai_firefly`, `ai_butterfly` | missing, UQD-T49 |
@@ -114,7 +114,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Ambient | `spr_sand1`, `2`, `spr_butterfly` (6), `spr_snow1`, `2`, `spr_fly`, `fly2`, `spr_firefly`, `dark`, `strip`, `spr_rain`, `raindrop`, `rainemitter`, `spr_leaf1`, `2`, `spr_tree1`, `spr_spotlight` | sand, butterfly, snow, fog (`spr_cloud1`), fly: UQD-T49; the rest optional |
 | Results | `bg_victory`, `bg_gameover`, `spr_virtue_*` (7) | backgrounds UQD-T48; virtues dropped |
 | Stats and combat UI | health, focus, art, skill, stance, combo, clash, critical-hit, buff, descbox, selectbox, talk and map sprites | dropped |
-| Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | the five bitmap fonts (atlas and glyph table) and `oldenglish.ttf` imported (UQD-T32), drawn by UQD-T36; the other ttfs came from the Android builds and are unused |
+| Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | the five bitmap fonts (atlas and glyph table) and `oldenglish.ttf` imported (UQD-T32); the five bitmap fonts built as UI Toolkit font assets and drawn as outlined text (UQD-T36); the other ttfs came from the Android builds and are unused |
 | Sound: duel | `sfx_beep`, `sfx_drumroll`, `sfx_unsheath`, `sfx_slash`, `sfx_victory`, `sfx_defeat` | built (UQD-T5, T24) |
 | Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), played by UQD-T41, T45 |
 | Sound: dropped | `sfx_disabled`, `sfx_bomb`, `sfx_powerup_activate` (focus and skills); `music_*` x8 (no script plays them) | dropped |

@@ -1,8 +1,8 @@
-/* QuickDuel's UI Toolkit styling (UQD-T31). Colors are set from code (DuelView's palette, and the label
-   sizes vary per call site; the Strike-phase inversion is a filter on the arena backdrop), so this file only
-   owns the structural roles that never change at runtime. Every label is bold, matching the original's
-   one-font, always-bold look; DuelView sets the shared font (an asset, Resources/UI/Fonts/Cinzel.ttf) on
-   the root so every label here inherits it. */
+/* QuickDuel's UI Toolkit styling (UQD-T31). Colors are set from code (DuelView's palette; the Strike-phase
+   inversion is a filter on the arena backdrop), so this file only owns the structural roles that never change
+   at runtime. Every label is the original's outlined text (OutlinedText, UQD-T36) in one of its five bitmap
+   fonts at its native size; the root carries the basic face for anything else. Nothing is bold: a bitmap
+   font has no bold weight, and a synthesized one would respace the original's glyphs. */
 
 .duel-root {
     position: absolute;
@@ -10,7 +10,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    -unity-font-style: bold;
+    -unity-font-style: normal;
     /* visible, not hidden: Root's own real size tracks the device aspect (see .stage below), so at an
        aspect narrower than 16:9 the fixed-size stage can be very slightly wider than Root itself; letting
        it overflow keeps every centred element on screen instead of clipping its edges. */
@@ -62,3 +62,4 @@
 .label--edge-right {
     -unity-text-align: middle-right;
 }
+

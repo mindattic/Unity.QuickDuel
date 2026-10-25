@@ -8,8 +8,8 @@ namespace Unity.QuickDuel.EditorTools
     /// <summary>
     /// Builds the PanelSettings asset DuelView's UIDocument renders through (UQD-T31): the UI was legacy
     /// uGUI Text off <c>Resources.GetBuiltinResource("LegacyRuntime.ttf")</c> with a hand-built Canvas;
-    /// it is now UI Toolkit, styled by <c>Resources/UI/Duel.uss</c> and set in a font asset
-    /// (<c>Resources/UI/Fonts/Cinzel.ttf</c>), read by <see cref="DuelView"/> through <c>Resources.Load</c>
+    /// it is now UI Toolkit, styled by <c>Resources/UI/Duel.uss</c> and set in the original's bitmap fonts
+    /// (<c>Resources/UI/Fonts/fnt_*.asset</c>, UQD-T36), read by <see cref="DuelView"/> through <c>Resources.Load</c>
     /// the same way <see cref="DuelAudio"/> reads its clips. Like <see cref="RenderPipelineBuilder"/>, this
     /// only creates the asset when it is missing, so rerunning it (and every import after it) leaves the
     /// committed asset untouched. Run from the menu or in batch mode via

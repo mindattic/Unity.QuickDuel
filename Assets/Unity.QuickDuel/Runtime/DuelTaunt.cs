@@ -13,7 +13,7 @@ namespace Unity.QuickDuel
 
         private DuelController controller;
         private DuelView view;
-        private Label text;
+        private OutlinedText text;
 
         public string Current => text.style.display != DisplayStyle.None ? text.text : "";
 
@@ -21,8 +21,8 @@ namespace Unity.QuickDuel
         {
             controller = GetComponent<DuelController>();
             view = GetComponent<DuelView>();
-            text = view.CreateLabel("Taunt", 72, new Vector2(0, 215f), new Color(0.75f, 0.08f, 0.08f));
-            text.style.unityFontStyleAndWeight = FontStyle.BoldAndItalic;
+            // A banner like the original's own "Premature Strike!" (UQD-T36).
+            text = view.CreateLabel("Taunt", OriginalType.Banner, new Vector2(0, 215f), new Color(0.75f, 0.08f, 0.08f));
             text.style.display = DisplayStyle.None;
             controller.RoundStarted += () => text.style.display = DisplayStyle.None;
             controller.Resolved += OnResolved;

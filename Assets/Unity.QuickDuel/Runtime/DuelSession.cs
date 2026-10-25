@@ -18,10 +18,10 @@ namespace Unity.QuickDuel
         private DuelQuit quit;
         private DuelView view;
         private InputAction cycleMode;
-        private Label modeText;
-        private Label leftScore;
-        private Label rightScore;
-        private Label verdict;
+        private OutlinedText modeText;
+        private OutlinedText leftScore;
+        private OutlinedText rightScore;
+        private OutlinedText verdict;
 
         private MatchSession Session => controller.Session;
 
@@ -67,11 +67,11 @@ namespace Unity.QuickDuel
         private void Start()
         {
             view = GetComponent<DuelView>();
-            var ink = new Color(0.10f, 0.08f, 0.08f);
-            modeText = view.CreateLabel("Mode", 40, new Vector2(0, 490f), ink);
-            leftScore = view.CreateEdgeLabel("LeftScore", 40, 0f, 490f, ink);
-            rightScore = view.CreateEdgeLabel("RightScore", 40, 1f, 490f, ink);
-            verdict = view.CreateLabel("Verdict", 50, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f));
+            // The HUD in the original's basic face; the match verdict as a banner (UQD-T36).
+            modeText = view.CreateLabel("Mode", OriginalType.Hud, new Vector2(0, 490f));
+            leftScore = view.CreateEdgeLabel("LeftScore", OriginalType.Hud, 0f, 490f);
+            rightScore = view.CreateEdgeLabel("RightScore", OriginalType.Hud, 1f, 490f);
+            verdict = view.CreateLabel("Verdict", OriginalType.Banner, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f));
             verdict.style.display = DisplayStyle.None;
 
             Session.ModeChanged += OnModeChanged;
