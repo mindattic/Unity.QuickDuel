@@ -14,6 +14,7 @@ namespace Unity.QuickDuel
     public sealed class DuelInput : MonoBehaviour
     {
         private DuelController controller;
+        private DuelFade fade;
         private InputAction leftKey;
         private InputAction rightKey;
         private InputAction padStrike;
@@ -52,6 +53,10 @@ namespace Unity.QuickDuel
                 if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
                     return;
                 if (ctx.control.device is Keyboard && UiFocus.IsTyping)
+                    return;
+                // The aftermath plays out and the loading fade resets the battle before the next round (UQD-T42).
+                if (fade == null) fade = GetComponent<DuelFade>();
+                if (fade != null && fade.Pending)
                     return;
                 controller.BeginRound();
             };

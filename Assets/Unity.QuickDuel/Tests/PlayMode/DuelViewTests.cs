@@ -90,7 +90,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.FighterIn(Side.Left).Defeat, Has.Member(view.FighterShows(Side.Left)), "the loser plays its defeat strip");
             Assert.That(view.Motion(Side.Left).XFraction, Is.EqualTo(0.5), "the loser falls at the middle");
             Assert.That(view.Motion(Side.Right).XFraction, Is.LessThan(0.5), "the winner dashes on past the middle");
-            Assert.That(view.PromptText, Does.Contain("next round"));
+            Assert.That(view.PromptText, Is.Empty, "the next round waits for the loading fade to reset the battle (UQD-T42)");
             Screenshots.Capture("05-resolved");
         }
 

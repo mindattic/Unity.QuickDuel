@@ -472,7 +472,27 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     fighter in the first round), so on a draw `spawn_weapons` threw the previous loser's weapon though nobody fell; the
     rebuild's tie throws nothing.
   - **Clearing, matches**: the original destroys every `obj_weapon` when the next round's loading fade covers the
-    screen; the rebuild, which has no fade yet (UQD-T42), clears them when the next round begins.
+    screen; so does the rebuild (UQD-T42), or sooner when the next round begins first.
+- ✅ The round transition (UQD-T42; `RoundFadeTests`, `DuelFadeTests`, `DuelInputTests`): `gameclock_aftermath.gml`
+  counts `aftermath_time = 3 * room_speed` steps from the cut and sets `obj_fade_gamescreen.mode = "fadein"`; the fade
+  (depth -10000, over everything) shows one of `spr_loading1` to `14` (`irandom_range(1, 14)`) and raises its alpha
+  `fadespeed = 0.005` a step; once it is full it resets the battle (`with (obj_blood_emitter)` and `with (obj_weapon)
+  instance_destroy()`, `gameclock.mode = "startup"`), whose first pass sets both fighters idle, clears the reaction
+  times and the clock's text alpha, and sends the fade to `"fadeout"`, 0.005 a step down to nothing. Counted in 60 a
+  second steps from the moment the round ended (`Duel.EndedAt`: the first strike, the early strike, or the timeout),
+  the image fades in from step 180, is full and the battle reset on step 380, and is gone on step 580. Core holds the
+  timing and the pick (`RoundFade`); `DuelFade` draws the image over the whole panel off the controller's clock
+  (UQD-LAW-2) and raises `BattleReset`, on which `DuelView` puts both fighters back idle and clears the aftermath's
+  text, `DuelTaunt` its taunt, `DuelBlood` stops the emitter and `DuelWeapons` clears the weapons.
+  - **The splatters, matches**: the ticket's wording says the blood and splatter are cleared, but the original's fade
+    destroys only the emitter and the weapons (and `obj_criticalhit`, which the rebuild does not have); the splatters
+    are not its to destroy and fade on at their own 0.0003 a step. The rebuild keeps the original.
+  - **The startup, deliberate**: the original's startup counts its own 3 s once the image is gone and then starts the
+    countdown by itself (a key press skipping it); the rebuild keeps its Ready phase, which waits for Space or Start,
+    and takes that press from the reset on, while the image is still fading out, as the original's skipping press was.
+    Space or Start before the reset does nothing, and the "next round" prompt is only shown from the reset on.
+  - **A round begun early**: online the host may begin the next round before a client's fade is done; the client's
+    image then simply goes, and the new round resets the battle as it always did.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

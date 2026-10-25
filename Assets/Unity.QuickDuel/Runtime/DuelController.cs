@@ -123,6 +123,10 @@ namespace Unity.QuickDuel
         // (the host's, online) decides the direction, this round's own first strike the start.
         public double ReactionCountSlide => VerdictBanner.Slide(Result, CurrentDuel?.FirstStrikeAt, Now);
 
+        // When the round in progress (or last played) ended on this machine's clock, where its aftermath and the round
+        // transition are timed from (UQD-T42); null while it runs or before the first round.
+        public double? EndedAt => CurrentDuel?.EndedAt;
+
         // Between rounds. Online that means no round is being played here and the last one has its verdict, so a
         // client can still quit between rounds even though only the host may begin the next one.
         public bool CanBeginRound => online == null

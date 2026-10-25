@@ -85,16 +85,21 @@ namespace Unity.QuickDuel
 
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
+            fade = GetComponent<DuelFade>();
+            if (fade != null) fade.BattleReset += OnRoundStarted;
         }
+
+        private DuelFade fade;
 
         private void OnDestroy()
         {
+            if (fade != null) fade.BattleReset -= OnRoundStarted;
             if (controller == null) return;
             controller.RoundStarted -= OnRoundStarted;
             controller.Resolved -= OnResolved;
         }
 
-        // The next round's loading fade destroys every obj_weapon.
+        // The loading fade (UQD-T42) destroys every obj_weapon under its full image, or the next round, begun first, does.
         private void OnRoundStarted()
         {
             Toss = null;

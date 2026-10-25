@@ -92,6 +92,11 @@ namespace Unity.QuickDuel
         private OutlinedText rightReaction;
         private float letterbox;
         private bool inverted;
+        private DuelFade fade;
+
+        // The loading fade (UQD-T42) has reset the battle under its full image: the aftermath's text is gone and both
+        // fighters stand idle until the next round begins.
+        private bool battleReset;
 
         public bool Inverted => inverted;
 
@@ -179,9 +184,34 @@ namespace Unity.QuickDuel
             Refresh(0f);
         }
 
+        private void Start()
+        {
+            fade = GetComponent<DuelFade>();
+            if (fade != null) fade.BattleReset += OnBattleReset;
+        }
+
+        private void OnDestroy()
+        {
+            if (fade != null) fade.BattleReset -= OnBattleReset;
+        }
+
         private void Update() => Refresh(Time.unscaledDeltaTime);
 
+        // obj_fade_gamescreen's reset and gameclock_startup's first pass: both fighters back to idle on their marks, the
+        // reaction times cleared and the aftermath's text gone (alpha = 0).
+        private void OnBattleReset()
+        {
+            ResetBattle();
+            battleReset = true;
+        }
+
         private void OnRoundStarted()
+        {
+            ResetBattle();
+            battleReset = false;
+        }
+
+        private void ResetBattle()
         {
             left.Motion.Idle();
             right.Motion.Idle();
@@ -259,7 +289,7 @@ namespace Unity.QuickDuel
             // freezes it, and it fades from there at 0.003 a 60 fps step.
             var count = controller.ReactionCount;
             var counterAlpha = (float)controller.ReactionCountAlpha;
-            SetVisible(counter, count > 0 && counterAlpha > 0f);
+            SetVisible(counter, count > 0 && counterAlpha > 0f && !battleReset);
             if (count > 0)
             {
                 counter.text = count.ToString();
@@ -269,16 +299,18 @@ namespace Unity.QuickDuel
             counter.style.translate = new Translate((float)controller.ReactionCountSlide * PixelScale, 0f);
 
             var resolved = phase == DuelPhase.Resolved;
-            var verdict = resolved ? controller.Result : null;
+            var aftermath = resolved && !battleReset;
+            var verdict = aftermath ? controller.Result : null;
             ShowWinner(verdict);
             // The original's own aftermath text says who won, or that someone struck early (DuelTaunt); the headline is
             // kept only for the rebuild's outcomes the original never drew (a tie, nobody striking, a forfeit) and while
             // an online verdict is on its way.
-            var headlined = resolved && !VerdictBanner.ShowsWinner(verdict) && !VerdictBanner.ShowsPremature(verdict);
+            var headlined = aftermath && !VerdictBanner.ShowsWinner(verdict) && !VerdictBanner.ShowsPremature(verdict);
             SetVisible(headline, headlined);
             if (headlined) headline.text = verdict != null ? Headline(verdict, RightName) : AwaitingVerdictText;
             SetVisible(title, phase == DuelPhase.Ready);
-            SetVisible(prompt, phase == DuelPhase.Ready || resolved);
+            // The next round is offered once the loading fade has reset the battle (UQD-T42), not over the aftermath.
+            SetVisible(prompt, phase == DuelPhase.Ready || (resolved && !(fade != null && fade.Pending)));
             prompt.text = controller.IsOnline ? OnlinePrompt(phase) : phase == DuelPhase.Ready
                 ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
                 : "Press Space or Start for the next round\nEsc / Select+Start: quit";

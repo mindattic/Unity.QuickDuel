@@ -154,6 +154,11 @@ namespace Unity.QuickDuel.Core
         // When this round saw its first strike after the cue (the original's aftermath began there); null before one.
         public double? FirstStrikeAt => firstStrikeAt;
 
+        // When this round ended, where its aftermath (and the round transition, UQD-T42) is timed from: the first strike
+        // for a round decided by reaction, the strike itself for one struck early, the timeout for nobody striking. Null
+        // until it is resolved.
+        public double? EndedAt { get; private set; }
+
         private bool ShowsReactionCount =>Phase == DuelPhase.Strike
             || (Phase == DuelPhase.Resolved && firstStrikeAt.HasValue && Result != null
                 && (Result.Outcome == DuelOutcome.FasterStrike || Result.Outcome == DuelOutcome.Tie));
@@ -172,7 +177,7 @@ namespace Unity.QuickDuel.Core
             if (firstStrikeAt.HasValue && now >= firstStrikeAt.Value + settings.SettleSeconds)
                 ResolveByReaction();
             else if (!firstStrikeAt.HasValue && now >= CueAt + settings.StrikeTimeoutSeconds)
-                Resolve(new DuelResult(DuelOutcome.NoStrike, null, null, null));
+                Resolve(new DuelResult(DuelOutcome.NoStrike, null, null, null), CueAt + settings.StrikeTimeoutSeconds);
         }
 
         public void Strike(Side side, double at)
@@ -195,7 +200,7 @@ namespace Unity.QuickDuel.Core
                 Resolve(DuelJudge.Judge(
                     side == Side.Left ? reaction : (double?)null,
                     side == Side.Right ? reaction : (double?)null,
-                    0));
+                    0), at);
                 return;
             }
 
@@ -211,11 +216,12 @@ namespace Unity.QuickDuel.Core
         }
 
         // Local strikes are real input events, so the online human-floor check does not apply.
-        private void ResolveByReaction() => Resolve(DuelJudge.Judge(leftStrikeAt - CueAt, rightStrikeAt - CueAt, 0));
+        private void ResolveByReaction() => Resolve(DuelJudge.Judge(leftStrikeAt - CueAt, rightStrikeAt - CueAt, 0), firstStrikeAt.Value);
 
-        private void Resolve(DuelResult result)
+        private void Resolve(DuelResult result, double endedAt)
         {
             Result = result;
+            EndedAt = endedAt;
             SetPhase(DuelPhase.Resolved);
             Resolved?.Invoke(result);
         }

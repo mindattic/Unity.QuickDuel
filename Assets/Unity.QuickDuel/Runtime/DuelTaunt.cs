@@ -27,6 +27,9 @@ namespace Unity.QuickDuel
             text.style.display = DisplayStyle.None;
             controller.RoundStarted += () => text.style.display = DisplayStyle.None;
             controller.Resolved += OnResolved;
+            // The loading fade (UQD-T42) clears the aftermath's text under its full image.
+            var fade = GetComponent<DuelFade>();
+            if (fade != null) fade.BattleReset += () => text.style.display = DisplayStyle.None;
         }
 
         private void OnResolved(DuelResult result)

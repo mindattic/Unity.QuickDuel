@@ -112,16 +112,22 @@ namespace Unity.QuickDuel
 
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
+            fade = GetComponent<DuelFade>();
+            if (fade != null) fade.BattleReset += OnRoundStarted;
         }
+
+        private DuelFade fade;
 
         private void OnDestroy()
         {
+            if (fade != null) fade.BattleReset -= OnRoundStarted;
             if (controller == null) return;
             controller.RoundStarted -= OnRoundStarted;
             controller.Resolved -= OnResolved;
         }
 
-        // The next round's loading fade destroyed the emitter; its drops fall on.
+        // The loading fade (UQD-T42) destroyed the emitter under its full image, or the next round began first; its drops
+        // fall on, and the splatters are not the fade's to destroy (they fade on at their own pace).
         private void OnRoundStarted() => Spray?.Stop();
 
         private void OnResolved(DuelResult verdict)

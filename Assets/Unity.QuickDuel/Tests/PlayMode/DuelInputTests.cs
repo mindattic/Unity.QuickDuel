@@ -47,6 +47,33 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Result.RightReaction, Is.EqualTo(0.200).Within(1e-6));
         }
 
+        // UQD-T42: Space over the aftermath does nothing; once the loading fade has reset the battle it begins the next round.
+        [UnityTest]
+        public IEnumerator SpaceWaitsForTheLoadingFadeToResetTheBattle()
+        {
+            yield return Load();
+            controller.BeginRound();
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
+            var cue = controller.CueAt;
+            controller.Strike(Side.Left, cue + 0.1);
+            controller.Strike(Side.Right, cue + 0.2);
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved));
+
+            Press(keyboard.spaceKey);
+            Release(keyboard.spaceKey);
+            yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved), "not over the aftermath");
+
+            var reset = controller.EndedAt.Value + (RoundFade.ResetTick + 1.0) / RoundFade.TicksPerSecond;
+            controller.Clock = () => reset;
+            yield return null;
+            Assert.That(controller.GetComponent<DuelFade>().HasReset, Is.True);
+            Press(keyboard.spaceKey);
+            Release(keyboard.spaceKey);
+            yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
+        }
+
         [UnityTest]
         public IEnumerator SecondGamepadStrikesForTheRight()
         {

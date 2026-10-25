@@ -48,6 +48,8 @@ namespace Unity.QuickDuel.EditorTools
                 Frames(Manifest(), "spr_weapon_myrmidon_shield", "the shield")[0],
                 Frames(Manifest(), "spr_weapon_myrmidon_shield_ground", "the shield")[0],
                 new[] { Clip("sfx_hitground1"), Clip("sfx_hitground2"), Clip("sfx_hitground3"), Clip("sfx_hitground4") });
+            // obj_fade_gamescreen (UQD-T42): the 14 loading images the round transition draws one of.
+            duel.AddComponent<DuelFade>().SetImages(LoadingImages());
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));
@@ -101,6 +103,16 @@ namespace Unity.QuickDuel.EditorTools
                 Frames(manifest, "spr_blood_drop1", "the blood")[0],
                 Frames(manifest, "spr_blood_drop2", "the blood")[0],
             };
+        }
+
+        // spr_loading1 to 14 (UQD-T42), in order.
+        public static List<Sprite> LoadingImages()
+        {
+            var manifest = Manifest();
+            var images = new List<Sprite>();
+            for (var i = 1; i <= RoundFade.Images; i++)
+                images.Add(Frames(manifest, $"spr_loading{i}", "the round transition")[0]);
+            return images;
         }
 
         // spr_splatter1 to 10 (UQD-T40), in order, each with the box a click must land in: GameMaker's automatic
