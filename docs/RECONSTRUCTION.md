@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: reconstruction
 status: living
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Unity.QuickDuel - Reconstruction (REA of the original)
@@ -36,7 +36,7 @@ updated: 2026-10-24
 | Premature strike | `action_attack` during `drumroll`: the striker loses outright (`reaction_time = opponent ART + 1 to 50`), "Premature Strike!" shown | Early strike loses; an Android taunt line drawn centred where "Premature Strike!" was, white Old English (UQD-T6, UQD-T39) |
 | Strike during `countdown` | Ignored (no handler outside `drumroll` and `action`) | Fixed to match (UQD-T22) |
 | Winner | Lower `reaction_time + reaction_penalty`; equal is a draw (nothing happens) | `DuelJudge` (lower wins, tie scores nobody) |
-| Match end | An HP bar per side, damage from the reaction gap; 0 HP goes to `gameover` or `victory` | Best of 3 verdict (deliberate) |
+| Match end | An HP bar per side, damage from the reaction gap; 0 HP goes to `gameover` or `victory` | Best of 3 (deliberate), then the victory or game over screen under the full loading image (UQD-T48) |
 
 ### 1.2 Input (`obj_game`)
 
@@ -60,7 +60,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `intro` | `obj_intro`, four cloud layers x3, `obj_typewriter_intro`, `obj_fade_intro` | built (UQD-T44): `Intro.unity`, the game's first scene (`IntroScene`, `IntroController`); it leads to the main menu (UQD-T45) |
 | `mainmenu` | `obj_title`, buttons New Game, Versus, Options, Quit, Credits, Scores, `obj_mainmenu`, `obj_mouse`, `obj_fade_mainmenu` | built (UQD-T45): `MainMenu.unity` (`MainMenu`, `MenuFade`, `MainMenuController`), New Game, Versus, Quit and the computer's difficulty in Options' slot; cursor built (UQD-T46: `KatanaCursor`), Credits built (UQD-T47: `CreditsRoll`; its screen never existed: fixed) (Options, Scores were empty stubs: dropped) |
 | `gamescreen` | `obj_jukebox`, `obj_game`, corner arts, `obj_mouse`, `obj_fade_gamescreen`, `obj_letterbox` | partly built; remainder UQD-T33 to T43 |
-| `victory`, `gameover` | `obj_victory`, `obj_virtue` x7, retry and continue buttons | missing, UQD-T48 (verdict screen; HP and virtues dropped) |
+| `victory`, `gameover` | `obj_victory`, `obj_virtue` x7, retry and continue buttons | built (UQD-T48): `VerdictScreen`, `DuelVerdict` in the Duel scene, cut to as the original's room_goto; "Game Over" (never drawn: `obj_gameover` was not placed) fixed, "Victory" added, `obj_victory`'s empty labels filled; Retry a new match, Continue the menu; HP and virtues dropped |
 | `characterselect`, `room2` | `obj_characterselect`, five `obj_btn_<fighter>`, `obj_doll`, `obj_descbox`, typewriter | dropped: choosing a fighter (fighters become cosmetic, UQD-T34) |
 | `location`, `travel` | `obj_location`, `obj_map`, `obj_walker`, `obj_travel`, `obj_talkbox`, `obj_dialogwriter`, portraits | dropped: overworld |
 | `room0` | `obj_game` only, 30 fps test room, not in the room order | dropped |
@@ -74,7 +74,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen fade built (UQD-T42: `RoundFade`, `DuelFade`); intro fade built (UQD-T44: `LoadingFade`, its random image fixed), and the Duel scene opens under the intro's image as the menu did; mainmenu fade built (UQD-T45: `MenuFade`, its shared first pass kept); the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | corner arts built (UQD-T43: `CornerArt`, `DuelCornerArt`, sliding in from off the screen on start, `x += 1 + 0.05` of the distance left a step); title built (UQD-T45), katana cursor built (UQD-T46: `KatanaCursor` on the menu and the duel, tip at the pointer, under the letterbox and fades, hidden while a gamepad is in use); clock missing, UQD-T50 |
 | Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | built (UQD-T44: `IntroScene`, `IntroController`); a key or pad button skips as well as the click (deliberate) |
-| Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit built (UQD-T45), Options' slot holds the difficulty; Credits built (UQD-T47); Retry: T48; Scores, Start: dropped |
+| Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit built (UQD-T45), Options' slot holds the difficulty; Credits built (UQD-T47); `_retry`, `_nextbattle` built (UQD-T48, the verdict's Retry and Continue); Scores, Start: dropped |
 | Ambient | `obj_sand_emitter` / `obj_sand`, `obj_butterfly_emitter` / `obj_butterfly`, `obj_snow_emitter` / `obj_snow`, `obj_fog_emitter` / `obj_fog`, `obj_fly_emitter` / `obj_fly`, `obj_rain_emitter` / `obj_raindrop`, `obj_leaf_emitter`, `obj_firefly_emitter` / `obj_firefly`, `obj_tree_emitter` / `obj_tree1`, `obj_lens`, `obj_spotlight` | missing, UQD-T49 (rain, leaf, firefly, tree, lens, spotlight were unused or location-only: optional) |
 | Clash | `obj_clash` | dropped |
 | Stats and combat | `obj_healthbar`, `obj_focusbar`, `obj_focusmeter`, `obj_focusarrow`, `obj_meterarrow`, `obj_artmeter`, `obj_skill`, `obj_skills`, `obj_stances`, `obj_combo`, `obj_buff`, `obj_debufficon`, `obj_criticalhit`, `obj_counter`, `obj_float_text`, `obj_flash_text` | dropped: stats, focus, skills, combos |
@@ -112,7 +112,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Frame and menu | `spr_titlescreen`, `spr_cornerart_left`, `left2`, `right`, `right2`, `spr_btn_left1` to `4`, `spr_btn_right1` to `4` (each with `_over`), `spr_katana_cursor`, `bg_black` | title, corner arts, cursor imported (UQD-T32); `left2` and `right2` drawn by the corner arts (UQD-T43), the plain pair an earlier cut nothing draws; title and the buttons `right1` to `3` and `left4` with their `_over` twins drawn by the main menu (UQD-T45), cursor by `KatanaCursor` (UQD-T46) |
 | Intro | `spr_cloud1` to `4`, `bg_mapscreen` | imported and drawn by the intro (UQD-T44) |
 | Ambient | `spr_sand1`, `2`, `spr_butterfly` (6), `spr_snow1`, `2`, `spr_fly`, `fly2`, `spr_firefly`, `dark`, `strip`, `spr_rain`, `raindrop`, `rainemitter`, `spr_leaf1`, `2`, `spr_tree1`, `spr_spotlight` | sand, butterfly, snow, fog (`spr_cloud1`), fly: UQD-T49; the rest optional |
-| Results | `bg_victory`, `bg_gameover`, `spr_virtue_*` (7) | backgrounds UQD-T48; virtues dropped |
+| Results | `bg_victory`, `bg_gameover`, `spr_virtue_*` (7) | backgrounds and `spr_btn_right4` imported and drawn by the verdict (UQD-T48); virtues dropped |
 | Stats and combat UI | health, focus, art, skill, stance, combo, clash, critical-hit, buff, descbox, selectbox, talk and map sprites | dropped |
 | Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | the five bitmap fonts (atlas and glyph table) and `oldenglish.ttf` imported (UQD-T32); the five bitmap fonts built as UI Toolkit font assets and drawn as outlined text (UQD-T36); the other ttfs came from the Android builds and are unused |
 | Sound: duel | `sfx_beep`, `sfx_drumroll`, `sfx_unsheath`, `sfx_slash`, `sfx_victory`, `sfx_defeat` | built (UQD-T5, T24) |

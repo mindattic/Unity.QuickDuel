@@ -129,6 +129,19 @@ namespace Unity.QuickDuel
             Draw();
         }
 
+        // room_goto out of the room (the verdict screen, UQD-T48): the transition ends where it stands, its image gone with
+        // the room.
+        public void Cut()
+        {
+            endedAt = null;
+            reset = false;
+            Image = null;
+            arrival = null;
+            Stage = RoundFadeStage.Off;
+            Alpha = 0f;
+            Draw();
+        }
+
         private void ShowImage(int image)
         {
             var sprite = image < images.Count ? images[image] : null;

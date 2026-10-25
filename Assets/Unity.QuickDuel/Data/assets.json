@@ -86,6 +86,8 @@
     "spr_cloud4": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud4_0.png" ] },
     "bg_mapscreen": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Intro/bg_mapscreen.png" ] },
     "bg_splatter_scroll": { "group": "background", "width": 1279, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Menu/bg_splatter_scroll.png" ] },
+    "bg_victory": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Verdict/bg_victory.png" ] },
+    "bg_gameover": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Verdict/bg_gameover.png" ] },
     "spr_btn_right1": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right1_0.png" ] },
     "spr_btn_right1_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right1_over_0.png" ] },
     "spr_btn_right2": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right2_0.png" ] },
@@ -95,7 +97,9 @@
     "spr_btn_left4": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_0.png" ] },
     "spr_btn_left4_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_over_0.png" ] },
     "spr_btn_left1": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left1_0.png" ] },
-    "spr_btn_left1_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left1_over_0.png" ] }
+    "spr_btn_left1_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left1_over_0.png" ] },
+    "spr_btn_right4": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Verdict/spr_btn_right4_0.png" ] },
+    "spr_btn_right4_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Verdict/spr_btn_right4_over_0.png" ] }
   },
   "sounds": {
     "sfx_beep": { "path": "Audio/sfx_beep.ogg" },

@@ -5,7 +5,8 @@ namespace Unity.QuickDuel.Core
 {
     // The main menu's buttons (UQD-T45): the original's New Game, Versus and Quit, the computer's difficulty, which
     // stands in the slot of the original's empty Options button, and Credits (UQD-T47).
-    public enum MenuButtonKind { NewGame, Versus, Difficulty, Quit, Credits }
+    // Retry and Continue are the verdict screen's (UQD-T48, VerdictScreen).
+    public enum MenuButtonKind { NewGame, Versus, Difficulty, Quit, Credits, Retry, Continue }
 
     // One of the menu's buttons as the original placed and drew it: the instance's room position (the sprite's origin,
     // 64, 32, sits on it), its sprite and the "_over" sprite drawn while the mouse is over it, its outlined label and the

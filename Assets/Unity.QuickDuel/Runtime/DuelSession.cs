@@ -84,7 +84,17 @@ namespace Unity.QuickDuel
 
         // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP. Issued on the local machine's behalf.
         // Refused online: the mode is the local game's, and an online duel is always player against player.
-        public bool CycleMode() => !controller.IsOnline && Session.CycleMode(MatchSession.LeftPlayerId);
+        // Refused under the verdict screen too (UQD-T48): its button decides what follows a finished match.
+        public bool CycleMode() => !controller.IsOnline && !VerdictShown && Session.CycleMode(MatchSession.LeftPlayerId);
+
+        private bool VerdictShown
+        {
+            get
+            {
+                var verdictScreen = GetComponent<DuelVerdict>();
+                return verdictScreen != null && verdictScreen.Shown;
+            }
+        }
 
         // False (and no-op) while a round is running, between rounds only -- the caller can tell it apart
         // from a mode that was actually applied, unlike the old unconditional void SetMode. Refused online.

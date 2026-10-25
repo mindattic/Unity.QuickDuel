@@ -15,6 +15,7 @@ namespace Unity.QuickDuel
     {
         private DuelController controller;
         private DuelFade fade;
+        private DuelVerdict verdict;
         private InputAction leftKey;
         private InputAction rightKey;
         private InputAction padStrike;
@@ -57,6 +58,10 @@ namespace Unity.QuickDuel
                 // The aftermath plays out and the loading fade resets the battle before the next round (UQD-T42).
                 if (fade == null) fade = GetComponent<DuelFade>();
                 if (fade != null && fade.Pending)
+                    return;
+                // The verdict screen's button, not Space or Start, leaves a finished match (UQD-T48).
+                if (verdict == null) verdict = GetComponent<DuelVerdict>();
+                if (verdict != null && verdict.Shown)
                     return;
                 controller.BeginRound();
             };

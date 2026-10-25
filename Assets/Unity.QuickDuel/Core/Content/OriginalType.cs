@@ -11,6 +11,7 @@ namespace Unity.QuickDuel.Core
     //   obj_locationart:                       fnt_oldenglish, outline 1, the arena's name            -> Banner
     //   obj_gameclock (aftermath):             fnt_oldenglish_small, outline 1, the winner's name     -> Name
     //   obj_gameover:                          fnt_oldenglish, draw_text_outline(..., 2, "Game Over") -> Title
+    //   obj_victory:                           fnt_oldenglish_small, outline 2, its result lines      -> Results
     //   obj_typewriter(_intro):                fnt_mono, draw_text_outline_alpha(..., 2, ...)         -> Intro
     //   obj_gameclock debug, obj_time, obj_btn_*: fnt_basic, outline 1                                -> Hud, Button
     //   health, focus, skill, buff readouts:   fnt_tiny, outline 1                                    -> Tiny
@@ -33,6 +34,7 @@ namespace Unity.QuickDuel.Core
         public static readonly TypeStyle Countdown = new TypeStyle(OldEnglish, 1);
         public static readonly TypeStyle Title = new TypeStyle(OldEnglish, 2);
         public static readonly TypeStyle Name = new TypeStyle(OldEnglishSmall, 1);
+        public static readonly TypeStyle Results = new TypeStyle(OldEnglishSmall, 2);
         public static readonly TypeStyle Intro = new TypeStyle(Mono, 2);
         public static readonly TypeStyle Hud = new TypeStyle(Basic, 1);
         public static readonly TypeStyle Button = new TypeStyle(Basic, 1);

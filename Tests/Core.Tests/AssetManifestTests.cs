@@ -95,6 +95,20 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(m.IntroText, Does.Not.Contain("#"));
         }
 
+        // The verdict screen (UQD-T48): bg_victory and bg_gameover, each the 640 x 480 room.
+        [Test]
+        public void The_shipped_manifest_carries_the_verdict_backgrounds()
+        {
+            var m = Shipped.Value;
+            foreach (var id in new[] { VerdictScreen.VictoryBackground, VerdictScreen.GameOverBackground })
+            {
+                var background = m.Sprite(id);
+                Assert.That(background.Group, Is.EqualTo("background"), id);
+                Assert.That((background.Width, background.Height), Is.EqualTo((VerdictScreen.RoomWidth, VerdictScreen.RoomHeight)), id);
+                Assert.That(background.Frames, Has.Count.EqualTo(1), id);
+            }
+        }
+
         // The main menu (UQD-T45): bg_splatter_scroll and the buttons it draws, each with its "_over" twin.
         [Test]
         public void The_shipped_manifest_carries_the_main_menu()
@@ -113,6 +127,10 @@ namespace Unity.QuickDuel.Core.Tests
                 ids.Add(button.Sprite);
                 ids.Add(button.OverSprite);
             }
+            // Then the verdict screen's Retry / Continue (UQD-T48).
+            var verdict = new VerdictScreen(VerdictKind.Victory, "", "").Button;
+            ids.Add(verdict.Sprite);
+            ids.Add(verdict.OverSprite);
             Assert.That(m.InGroup("button").Select(s => s.Id), Is.EqualTo(ids));
             foreach (var sprite in m.InGroup("button"))
             {

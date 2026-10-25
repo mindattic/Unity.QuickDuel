@@ -80,6 +80,9 @@ namespace Unity.QuickDuel.EditorTools
             new SpriteEntry("bg_mapscreen", "background", "Art/Intro"),
             // The main menu room's background, scrolling behind the title's cut-out logo (UQD-T45).
             new SpriteEntry("bg_splatter_scroll", "background", "Art/Menu"),
+            // The victory and gameover rooms' backgrounds, the match verdict (UQD-T48).
+            new SpriteEntry("bg_victory", "background", "Art/Verdict"),
+            new SpriteEntry("bg_gameover", "background", "Art/Verdict"),
         };
 
         /// <summary>
@@ -95,6 +98,9 @@ namespace Unity.QuickDuel.EditorTools
                 list.Add(new SpriteEntry(id, "button", "Art/Menu"));
                 list.Add(new SpriteEntry(id + "_over", "button", "Art/Menu"));
             }
+            // obj_btn_retry and obj_btn_nextbattle's spr_btn_right4, on the verdict screen (UQD-T48).
+            list.Add(new SpriteEntry("spr_btn_right4", "button", "Art/Verdict"));
+            list.Add(new SpriteEntry("spr_btn_right4_over", "button", "Art/Verdict"));
             return list;
         }
 

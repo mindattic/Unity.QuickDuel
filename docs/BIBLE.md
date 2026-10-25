@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: bible
 status: living
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Unity.QuickDuel — Project Bible
@@ -111,7 +111,8 @@ change it makes is announced only as an event (`RoundStarted`, `PhaseChanged`, `
 `DuelSession` is a thin view that turns Tab / gamepad Select into `SetMode` and draws the mode, score and
 verdict labels from the session's state. The mode is cycled only between rounds; changing it always starts
 a fresh match. A match is first to 2 wins (best of 3); ties and no-strike rounds award nobody. The
-scoreboard shows wins and each side's best reaction.
+scoreboard shows wins and each side's best reaction. A finished local match ends on the original's victory or game
+over screen (UQD-T48, [§6](#UQD-§6)), whose Retry starts a new match in the same mode and Continue returns to the menu.
 
 AI reaction ranges (`AiOpponent.ReactionRange`): Easy 450–700 ms, Normal 300–450 ms, Hard 200–300 ms.
 
@@ -606,6 +607,33 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     through it. The line advances (44, 18, 34, 26, 17 and 13 px) and the 12 px gap after each credit are the
     rebuild's own. A click anywhere, Enter, Space, a pad's South or Start, or Escape closes the credits with the click
     (Escape does not end the game while they are up), and the roll starts from the foot each time it is opened.
+- ✅ The match verdict (UQD-T48; `VerdictScreenTests` and `AssetManifestTests` in Core, `DuelVerdictTests` in PlayMode,
+  screenshots `10-verdict-victory` and `10-verdict-gameover`): the original's victory and gameover rooms. Once a round
+  ends the match, the aftermath and the loading fade play as after any round (UQD-T42); when the image is full and the
+  battle reset under it, the duel cuts to the verdict, as `obj_fade_gamescreen`'s `room_goto(gameover)` /
+  `room_goto(victory)` did (`VerdictScreen` in Core, drawn by `DuelVerdict`): `bg_victory` or `bg_gameover` filling
+  the 640 x 480 room, the heading in `fnt_oldenglish` outlined 2 centred on (320, 64), and the button on
+  `spr_btn_right4` at (576, 448), its `_over` sprite under the pointer (no flick: the original's verdict buttons had
+  none), "Continue" or "Retry" in `fnt_basic` outlined 1 on (x + 6, y - 6), clicking with `sfx_click`. Space / Start no
+  longer begins a round, nor Tab the mode, under it; Escape still quits. Not online: an online match has no verdict room
+  and its host replaces a finished match on the next round, as before.
+  - **Best of 3, deliberate**: the original went there when an HP bar ran out ([§6](#UQD-§6), "Wins needed, 2"); the
+    rebuild goes there when a side has its two wins. Game Over when the computer took the match, Victory when the player
+    did, and in Versus (which the original never sent to a verdict room, its check being `is_singleplayer` only)
+    Victory for whichever player won, named in the result line.
+  - **Retry and Continue, deliberate**: both buttons went on to the overworld (`room_goto(travel)`, or `location` in
+    Versus), which is dropped. Retry (Game Over) loads the duel again for a new match in the same mode; Continue
+    (Victory) goes back to the main menu. Either scene opens under the loading image the verdict cut from (`fade_asset`).
+    A key or pad (Enter, Space, South or Start) presses the one button too, as on the menu.
+  - **Fixed defects**: the gameover room placed `obj_victory` where `obj_gameover` belonged, so "Game Over" was never
+    drawn; the rebuild draws it. Both objects set `fa_left` and drew from `room_width/2`, so their text started at the
+    room's middle; it is centred, as the coordinate meant. `obj_victory`'s labels "Round Time", "Fastest Reaction" and
+    "Other" (`fnt_oldenglish_small` outlined 2, at `room_height/4`, `/3` and `/2`) never had values: the first line
+    carries the match's result ("Left takes the match 2-1") and the second the match's fastest reaction and whose it
+    was; "Other" had nothing to say and is left out. The victory room had no heading at all: it takes "Victory" in Game
+    Over's style. Neither room placed `obj_mouse`, so with the system cursor hidden the button had no visible pointer;
+    the katana cursor is drawn over the verdict.
+  - **Dropped**: `obj_virtue` x7 and `spr_virtue_*` (the virtues went with stats), and the HP bars.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

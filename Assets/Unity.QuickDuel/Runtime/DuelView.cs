@@ -179,7 +179,10 @@ namespace Unity.QuickDuel
         public VisualElement LetterboxTop => letterboxTop;
 
         // obj_mouse (depth -5000) draws under the letterbox and the loading fade (-10000) and over the rest (UQD-T46).
-        public VisualElement CursorCeiling => letterboxTop;
+        // Over the verdict screen (UQD-T48), which covers everything, the katana is drawn over everything.
+        public VisualElement CursorCeiling => verdictScreen != null && verdictScreen.Shown ? null : letterboxTop;
+
+        private DuelVerdict verdictScreen;
 
         private void Awake()
         {
@@ -194,6 +197,7 @@ namespace Unity.QuickDuel
         {
             fade = GetComponent<DuelFade>();
             if (fade != null) fade.BattleReset += OnBattleReset;
+            verdictScreen = GetComponent<DuelVerdict>();
         }
 
         private void OnDestroy()
