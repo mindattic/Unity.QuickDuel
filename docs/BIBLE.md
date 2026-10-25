@@ -83,7 +83,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
-| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
+| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the loser's weapon thrown spinning to land with a hit-ground sound; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
 `SettleSeconds` (50 ms) for a later-delivered input event that happened earlier, then resolves.
@@ -451,6 +451,28 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     fell below the screen; the rebuild spreads them over the screen's height.
   - **The start, matches**: as with the sliding number, the original's aftermath begins at the first strike and the
     rebuild's at the verdict, up to `SettleSeconds` (50 ms) later.
+- ✅ The loser's weapon thrown (UQD-T41; `WeaponTossTests`, `DuelWeaponsTests`): `gameclock_aftermath.gml`'s first
+  pass calls `spawn_weapons.gml` after `determine_winner`, which creates an `obj_weapon` at `room_width/2,
+  vertical_position` with the loser's `weapon_asset`, first a second one behind it for the Myrmidon (its shield,
+  `id_shield`) or the Ronin (a second sword), each mirrored (`image_xscale = -1`) when the right fighter lost. Each piece
+  leaves at `velocityX = irandom_range(5,6)`, negative with `spin = 15` when the left won and positive with `spin = -15`
+  when the right did, `velocityY = irandom_range(12,20)`, and picks `landY = irandom_range(ground_level - 10,
+  ground_level)` (`ground_level` is the fighters' feet, 384). Its step event turns it `spin` degrees every step and its
+  alarm, every 2 steps, turns it `spin` more and moves it `x += velocityX; y -= velocityY; velocityY -= 1; y += 1` while
+  `y < landY`; the first alarm that finds it at or below `landY` plays one of `sfx_hitground1` to `4` (`choose`), swaps
+  in its `weapon_asset_ground` sprite and sets its angle to 0, and it lies there until the next round's loading fade
+  destroys it. `obj_weapon` is at depth -1: over the text and the fallen loser, level with the attacking winner (drawn
+  over it) and under the splatters. Core holds the rule (`WeaponToss`); `DuelWeapons` draws it on the stage at the
+  fighters' pixel scale, stepping at 60 a second off the controller's clock (UQD-LAW-2), and plays the sounds. Weapons
+  stay cosmetic data: each fighter's in-hand and ground sprites come with its `FighterLook`, the shield and the four
+  sounds from the asset manifest (`DuelSceneBuilder`).
+  - **Which rounds throw, matches**: a fair win and an early strike, where a loser falls; nobody striking and a forfeit
+    cut no one and throw nothing.
+  - **A dead heat, fixed defect**: `determine_winner.gml` leaves `last_loser` as the previous round set it (the right
+    fighter in the first round), so on a draw `spawn_weapons` threw the previous loser's weapon though nobody fell; the
+    rebuild's tie throws nothing.
+  - **Clearing, matches**: the original destroys every `obj_weapon` when the next round's loading fade covers the
+    screen; the rebuild, which has no fade yet (UQD-T42), clears them when the next round begins.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

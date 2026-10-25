@@ -32,7 +32,7 @@ updated: 2026-10-24
 | `drumroll` | `irandom_range(3 * room_speed, 6.5 * room_speed)` ticks, drumroll sound, `obj_letterbox` closes in 1 px per tick to 12% of the height | Same 3 to 6.5 s, drumroll, letterbox |
 | `action` | Drumroll stops, unsheath sound, `arena.inverted = true` (blend-mode invert of the whole backdrop), fighters switch to run sprites, a counting-up number shows, the computer opponent strikes at `ART + irandom(-LCK, LCK)` ticks | Cue, a real colour invert of the arena backdrop (UQD-T33), unsheath, the counting-up `ceil(count)` in ms read off the event clock, frozen at the first strike and fading 0.003 a 60 fps step (UQD-T38), adaptive computer replaced by Easy / Normal / Hard ranges |
 | `clash` | Reactions within 3 ticks start a button-mash bar (`obj_clash`, `action_clash`) | Dropped on purpose; a dead heat is a tie that scores nobody |
-| `aftermath` | Letterbox exits, slash sound, blood emitter, 6 to 12 splatters, white flash, `determine_winner`, loser's weapon(s) thrown, winner reaction number slides, 3 s, then a loading-art fade and the next `startup` | Slash, loser falls, reaction times; the winner's name and Wins! above the loser's mark and the winner's number sliding 1 px a 60 fps step away from the loser as it fades (UQD-T39); blood emitter, 6 to 12 splatters and the white flash (UQD-T40); no weapons or fade |
+| `aftermath` | Letterbox exits, slash sound, blood emitter, 6 to 12 splatters, white flash, `determine_winner`, loser's weapon(s) thrown, winner reaction number slides, 3 s, then a loading-art fade and the next `startup` | Slash, loser falls, reaction times; the winner's name and Wins! above the loser's mark and the winner's number sliding 1 px a 60 fps step away from the loser as it fades (UQD-T39); blood emitter, 6 to 12 splatters and the white flash (UQD-T40); the loser's weapon (and the Myrmidon's shield or the Ronin's second sword) thrown spinning, landing with a hit-ground sound (UQD-T41); no fade |
 | Premature strike | `action_attack` during `drumroll`: the striker loses outright (`reaction_time = opponent ART + 1 to 50`), "Premature Strike!" shown | Early strike loses; an Android taunt line drawn centred where "Premature Strike!" was, white Old English (UQD-T6, UQD-T39) |
 | Strike during `countdown` | Ignored (no handler outside `drumroll` and `action`) | Fixed to match (UQD-T22) |
 | Winner | Lower `reaction_time + reaction_penalty`; equal is a draw (nothing happens) | `DuelJudge` (lower wins, tie scores nobody) |
@@ -70,7 +70,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Group | Objects | Disposition |
 | --- | --- | --- |
 | Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33), `obj_player` as the cosmetic fighters standing, facing and fading in (UQD-T34) and running, creeping, dashing and falling (UQD-T35, `FighterMotion`) |
-| Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | blood, splatter, flash built (UQD-T40: `BloodSpray`, `SplatterField`, `WhiteFlash`, `DuelBlood`); `obj_weapon` missing, UQD-T41 |
+| Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | built: blood, splatter, flash (UQD-T40: `BloodSpray`, `SplatterField`, `WhiteFlash`, `DuelBlood`), `obj_weapon` (UQD-T41: `WeaponToss`, `DuelWeapons`) |
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen, intro and mainmenu fades missing, UQD-T42, T44, T45; the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | missing, UQD-T43, T45, T46, T50 |
 | Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | missing, UQD-T44 |
@@ -91,7 +91,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `action_attack`, `determine_winner` | built as `Duel.Strike`, `DuelJudge` (the early-strike rule matches; the clash branch dropped) |
 | `add_reaction`, `calculate_art`, `random_luck` | dropped (adaptive AI replaced by `AiOpponent` ranges) |
 | `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | built as `FighterMotion` (idle UQD-T34; running, attacking and defeat UQD-T35); `set_state_action` is dead code (never called) and is not rebuilt |
-| `spawn_weapons` | missing, UQD-T41 |
+| `spawn_weapons` | built (UQD-T41, `WeaponToss`) |
 | `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (per round, all 11, UQD-T33); `setup_arena_properties` missing, UQD-T49 |
 | `load_characters`, `choose_opponent`, `set_character_description` | `load_characters` is `Data/assets.json`'s fighters (name and sprites only), `choose_opponent` is `FighterDraw` (both seats, drawn per match, since character select is dropped) (UQD-T34); stats, skills, portraits and descriptions dropped |
 | `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | intro text missing UQD-T44; the rest dropped |
@@ -105,7 +105,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Group | Assets | Disposition |
 | --- | --- | --- |
-| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), named per fighter in `Data/assets.json`, idle drawn (UQD-T34), run, attack and defeat drawn (UQD-T35), weapons by T41; portraits, profiles, icons, silhouettes: dropped |
+| Fighters | `spr_character_<exile,gypsy,myrmidon,ronin,vagabond>_<idle,run,attack,defeat>` (idle and run 1 frame, attack and defeat 4), weapons and ground weapons, Myrmidon shield, portraits, profiles, icons, silhouettes | idle, run, attack, defeat, weapons: imported (UQD-T32), named per fighter in `Data/assets.json`, idle drawn (UQD-T34), run, attack and defeat drawn (UQD-T35), weapons, ground weapons and the shield thrown (UQD-T41); portraits, profiles, icons, silhouettes: dropped |
 | Arenas | 17 `spr_arena_*` sprites (11 named in `load_arenas`), `arena_desert` background, `bg_dojo`, `bg_panorama1` | the 11 `load_arenas.gml` arenas imported with their names and descriptions (UQD-T32), drawn by UQD-T33, one per round, behind everything. Fixed defect (UQD-T33): `load_arenas.gml` gives Sozza's Point and South Ridge the same id (5), so South Ridge overwrote Sozza's Point and only 10 arenas could be chosen; all 11 are drawn now |
 | Transitions | `spr_loading1` to `14` | imported (UQD-T32), drawn by UQD-T42 |
 | Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | blood drops, splatters, flash imported (UQD-T32), drawn (UQD-T40); `bg_splatter_scroll` (main menu) and `spr_white` (`obj_lens`) are not the aftermath's |
@@ -116,7 +116,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Stats and combat UI | health, focus, art, skill, stance, combo, clash, critical-hit, buff, descbox, selectbox, talk and map sprites | dropped |
 | Fonts | `fnt_basic`, `fnt_mono`, `fnt_oldenglish`, `fnt_oldenglish_small`, `fnt_tiny` (ttf: oldenglish, sansation, cyberia, gnuolane, infinity, junction) | the five bitmap fonts (atlas and glyph table) and `oldenglish.ttf` imported (UQD-T32); the five bitmap fonts built as UI Toolkit font assets and drawn as outlined text (UQD-T36); the other ttfs came from the Android builds and are unused |
 | Sound: duel | `sfx_beep`, `sfx_drumroll`, `sfx_unsheath`, `sfx_slash`, `sfx_victory`, `sfx_defeat` | built (UQD-T5, T24) |
-| Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), played by UQD-T41, T45 |
+| Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), hit-ground played as a thrown weapon lands (UQD-T41), the rest by T45 |
 | Sound: dropped | `sfx_disabled`, `sfx_bomb`, `sfx_powerup_activate` (focus and skills); `music_*` x8 (no script plays them) | dropped |
 | Data | `datafiles/credits.txt` (arena photo credits) | imported as `Data/credits.txt` (UQD-T32), shown by UQD-T47 |
 | Project | `bushidocoda.ico`, splash images, `help.rtf`, `html` / `Install` web and installer pages | icon and product name: UQD-T50; the rest dropped |

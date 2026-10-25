@@ -42,6 +42,12 @@ namespace Unity.QuickDuel.EditorTools
             view.SetFighters(Fighters());
             duel.AddComponent<DuelTaunt>();
             duel.AddComponent<DuelBlood>().SetSprites(BloodDrops(), Splatters(), Frames(Manifest(), "spr_flash", "the flash")[0]);
+            // obj_weapon (UQD-T41): the Myrmidon's shield (each fighter's own weapon comes with its look) and the four
+            // sounds it chooses from as it lands.
+            duel.AddComponent<DuelWeapons>().SetAssets(
+                Frames(Manifest(), "spr_weapon_myrmidon_shield", "the shield")[0],
+                Frames(Manifest(), "spr_weapon_myrmidon_shield_ground", "the shield")[0],
+                new[] { Clip("sfx_hitground1"), Clip("sfx_hitground2"), Clip("sfx_hitground3"), Clip("sfx_hitground4") });
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));
