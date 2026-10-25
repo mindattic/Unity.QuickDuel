@@ -187,6 +187,23 @@ the stats, skills and portraits in the same script are not read. `AssetManifest.
 - **Deliberate deviation**: the original's player chose a fighter on the character select screen (Myrmidon by
   default) and its single-player opponent was `choose_opponent`'s random pick per location; both screens are
   dropped, so the rebuild draws both seats at random for each match.
+- **Motion through a round** (`FighterMotion`, UQD-T35, from the `set_state_*` scripts, `obj_player`, `gameclock_action`
+  and `obj_gameclock`'s alarm). On the cue both fighters switch to their run sprite on their run marks, 40% and 60%
+  of the width (`left/right_position_run = room_width / 2 -/+ room_width / 10`), and creep together 0.01 original
+  pixel per step at the cue's `actionFPS` of 1000, 10 original pixels a second, timed by the clock
+  ([UQD-LAW-2](#UQD-LAW-2)), until the verdict. The verdict (`determine_winner`) puts both at the middle: the winner
+  plays its attack strip, drawn in front (`depth = -1`), dashing on each 60 fps step by `1 + 0.1` of the gap left to
+  the loser's idle mark; the loser plays its defeat strip. Strips advance at `image_speed` 0.1 (a frame every 10
+  steps) and hold their last frame (Animation End). Three seconds after the verdict (`alarm[0]`) the winner shows its
+  idle sprite again where it stopped; the next round puts both back on their idle marks. A draw or nobody striking
+  moves no one, as `determine_winner`'s draw branch does nothing. An early strike plays the same winner and loser
+  motion from the idle marks, as the original's premature strike does.
+- **Fixed defect**: `obj_player`'s dash for a winner facing left tests `x < right_position_idle` instead of
+  `x > left_position_idle`, so the right-hand winner never stops and drifts on to 10 pixels past the left mark; the
+  rebuild mirrors the left-hand winner's dash and stops it on the mark.
+- **Deliberate deviation**: the original held a round's loser on the first defeat frame while it had HP left and
+  played the whole strip only for the killing blow; the rebuild has no HP ([§3](#UQD-§3)), so every round's loser
+  plays the whole defeat strip, in place of the toppling box it had before.
 
 ## 5. The Laws {#UQD-§5}
 
@@ -332,7 +349,11 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   as `DuelView`'s `FighterLook` list in place of the placeholder boxes. The authority draws a fighter roll per match
   (sent with `RoundBegan` online); the pair stands in its idle sprites at a quarter and three quarters of the width,
   facing each other, fades in at 0.01 alpha per original 60 fps step, and is tinted red and blue when both seats hold
-  the same fighter. The loser still topples as before; the run, attack and defeat strips are UQD-T35's.
+  the same fighter.
+- ✅ The fighters' motion (UQD-T35, [§4.5](#UQD-§4.5); `FighterMotionTests`, `DuelViewTests`): on the cue both run
+  from 40% and 60% of the width, creeping together 0.01 pixel a 1000 fps step; the winner dashes from the middle on to
+  the loser's mark (easing `1 + 0.1` of the gap a 60 fps step) playing its attack strip in front, the loser plays its
+  defeat strip at the middle, and three seconds on the winner returns to idle. The loser no longer topples.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

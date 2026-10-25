@@ -28,6 +28,12 @@ namespace Unity.QuickDuel
     // three quarters of the stage width, two thirds of the way down, facing each other (the right one mirrored), drawn
     // at the original's 640 x 480 scale, fading in at obj_player's 0.01 alpha per 60 fps tick whenever a new pair takes
     // the field, and tinted red (left) and blue (right) when both are the same fighter (FighterLineup).
+    //
+    // They move through the round as obj_player did (UQD-T35, FighterMotion): on the cue both switch to their run sprite
+    // on their run marks at 40% and 60% of the width and creep together 10 original pixels a second; the verdict sends the
+    // winner from the middle dashing on to the loser's mark playing its attack strip, drawn in front, and the loser plays
+    // its defeat strip at the middle; three seconds on the winner shows its idle sprite again, and the next round puts
+    // both back on their idle marks.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
@@ -115,7 +121,12 @@ namespace Unity.QuickDuel
         public string HeadlineText => IsVisible(headline) ? headline.text : "";
         public string PromptText => IsVisible(prompt) ? prompt.text : "";
         public string ReactionText(Side side) => (side == Side.Left ? leftReaction : rightReaction).text;
-        public bool HasFallen(Side side) => (side == Side.Left ? left : right).Fallen;
+
+        // What that fighter is doing, and where it stands as a fraction of the stage width.
+        public FighterMotion Motion(Side side) => (side == Side.Left ? left : right).Motion;
+
+        // The sprite that fighter shows (idle, run, or a frame of its attack or defeat strip); null without fighters.
+        public Sprite FighterShows(Side side) => (side == Side.Left ? left : right).Sprite;
 
         // Other components (DuelSession, DuelTaunt) hang their own labels off this same tree.
         public VisualElement Root { get; private set; }
@@ -134,8 +145,10 @@ namespace Unity.QuickDuel
 
         private void OnRoundStarted()
         {
-            left.Reset();
-            right.Reset();
+            left.Motion.Idle();
+            right.Motion.Idle();
+            left.Draw();
+            right.Draw();
             leftReaction.text = "";
             rightReaction.text = "";
         }
@@ -144,10 +157,16 @@ namespace Unity.QuickDuel
         {
             leftReaction.text = FormatReaction(result.LeftReaction);
             rightReaction.text = FormatReaction(result.RightReaction);
+            // determine_winner: the winner attacks, drawn in front (depth -1), and the loser is defeated; a draw moves no one.
             if (result.Winner.HasValue)
             {
-                var winner = result.Winner.Value;
-                (winner == Side.Left ? right : left).Fall();
+                var winner = result.Winner.Value == Side.Left ? left : right;
+                var loser = winner == left ? right : left;
+                winner.Motion.Attack();
+                loser.Motion.Defeat();
+                winner.Root.BringToFront();
+                winner.Draw();
+                loser.Draw();
             }
         }
 
@@ -203,8 +222,16 @@ namespace Unity.QuickDuel
                 ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
                 : "Press Space or Start for the next round\nEsc / Select+Start: quit";
 
-            left.Animate(dt);
-            right.Animate(dt);
+            // gameclock_action's first pass: the cue sends both idle fighters to their run marks, and they creep while it
+            // is up.
+            var cueUp = phase == DuelPhase.Strike;
+            if (cueUp)
+            {
+                if (left.Motion.Pose == FighterPose.Idle) left.Motion.Run();
+                if (right.Motion.Pose == FighterPose.Idle) right.Motion.Run();
+            }
+            left.Animate(dt, cueUp);
+            right.Animate(dt, cueUp);
         }
 
         // The headline while this side's round is over but the host's verdict is still on its way (online only).
@@ -416,20 +443,21 @@ namespace Unity.QuickDuel
         // The x, from the stage centre, that `side`'s fighter stands at: a quarter or three quarters of the width.
         private static float StageX(Side side) => ((float)FighterLineup.X(side) - 0.5f) * StageWidth;
 
-        // One of the original fighters on the field: its idle sprite at the original's scale, centred where obj_player
-        // stood (the sprites' origin is their centre), the right one mirrored to face left. The root sits at the
-        // sprite's feet so the loser can topple over them (until UQD-T35 plays the defeat strip instead).
+        // One of the original fighters on the field, drawn from its FighterMotion (UQD-T35): the sprite the motion's pose
+        // calls for (idle, run, or a frame of the attack or defeat strip) at the original's scale, centred where
+        // obj_player stood (the sprites' origin is their centre), the right one mirrored to face left. The root sits
+        // at the sprite's feet and moves along the stage with the motion's x.
         private sealed class Fighter
         {
             private readonly VisualElement root;
-            private readonly float facing;
-            private float targetAngle;
-            private float angle;
             private float shownFor;
+            private Sprite shownSprite;
+            private bool spriteStale = true;
 
             public Fighter(DuelView view, Side side)
             {
-                facing = FighterLineup.Facing(side);
+                Motion = new FighterMotion(side);
+                var facing = FighterLineup.Facing(side);
                 var size = OriginalSpriteSize * PixelScale;
                 root = new VisualElement { name = side == Side.Left ? "Left" : "Right", pickingMode = PickingMode.Ignore };
                 PlaceOnStage(root, StageX(side), FighterY - size / 2f, 0f, 0f);
@@ -442,57 +470,74 @@ namespace Unity.QuickDuel
                 root.Add(Image);
 
                 Show(null, null);
-                Reset();
             }
 
             // The original's fighter sprites are all 128 x 128 (Data/assets.json).
             private const float OriginalSpriteSize = 128f;
 
             public VisualElement Image { get; }
+            public VisualElement Root => root;
+            public FighterMotion Motion { get; }
             public FighterLook Look { get; private set; }
             public float Alpha => (float)FighterLineup.Alpha(shownFor);
-            public bool Fallen => Mathf.Abs(targetAngle) > 1f;
 
-            // Puts `look` on the field in its idle sprite, faded out, with `tint` as its image_blend (null: none).
+            // The sprite on screen; null in a scene that carries no fighters.
+            public Sprite Sprite => shownSprite;
+
+            // Puts `look` on the field, faded out, with `tint` as its image_blend (null: none).
             public void Show(FighterLook look, Rgb? tint)
             {
                 Look = look;
                 shownFor = 0f;
-                Image.style.backgroundImage = look?.Idle != null
-                    ? new StyleBackground(look.Idle)
-                    : new StyleBackground(StyleKeyword.None);
                 Image.style.unityBackgroundImageTintColor = tint.HasValue
                     ? (Color)new Color32(tint.Value.R, tint.Value.G, tint.Value.B, 255)
                     : Color.white;
                 Image.style.opacity = Alpha;
+                spriteStale = true;
+                Draw();
             }
-
-            public void Reset()
-            {
-                targetAngle = 0;
-                angle = 0;
-                Apply();
-            }
-
-            public void Fall() => targetAngle = 90f * facing;
 
             // A hitch (a scene load, a stalled frame) advances the fade by at most this much, as the original's
             // frame-locked fade would not have jumped either; at any frame rate above 20 fps it is pure clock time.
             private const float MaxFadeStep = 0.05f;
 
-            public void Animate(float dt)
+            public void Animate(float dt, bool creeping)
             {
                 shownFor += Mathf.Min(dt, MaxFadeStep);
                 Image.style.opacity = Alpha;
-                var step = dt == 0f ? 360f : dt * 360f;
-                angle = Mathf.MoveTowardsAngle(angle, targetAngle, step);
-                Apply();
+                if (creeping) Motion.Creep(dt);
+                Motion.Advance(dt);
+                Draw();
             }
 
-            // UI Toolkit's `rotate` turns clockwise for a positive angle (it is y-down, like CSS); the
-            // original's Z-euler turned counter-clockwise for a positive angle (it was y-up). Negating
-            // keeps every angle above (and every caller of Fall) reading exactly as it did there.
-            private void Apply() => root.style.rotate = new Rotate(Angle.Degrees(-angle));
+            // Places the root at the motion's x and shows the sprite its pose calls for, swapping the image only when
+            // it changes.
+            public void Draw()
+            {
+                root.style.left = StageWidth * (float)Motion.XFraction;
+                var sprite = SpriteFor(Look, Motion);
+                if (sprite == shownSprite && !spriteStale) return;
+                shownSprite = sprite;
+                spriteStale = false;
+                Image.style.backgroundImage = sprite != null
+                    ? new StyleBackground(sprite)
+                    : new StyleBackground(StyleKeyword.None);
+            }
+
+            private static Sprite SpriteFor(FighterLook look, FighterMotion motion)
+            {
+                if (look == null) return null;
+                switch (motion.Sprite)
+                {
+                    case FighterSprite.Run: return look.Run;
+                    case FighterSprite.Attack: return Frame(look.Attack, motion.Frame) ?? look.Idle;
+                    case FighterSprite.Defeat: return Frame(look.Defeat, motion.Frame) ?? look.Idle;
+                    default: return look.Idle;
+                }
+            }
+
+            private static Sprite Frame(IReadOnlyList<Sprite> strip, int frame) =>
+                strip.Count == 0 ? null : strip[Mathf.Clamp(frame, 0, strip.Count - 1)];
         }
     }
 }

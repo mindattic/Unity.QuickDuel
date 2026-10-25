@@ -53,6 +53,20 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.Inverted, Is.True);
             Assert.That(IsInvertFilter(view.Backdrop), Is.True, "the cue inverts the whole backdrop");
             Assert.That(view.CueText, Is.EqualTo("!"));
+            foreach (var side in new[] { Side.Left, Side.Right })
+            {
+                Assert.That(view.Motion(side).Pose, Is.EqualTo(FighterPose.Running), "the cue sets both running");
+                Assert.That(view.FighterShows(side), Is.SameAs(view.FighterIn(side).Run));
+            }
+            Assert.That(view.Motion(Side.Left).XFraction, Is.EqualTo(0.4).Within(0.01));
+            Assert.That(view.Motion(Side.Right).XFraction, Is.EqualTo(0.6).Within(0.01));
+            var crept = view.Motion(Side.Left).X;
+            yield return new WaitForSecondsRealtime(0.1f);
+            var stage = view.Root.Q("Stage").worldBound;
+            Assert.That(view.FighterElement(Side.Left).worldBound.center.x - stage.xMin,
+                Is.EqualTo(stage.width * (float)view.Motion(Side.Left).XFraction).Within(3f), "drawn where it runs, from 40% of the width");
+            if (controller.Phase == DuelPhase.Strike)
+                Assert.That(view.Motion(Side.Left).X, Is.GreaterThan(crept), "the left fighter creeps toward the middle");
             Screenshots.Capture("04-cue");
 
             var cue = controller.CueAt;
@@ -65,8 +79,12 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.HeadlineText, Is.EqualTo("Right wins"));
             Assert.That(view.ReactionText(Side.Left), Is.EqualTo("312 ms"));
             Assert.That(view.ReactionText(Side.Right), Is.EqualTo("187 ms"));
-            Assert.That(view.HasFallen(Side.Left), Is.True);
-            Assert.That(view.HasFallen(Side.Right), Is.False);
+            Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));
+            Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Defeated));
+            Assert.That(view.FighterIn(Side.Right).Attack, Has.Member(view.FighterShows(Side.Right)), "the winner plays its attack strip");
+            Assert.That(view.FighterIn(Side.Left).Defeat, Has.Member(view.FighterShows(Side.Left)), "the loser plays its defeat strip");
+            Assert.That(view.Motion(Side.Left).XFraction, Is.EqualTo(0.5), "the loser falls at the middle");
+            Assert.That(view.Motion(Side.Right).XFraction, Is.LessThan(0.5), "the winner dashes on past the middle");
             Assert.That(view.PromptText, Does.Contain("next round"));
             Screenshots.Capture("05-resolved");
         }
@@ -173,6 +191,52 @@ namespace Unity.QuickDuel.Tests
             Assert.That((Color32)Tint(Side.Left), Is.EqualTo(new Color32(196, 64, 64, 255)));
             Assert.That((Color32)Tint(Side.Right), Is.EqualTo(new Color32(64, 64, 196, 255)));
             Screenshots.Capture("07-same-fighter");
+        }
+
+        // The fighters' motion through a round (UQD-T35): on the cue both run from 40% and 60% of the width, the winner
+        // dashes from the middle on to the loser's quarter-width mark playing its attack strip, the loser plays its defeat
+        // strip at the middle, three seconds on the winner shows its idle sprite again, and the next round puts both back.
+        [UnityTest]
+        public IEnumerator TheWinnerDashesThroughAndTheLoserFalls()
+        {
+            controller.Settings = DuelSceneTests.FastSettings();
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
+            yield return null;
+            Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Running));
+
+            controller.Strike(Side.Left, controller.CueAt + 0.15);
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved);
+            yield return null;
+            Assert.That(controller.Result.Winner, Is.EqualTo(Side.Left));
+            Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Attacking));
+            Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Defeated));
+            Assert.That(view.FighterShows(Side.Left), Is.SameAs(view.FighterIn(Side.Left).Attack[view.Motion(Side.Left).Frame]));
+            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[view.Motion(Side.Right).Frame]));
+            Assert.That(view.Root.Q("Stage").IndexOf(view.FighterElement(Side.Left).parent),
+                Is.GreaterThan(view.Root.Q("Stage").IndexOf(view.FighterElement(Side.Right).parent)), "the winner is drawn in front");
+
+            yield return new WaitForSecondsRealtime(1f);
+            Assert.That(view.Motion(Side.Left).XFraction, Is.EqualTo(0.75).Within(0.01), "the winner stops on the loser's mark");
+            Assert.That(view.FighterShows(Side.Left), Is.SameAs(view.FighterIn(Side.Left).Attack[3]), "the strip holds its last frame");
+            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[3]));
+            var stage = view.Root.Q("Stage").worldBound;
+            Assert.That(view.FighterElement(Side.Left).worldBound.center.x - stage.xMin, Is.EqualTo(stage.width * 0.75f).Within(3f));
+            Assert.That(view.FighterElement(Side.Right).worldBound.center.x - stage.xMin, Is.EqualTo(stage.width * 0.5f).Within(3f));
+            Screenshots.Capture("08-winner-dashed");
+
+            yield return DuelSceneTests.WaitUntil(() => view.FighterShows(Side.Left) == view.FighterIn(Side.Left).Idle, 4f);
+            Assert.That(view.Motion(Side.Left).PoseSeconds, Is.GreaterThanOrEqualTo(FighterMotion.WinnerIdleAfterSeconds));
+            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[3]), "the loser stays down");
+
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return null;
+            foreach (var side in new[] { Side.Left, Side.Right })
+            {
+                Assert.That(view.Motion(side).Pose, Is.EqualTo(FighterPose.Idle));
+                Assert.That(view.Motion(side).XFraction, Is.EqualTo(FighterLineup.X(side)));
+                Assert.That(view.FighterShows(side), Is.SameAs(view.FighterIn(side).Idle));
+            }
         }
 
         private Color Tint(Side side) => view.FighterElement(side).style.unityBackgroundImageTintColor.value;

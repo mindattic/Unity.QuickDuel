@@ -109,7 +109,8 @@ namespace Unity.QuickDuel.Online.Tests
                 Assert.That(controller.Result.RightReaction, Is.EqualTo(0.20).Within(1e-6));
                 Assert.That(view.HeadlineText, Is.EqualTo("Right wins"));
                 Assert.That(view.ReactionText(Side.Right), Is.EqualTo("200 ms"));
-                Assert.That(view.HasFallen(Side.Left), Is.True);
+                Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Defeated));
+                Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));
                 Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));
                 Assert.That(session.ScoreText(Side.Right), Does.Contain("1/"));
             }
