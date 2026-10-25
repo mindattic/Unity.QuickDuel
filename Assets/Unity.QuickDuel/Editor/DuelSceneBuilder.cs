@@ -62,7 +62,7 @@ namespace Unity.QuickDuel.EditorTools
 #endif
 
             EditorSceneManager.SaveScene(scene, ScenePath);
-            AddToBuildSettings(ScenePath);
+            BuildScenes.Register(ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"QuickDuel: wrote {ScenePath}");
         }
@@ -191,12 +191,6 @@ namespace Unity.QuickDuel.EditorTools
             if (clip == null)
                 Debug.LogWarning($"QuickDuel: missing {path}");
             return clip;
-        }
-
-        private static void AddToBuildSettings(string path)
-        {
-            var others = EditorBuildSettings.scenes.Where(s => s.path != path);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(path, true) }.Concat(others).ToArray();
         }
     }
 }

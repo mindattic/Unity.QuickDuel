@@ -229,7 +229,9 @@ between-rounds mode toggle) is out of scope unless this Bible is changed first (
 
 ### UQD-LAW-4 — The scene is generated {#UQD-LAW-4}
 `Assets/Scenes/Duel.unity` is written by `DuelSceneBuilder` (menu *QuickDuel → Rebuild Duel Scene*, or
-batch mode); the UI Toolkit tree is built in code by `DuelView` (UQD-T31). Never hand-edit the scene YAML.
+batch mode) and `Assets/Scenes/Intro.unity` by `IntroSceneBuilder` (*QuickDuel → Rebuild Intro Scene*, UQD-T44); the
+UI Toolkit trees are built in code by `DuelView` (UQD-T31) and `IntroController`, and the build settings keep the
+scenes in the order the game runs them (`BuildScenes`: the intro first). Never hand-edit the scene YAML.
 
 ### UQD-LAW-5 — One home per fact {#UQD-LAW-5}
 Rules live here; history and the surveyed old builds live in [ORIGINS](ORIGINS.md); story and ticket status
@@ -508,6 +510,36 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     room's top) rather than the room's, so the frame still frames the screen.
   - **Layering, matches**: Draw GUI runs after every ordinary draw, so the arts lie over the fighters, the blood, the
     splatters and the flash, and under the letterbox and the loading fade (-10000).
+- ✅ The intro (UQD-T44; `IntroSceneTests`, `IntroTests`): the game now opens on the original's `intro` room, built in
+  `Assets/Scenes/Intro.unity`. Core holds the room (`IntroScene`, `LoadingFade`), stepped at 60 a second off the clock
+  from the scene's start (UQD-LAW-2), the room's first step before its first draw; `IntroController` draws it at the
+  original's pixel scale on a 640 x 480 area centred on the screen. The art and the story are data: `spr_cloud1` to `4`
+  and the room's `bg_mapscreen` background are in the asset manifest, and so is `load_text.gml`'s `introText` (the
+  generator reads it from the script, `#` line breaks as newlines, the original's "eachother" kept).
+  - **Clouds, match**: four cloud sprites (256 x 48, top-left origin) placed three times each, every one at half alpha
+    (`image_alpha = 0.5`) moving left a pixel a step (`hspeed = -1`), created at a random x in -128..768 and y in
+    -24..456, and, the step one is found past `x < -sprite_width`, sent back to a random x in 640..1280 and a fresh y.
+    They draw at depth -100, over the story; the map (`bg_mapscreen`) is the room's background and covers the screen.
+  - **Story, match**: `obj_intro`'s alarm creates `obj_typewriter_intro` on step 180 (3 s), which shows one more
+    character every 4 steps (`type_speed = 4`; a line break is a character like any other) from (40, 50) in `fnt_mono`
+    outlined 2, white; once its alarm finds nothing left to type it holds 300 steps (5 s) and starts the fade. The
+    story's own fade-out is never set in the intro, so the text stays at full alpha. An alarm set to n goes off n steps
+    later; an object created in a step runs its alarms from the next.
+  - **Loading fade, match**: the room opens under `spr_loading1` (globals.gml's `fade_asset`) full, fading out 0.01 a
+    step (100 steps); the fade-in rises 0.01 a step from nothing and enters the next room on the step after it is full,
+    in double precision as GameMaker counted it. The image is handed on (`LoadingHandoff`, the original's global
+    `fade_asset`) and the next scene opens under it, fading it away 0.01 a step, as `obj_fade_mainmenu` did.
+  - **Random loading image, fixed defect**: `obj_fade_intro` shares one `firstPass` between its fade-out and its
+    fade-in, and the fade-out on room start has already spent it, so the fade-in's first pass, where it picks one of the
+    14 loading images (`irandom_range(1, 14)`) and starts it from nothing, could never run: the intro always faded
+    `spr_loading1` back in. Entering the fade-in now starts its own first pass, so a random image fades in from nothing,
+    as written.
+  - **Skip, deliberate**: the original skipped only on a left click (`obj_intro`'s global left press starts the fade).
+    A click still does, and so does any key and a pad's South or Start, so a keyboard or pad player is never stuck
+    watching it. Skipping starts the same fade, at once, from any moment; a second press changes nothing.
+  - **Where it leads, deliberate until UQD-T45**: the original went on to `mainmenu`; until the main menu is built the
+    intro leads to the Duel scene's Ready screen, which opens under the intro's image as the menu did. F1 (fullscreen)
+    is UQD-T50's.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

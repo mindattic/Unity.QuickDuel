@@ -18,7 +18,7 @@ namespace Unity.QuickDuel.Core
         // The groups a sprite can belong to, in the order the manifest lists them.
         public static readonly IReadOnlyList<string> SpriteGroups = new[]
         {
-            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor",
+            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor", "cloud", "background",
         };
 
         private readonly Dictionary<string, OriginalSprite> spritesById = new Dictionary<string, OriginalSprite>();
@@ -26,8 +26,9 @@ namespace Unity.QuickDuel.Core
         private readonly Dictionary<string, OriginalFont> fontsById = new Dictionary<string, OriginalFont>();
 
         private AssetManifest(List<OriginalSprite> sprites, List<OriginalSound> sounds, List<OriginalFont> fonts,
-            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, List<OriginalFighter> fighters, string credits)
+            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, List<OriginalFighter> fighters, string introText, string credits)
         {
+            IntroText = introText;
             Sprites = sprites;
             Sounds = sounds;
             Fonts = fonts;
@@ -58,6 +59,9 @@ namespace Unity.QuickDuel.Core
         // The fighters load_characters.gml defines, in its id order (Myrmidon, Ronin, Gypsy, Vagabond, Exile):
         // cosmetic data only, a name and sprites; the original's stats and skills are not carried (BIBLE section 3).
         public IReadOnlyList<OriginalFighter> Fighters { get; }
+
+        // The intro's story (load_text.gml's introText, UQD-T44), "#" line breaks turned into newlines.
+        public string IntroText { get; }
 
         // The credits text (the arena photo sources, datafiles/credits.txt).
         public string Credits { get; }
@@ -250,11 +254,15 @@ namespace Unity.QuickDuel.Core
             fighterReader.Check(fighters.Count > 0, "fighters", "must hold at least one fighter");
             fighterReader.Done();
 
+            var textReader = reader.Section("text");
+            var introText = textReader.Text("intro");
+            textReader.Done();
+
             var credits = reader.Text("credits");
             CheckPath(reader, "credits", credits, ".txt");
             reader.Done();
 
-            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, fighters, credits);
+            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, fighters, introText, credits);
         }
 
         // A fighter's sprite: the id of a sprite in 'sprites' of the expected group.

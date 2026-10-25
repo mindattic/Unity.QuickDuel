@@ -72,6 +72,29 @@ namespace Unity.QuickDuel.Core.Tests
             }
         }
 
+        // The intro (UQD-T44): obj_cloud1 to 4's clouds, the room's bg_mapscreen and load_text.gml's introText.
+        [Test]
+        public void The_shipped_manifest_carries_the_intro()
+        {
+            var m = Shipped.Value;
+            Assert.That(m.InGroup("cloud").Select(s => s.Id), Is.EqualTo(new[] { "spr_cloud1", "spr_cloud2", "spr_cloud3", "spr_cloud4" }));
+            foreach (var cloud in m.InGroup("cloud"))
+            {
+                Assert.That(cloud.Width, Is.EqualTo(IntroScene.CloudWidth), cloud.Id);
+                Assert.That(cloud.Height, Is.EqualTo(IntroScene.CloudHeight), cloud.Id);
+                Assert.That(cloud.OriginX, Is.Zero, cloud.Id);
+                Assert.That(cloud.OriginY, Is.Zero, cloud.Id);
+            }
+            var map = m.Sprite("bg_mapscreen");
+            Assert.That(map.Group, Is.EqualTo("background"));
+            Assert.That((map.Width, map.Height), Is.EqualTo((IntroScene.RoomWidth, IntroScene.RoomHeight)));
+
+            Assert.That(m.IntroText, Does.StartWith("For centuries the empire had been fragmented.\nFactions waged war endlessly against eachother.\n\n"));
+            Assert.That(m.IntroText, Does.Contain("A young boy was crowned the Enlightened Ruler.\n\n"));
+            Assert.That(m.IntroText, Does.EndWith("The end of a way of life had begun.\n\nThe Bushido Coda."));
+            Assert.That(m.IntroText, Does.Not.Contain("#"));
+        }
+
         [Test]
         public void The_shipped_manifest_lists_the_sounds_fonts_and_credits()
         {
@@ -136,6 +159,7 @@ namespace Unity.QuickDuel.Core.Tests
   ""typefaces"": { ""a"": { ""path"": ""Fonts/a.ttf"" } },
   ""arenas"": { ""a"": { ""name"": ""A"", ""description"": ""An arena."", ""sprite"": ""spr_a"" } },
   ""fighters"": { ""f"": { ""name"": ""F"", ""idle"": ""spr_f"", ""run"": ""spr_f"", ""attack"": ""spr_f"", ""defeat"": ""spr_f"", ""weapon"": ""spr_w"", ""groundWeapon"": ""spr_w"" } },
+  ""text"": { ""intro"": ""A story."" },
   ""credits"": ""Data/credits.txt""
 }".Replace("\r\n", "\n");
 

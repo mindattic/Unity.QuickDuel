@@ -63,8 +63,18 @@ namespace Unity.QuickDuel.EditorTools
             for (var i = 1; i <= 10; i++)
                 list.Add(new SpriteEntry($"spr_splatter{i}", "splatter", "Art/Aftermath"));
             list.Add(new SpriteEntry("spr_flash", "flash", "Art/Aftermath"));
+
+            // The intro (UQD-T44): obj_cloud1 to 4's clouds.
+            for (var i = 1; i <= 4; i++)
+                list.Add(new SpriteEntry($"spr_cloud{i}", "cloud", "Art/Intro"));
             return list;
         }
+
+        /// <summary>
+        /// GameMaker backgrounds (a <c>.background.gmx</c> and one image) the rebuild draws, listed with the sprites in
+        /// the "background" group: the intro room's bg_mapscreen (UQD-T44).
+        /// </summary>
+        public static readonly SpriteEntry[] Backgrounds = { new SpriteEntry("bg_mapscreen", "background", "Art/Intro") };
 
         public const string ArenaFolder = "Art/Arenas";
         public const string AudioFolder = "Audio";

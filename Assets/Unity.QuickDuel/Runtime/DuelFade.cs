@@ -14,6 +14,10 @@ namespace Unity.QuickDuel
     // Everything steps at the original's 60 a second counted off the controller's clock, not rendered frames. The image
     // is drawn at depth -10000, over everything else on the panel, stretched over the whole screen as the original's
     // 640 x 480 room. A round begun before the fade is done (online, the host's Space) simply takes the image away.
+    //
+    // Arriving from the intro (UQD-T44), the scene opens under the loading image the intro faded in (LoadingHandoff, the
+    // original's fade_asset) and fades it away at 0.01 a step, as obj_fade_mainmenu opened the main menu the intro led
+    // to; the Ready screen stands in for that menu until it is built (UQD-T45).
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelFade : MonoBehaviour
     {
@@ -26,6 +30,9 @@ namespace Unity.QuickDuel
         private readonly System.Random random = new System.Random();
         private double? endedAt;
         private bool reset;
+        private LoadingFade arrival;
+        private double arrivedAt;
+        private long arrivalSteps;
 
         public void SetImages(IEnumerable<Sprite> loadingImages)
         {
@@ -52,6 +59,16 @@ namespace Unity.QuickDuel
         // The battle has been reset under this transition's image (until the next round begins).
         public bool HasReset => reset;
 
+        // The intro's image fading away as the scene opens (0 to 13 for spr_loading1 to 14); null once it is gone or when
+        // the scene was not entered from the intro.
+        public int? ArrivalImage => arrival?.Image;
+
+        // The clock reading the scene opened under it.
+        public double ArrivedAt => arrivedAt;
+
+        // That image's alpha now.
+        public float ArrivalAlpha => arrival != null ? (float)arrival.DrawnAlpha : 0f;
+
         // The drawn image, for tests and screenshots.
         public VisualElement Overlay => overlay;
 
@@ -72,6 +89,16 @@ namespace Unity.QuickDuel
 
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
+
+            if (LoadingHandoff.TryTake(out var image) && image >= 0 && image < LoadingFade.Images)
+            {
+                arrival = new LoadingFade(image);
+                arrivedAt = controller.Now;
+                arrivalSteps = 0;
+                ShowImage(image);
+            }
+            Advance();
+            Draw();
         }
 
         private void OnDestroy()
@@ -96,12 +123,18 @@ namespace Unity.QuickDuel
             endedAt = controller.EndedAt ?? controller.Now;
             reset = false;
             Image = RoundFade.Pick(random);
-            var sprite = Image.Value < images.Count ? images[Image.Value] : null;
+            arrival = null;
+            ShowImage(Image.Value);
+            Advance();
+            Draw();
+        }
+
+        private void ShowImage(int image)
+        {
+            var sprite = image < images.Count ? images[image] : null;
             // A scene that carries no images fades a black screen instead.
             overlay.style.backgroundImage = sprite != null ? new StyleBackground(sprite) : new StyleBackground(StyleKeyword.None);
             overlay.style.backgroundColor = sprite != null ? Color.clear : Color.black;
-            Advance();
-            Draw();
         }
 
         private void Update()
@@ -113,6 +146,18 @@ namespace Unity.QuickDuel
         // Runs the transition on to the clock's current step, resetting the battle once the image is full.
         private void Advance()
         {
+            if (arrival != null)
+            {
+                var steps = LoadingFade.StepsAt(controller.Now - arrivedAt);
+                while (arrivalSteps < steps && arrival.Mode == LoadingFadeMode.FadeOut)
+                {
+                    arrival.Step(null);
+                    arrivalSteps++;
+                }
+                if (arrival.Mode != LoadingFadeMode.FadeOut)
+                    arrival = null;
+            }
+
             if (!endedAt.HasValue)
             {
                 Stage = RoundFadeStage.Off;
@@ -133,8 +178,14 @@ namespace Unity.QuickDuel
         {
             if (overlay == null) return;
             var shown = endedAt.HasValue && Alpha > 0f;
+            var opacity = shown ? Alpha : 0f;
+            if (!endedAt.HasValue && ArrivalAlpha > 0f)
+            {
+                shown = true;
+                opacity = ArrivalAlpha;
+            }
             overlay.style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
-            overlay.style.opacity = shown ? Alpha : 0f;
+            overlay.style.opacity = opacity;
             // Depth -10000: over everything any other component has hung off the panel since.
             if (shown && overlay.parent != null && overlay.parent.IndexOf(overlay) != overlay.parent.childCount - 1)
                 overlay.BringToFront();

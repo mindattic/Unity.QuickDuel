@@ -17,7 +17,7 @@ namespace Unity.QuickDuel.EditorTools
         {
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (scenes.Length == 0)
-                scenes = new[] { DuelSceneBuilder.ScenePath };
+                scenes = BuildScenes.Order;
 
             Directory.CreateDirectory(Path.GetDirectoryName(WindowsPath));
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions

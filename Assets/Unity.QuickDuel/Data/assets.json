@@ -79,7 +79,12 @@
     "spr_splatter8": { "group": "splatter", "width": 96, "height": 96, "originX": 48, "originY": 48, "frames": [ "Art/Aftermath/spr_splatter8_0.png" ] },
     "spr_splatter9": { "group": "splatter", "width": 96, "height": 96, "originX": 48, "originY": 48, "frames": [ "Art/Aftermath/spr_splatter9_0.png" ] },
     "spr_splatter10": { "group": "splatter", "width": 96, "height": 96, "originX": 48, "originY": 48, "frames": [ "Art/Aftermath/spr_splatter10_0.png" ] },
-    "spr_flash": { "group": "flash", "width": 90, "height": 90, "originX": 0, "originY": 0, "frames": [ "Art/Aftermath/spr_flash_0.png" ] }
+    "spr_flash": { "group": "flash", "width": 90, "height": 90, "originX": 0, "originY": 0, "frames": [ "Art/Aftermath/spr_flash_0.png" ] },
+    "spr_cloud1": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud1_0.png" ] },
+    "spr_cloud2": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud2_0.png" ] },
+    "spr_cloud3": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud3_0.png" ] },
+    "spr_cloud4": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud4_0.png" ] },
+    "bg_mapscreen": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Intro/bg_mapscreen.png" ] }
   },
   "sounds": {
     "sfx_beep": { "path": "Audio/sfx_beep.ogg" },
@@ -124,6 +129,9 @@
     "gypsy": { "name": "Gypsy", "idle": "spr_character_gypsy_idle", "run": "spr_character_gypsy_run", "attack": "spr_character_gypsy_attack", "defeat": "spr_character_gypsy_defeat", "weapon": "spr_weapon_gypsy", "groundWeapon": "spr_weapon_gypsy_ground" },
     "vagabond": { "name": "Vagabond", "idle": "spr_character_vagabond_idle", "run": "spr_character_vagabond_run", "attack": "spr_character_vagabond_attack", "defeat": "spr_character_vagabond_defeat", "weapon": "spr_weapon_vagabond", "groundWeapon": "spr_weapon_vagabond_ground" },
     "exile": { "name": "Exile", "idle": "spr_character_exile_idle", "run": "spr_character_exile_run", "attack": "spr_character_exile_attack", "defeat": "spr_character_exile_defeat", "weapon": "spr_weapon_exile", "groundWeapon": "spr_weapon_exile_ground" }
+  },
+  "text": {
+    "intro": "For centuries the empire had been fragmented.\nFactions waged war endlessly against eachother.\n\nThen a descendant of the royal bloodline was found.\nA young boy was crowned the Enlightened Ruler.\n\nOld ways were outlawed; the caste system abolished.\nThe end of a way of life had begun.\n\nThe Bushido Coda."
   },
   "credits": "Data/credits.txt"
 }

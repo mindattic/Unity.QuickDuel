@@ -73,6 +73,8 @@ namespace Unity.QuickDuel.EditorTools
             var sprites = new List<SpriteRecord>();
             foreach (var entry in OriginalAssetCatalog.Sprites())
                 sprites.Add(CopySprite(root, entry.Id, entry.Group, entry.Folder));
+            foreach (var entry in OriginalAssetCatalog.Backgrounds)
+                sprites.Add(CopyBackground(root, entry.Id, entry.Group, entry.Folder));
 
             var arenas = ReadArenas(Path.Combine(root, "scripts", "load_arenas.gml"));
             var arenaSprites = new List<SpriteRecord>();
@@ -83,6 +85,7 @@ namespace Unity.QuickDuel.EditorTools
             sprites.InsertRange(sprites.FindIndex(s => s.Group == "loading"), arenaSprites);
 
             var fighters = ReadFighters(Path.Combine(root, "scripts", "load_characters.gml"));
+            var introText = ReadIntroText(Path.Combine(root, "scripts", "load_text.gml"));
 
             var sounds = new List<KeyValuePair<string, string>>();
             foreach (var sound in OriginalAssetCatalog.Sounds)
@@ -114,7 +117,7 @@ namespace Unity.QuickDuel.EditorTools
 
             Copy(Path.Combine(root, "datafiles", "credits.txt"), CreditsFile);
 
-            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, fighters, CreditsFile);
+            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, fighters, introText, CreditsFile);
             Directory.CreateDirectory(Full(DataFolder));
             File.WriteAllText(Full(ManifestPath), text, new UTF8Encoding(false));
 
@@ -174,6 +177,58 @@ namespace Unity.QuickDuel.EditorTools
             if (record.Frames.Count == 0)
                 throw new InvalidDataException($"The original sprite {id} has no frames.");
             return record;
+        }
+
+        // A GameMaker background: one image, its size from the .background.gmx, drawn from its top left.
+        private static SpriteRecord CopyBackground(string root, string id, string group, string folder)
+        {
+            var definition = Path.Combine(root, "background", id + ".background.gmx");
+            if (!File.Exists(definition))
+                throw new FileNotFoundException($"The original has no background {id}", definition);
+
+            var xml = new XmlDocument();
+            xml.Load(definition);
+            var background = xml.SelectSingleNode("/background");
+            var record = new SpriteRecord
+            {
+                Id = id,
+                Group = group,
+                Width = Int(background, "width"),
+                Height = Int(background, "height"),
+            };
+            // "images\bg_x.png", relative to the background folder.
+            var image = background.SelectSingleNode("data").InnerText.Trim();
+            var path = $"{folder}/{Path.GetFileName(image.Replace('\\', '/'))}";
+            Copy(Path.Combine(root, "background", image.Replace('\\', Path.DirectorySeparatorChar)), path);
+            record.Frames.Add(path);
+            return record;
+        }
+
+        private static readonly Regex IntroLine = new Regex(@"^\s*txt\s*(\+?=)\s*(""[^""]*"")\s*;?\s*$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// load_text.gml's introText (UQD-T44): the <c>txt</c> lines from the top of the script down to
+        /// <c>introText = txt;</c>, joined, with GameMaker's "#" line break turned into a newline.
+        /// </summary>
+        public static string ReadIntroText(string script)
+        {
+            var text = new StringBuilder();
+            foreach (var line in File.ReadAllLines(script))
+            {
+                if (Regex.IsMatch(line, @"^\s*introText\s*=\s*txt\s*;"))
+                {
+                    if (text.Length == 0)
+                        throw new InvalidDataException("load_text.gml sets introText from an empty txt.");
+                    return text.ToString().Replace('#', '\n');
+                }
+                var match = IntroLine.Match(line);
+                if (!match.Success)
+                    continue;
+                if (match.Groups[1].Value == "=")
+                    text.Clear();
+                text.Append(Literal(match.Groups[2].Value, "load_text.gml"));
+            }
+            throw new InvalidDataException("load_text.gml never sets introText.");
         }
 
         private static FontRecord CopyFont(string root, string id)
@@ -382,7 +437,7 @@ namespace Unity.QuickDuel.EditorTools
 
             public string Write(List<SpriteRecord> sprites, List<KeyValuePair<string, string>> sounds,
                 List<FontRecord> fonts, List<KeyValuePair<string, string>> typefaces, List<ArenaRecord> arenas,
-                List<FighterRecord> fighters, string credits)
+                List<FighterRecord> fighters, string introText, string credits)
             {
                 sb.Append("{\n");
                 Line(1, $"\"format\": {Str(AssetManifest.Format)},");
@@ -435,6 +490,10 @@ namespace Unity.QuickDuel.EditorTools
                     Line(2, $"{Str(f.Id)}: {{ \"name\": {Str(f.Name)}, \"idle\": {Str(f.Idle)}, \"run\": {Str(f.Run)}, \"attack\": {Str(f.Attack)}, " +
                             $"\"defeat\": {Str(f.Defeat)}, \"weapon\": {Str(f.Weapon)}, \"groundWeapon\": {Str(f.GroundWeapon)} }}{Comma(i, fighters.Count)}");
                 }
+                Line(1, "},");
+
+                Line(1, "\"text\": {");
+                Line(2, $"\"intro\": {Str(introText)}");
                 Line(1, "},");
 
                 Line(1, $"\"credits\": {Str(credits)}");

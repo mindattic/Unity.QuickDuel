@@ -57,7 +57,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 
 | Room | Contents | Disposition |
 | --- | --- | --- |
-| `intro` | `obj_intro`, four cloud layers x3, `obj_typewriter_intro`, `obj_fade_intro` | missing, UQD-T44 (the Ready screen stands in) |
+| `intro` | `obj_intro`, four cloud layers x3, `obj_typewriter_intro`, `obj_fade_intro` | built (UQD-T44): `Intro.unity`, the game's first scene (`IntroScene`, `IntroController`); it leads to the Ready screen until the main menu is built (UQD-T45) |
 | `mainmenu` | `obj_title`, buttons New Game, Versus, Options, Quit, Credits, Scores, `obj_mainmenu`, `obj_mouse`, `obj_fade_mainmenu` | missing, UQD-T45, T46, T47 (Options, Scores were empty stubs: dropped) |
 | `gamescreen` | `obj_jukebox`, `obj_game`, corner arts, `obj_mouse`, `obj_fade_gamescreen`, `obj_letterbox` | partly built; remainder UQD-T33 to T43 |
 | `victory`, `gameover` | `obj_victory`, `obj_virtue` x7, retry and continue buttons | missing, UQD-T48 (verdict screen; HP and virtues dropped) |
@@ -71,9 +71,9 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | --- | --- | --- |
 | Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33), `obj_player` as the cosmetic fighters standing, facing and fading in (UQD-T34) and running, creeping, dashing and falling (UQD-T35, `FighterMotion`) |
 | Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | built: blood, splatter, flash (UQD-T40: `BloodSpray`, `SplatterField`, `WhiteFlash`, `DuelBlood`), `obj_weapon` (UQD-T41: `WeaponToss`, `DuelWeapons`) |
-| Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen fade built (UQD-T42: `RoundFade`, `DuelFade`); intro and mainmenu fades missing, UQD-T44, T45; the rest dropped |
+| Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen fade built (UQD-T42: `RoundFade`, `DuelFade`); intro fade built (UQD-T44: `LoadingFade`, its random image fixed), and the Duel scene opens under the intro's image as the menu did; mainmenu fade UQD-T45; the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | corner arts built (UQD-T43: `CornerArt`, `DuelCornerArt`, sliding in from off the screen on start, `x += 1 + 0.05` of the distance left a step); title, cursor and clock missing, UQD-T45, T46, T50 |
-| Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | missing, UQD-T44 |
+| Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | built (UQD-T44: `IntroScene`, `IntroController`); a key or pad button skips as well as the click (deliberate) |
 | Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit, Credits, Retry: UQD-T45, T47, T48; Options, Scores, Start: dropped |
 | Ambient | `obj_sand_emitter` / `obj_sand`, `obj_butterfly_emitter` / `obj_butterfly`, `obj_snow_emitter` / `obj_snow`, `obj_fog_emitter` / `obj_fog`, `obj_fly_emitter` / `obj_fly`, `obj_rain_emitter` / `obj_raindrop`, `obj_leaf_emitter`, `obj_firefly_emitter` / `obj_firefly`, `obj_tree_emitter` / `obj_tree1`, `obj_lens`, `obj_spotlight` | missing, UQD-T49 (rain, leaf, firefly, tree, lens, spotlight were unused or location-only: optional) |
 | Clash | `obj_clash` | dropped |
@@ -94,7 +94,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `spawn_weapons` | built (UQD-T41, `WeaponToss`) |
 | `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (per round, all 11, UQD-T33); `setup_arena_properties` missing, UQD-T49 |
 | `load_characters`, `choose_opponent`, `set_character_description` | `load_characters` is `Data/assets.json`'s fighters (name and sprites only), `choose_opponent` is `FighterDraw` (both seats, drawn per match, since character select is dropped) (UQD-T34); stats, skills, portraits and descriptions dropped |
-| `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | intro text missing UQD-T44; the rest dropped |
+| `load_text`, `init_text`, `process_text`, `dialog`, `mouseover_message_draw` | `introText` read into the asset manifest and typed out by the intro (UQD-T44); the rest dropped |
 | `draw_text_outline`, `_alpha`, `_color`, `add_shadow`, `draw_light`, `create_lens`, `RGB` | outline text built as `OutlinedText` and `OriginalType` (UQD-T36); lighting dropped |
 | `show_float_text`, `_color` | dropped (damage numbers) |
 | `calculate_damage`, `check_regen`, `focus_percent`, `skill_*`, `reset_combos`, `reset_selectboxes` | dropped |
@@ -110,7 +110,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Transitions | `spr_loading1` to `14` | imported (UQD-T32), drawn by the round transition (UQD-T42) |
 | Aftermath | `spr_blood_drop1`, `2`, `spr_splatter1` to `10`, `spr_flash`, `bg_splatter_scroll`, `spr_white` | blood drops, splatters, flash imported (UQD-T32), drawn (UQD-T40); `bg_splatter_scroll` (main menu) and `spr_white` (`obj_lens`) are not the aftermath's |
 | Frame and menu | `spr_titlescreen`, `spr_cornerart_left`, `left2`, `right`, `right2`, `spr_btn_left1` to `4`, `spr_btn_right1` to `4` (each with `_over`), `spr_katana_cursor`, `bg_black` | title, corner arts, cursor imported (UQD-T32); `left2` and `right2` drawn by the corner arts (UQD-T43), the plain pair an earlier cut nothing draws; title and cursor drawn by UQD-T45, T46 |
-| Intro | `spr_cloud1` to `4` | missing, UQD-T44 |
+| Intro | `spr_cloud1` to `4`, `bg_mapscreen` | imported and drawn by the intro (UQD-T44) |
 | Ambient | `spr_sand1`, `2`, `spr_butterfly` (6), `spr_snow1`, `2`, `spr_fly`, `fly2`, `spr_firefly`, `dark`, `strip`, `spr_rain`, `raindrop`, `rainemitter`, `spr_leaf1`, `2`, `spr_tree1`, `spr_spotlight` | sand, butterfly, snow, fog (`spr_cloud1`), fly: UQD-T49; the rest optional |
 | Results | `bg_victory`, `bg_gameover`, `spr_virtue_*` (7) | backgrounds UQD-T48; virtues dropped |
 | Stats and combat UI | health, focus, art, skill, stance, combo, clash, critical-hit, buff, descbox, selectbox, talk and map sprites | dropped |
