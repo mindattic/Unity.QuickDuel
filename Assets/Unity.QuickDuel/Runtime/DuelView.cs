@@ -75,6 +75,7 @@ namespace Unity.QuickDuel
         private OutlinedText title;
         private OutlinedText getReady;
         private OutlinedText countdown;
+        private OutlinedText counter;
         private OutlinedText cue;
         private OutlinedText headline;
         private OutlinedText prompt;
@@ -126,6 +127,13 @@ namespace Unity.QuickDuel
         // The alpha the countdown's number is drawn at: 1 as each of 3, 2, 1 appears, fading 0.02 a 60 fps step.
         public float CountdownAlpha => IsVisible(countdown) ? countdown.style.opacity.value : 0f;
         public string CueText => IsVisible(cue) ? cue.text : "";
+
+        // gameclock_action's counting-up number in the centre while the cue is up (UQD-T38): milliseconds since the cue,
+        // frozen at the first strike; empty when none is drawn.
+        public string CounterText => IsVisible(counter) ? counter.text : "";
+
+        // The alpha it is drawn at: 1 while it counts, fading 0.003 a 60 fps step from the first strike.
+        public float CounterAlpha => IsVisible(counter) ? counter.style.opacity.value : 0f;
         public string HeadlineText => IsVisible(headline) ? headline.text : "";
         public string PromptText => IsVisible(prompt) ? prompt.text : "";
         public string ReactionText(Side side) => (side == Side.Left ? leftReaction : rightReaction).text;
@@ -223,6 +231,17 @@ namespace Unity.QuickDuel
 
             SetInverted(phase == DuelPhase.Strike);
             SetVisible(cue, phase == DuelPhase.Strike);
+
+            // gameclock_action (UQD-T38): ceil(count) at 1 ms a tick from the cue, read off the clock; the first strike
+            // freezes it, and it fades from there at 0.003 a 60 fps step.
+            var count = controller.ReactionCount;
+            var counterAlpha = (float)controller.ReactionCountAlpha;
+            SetVisible(counter, count > 0 && counterAlpha > 0f);
+            if (count > 0)
+            {
+                counter.text = count.ToString();
+                counter.style.opacity = counterAlpha;
+            }
 
             var resolved = phase == DuelPhase.Resolved;
             SetVisible(headline, resolved);
@@ -375,8 +394,12 @@ namespace Unity.QuickDuel
             getReady = CreateLabel("GetReady", OriginalType.Countdown, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale));
             getReady.text = CountdownBanner.Text;
             getReady.style.opacity = 1f; // draw_text_outline_alpha(..., default_alpha), and default_alpha is 1
-            // Not the original's (its cue is the invert alone): kept at twice the banner's scale so it reads at once.
-            cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, 120f), CueRed, 2f);
+            // obj_gameclock draws the action's count where the countdown's number was (room_height/2 - 16), in the same
+            // Old English outlined 1.
+            counter = CreateLabel("Counter", OriginalType.Countdown, new Vector2(0, CountdownY));
+            // Not the original's (its cue is the invert alone): kept at twice the banner's scale so it reads at once,
+            // on Get Ready's line so the count beneath it stays where the original drew it.
+            cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale), CueRed, 2f);
             cue.text = "!";
             headline = CreateLabel("Headline", OriginalType.Banner, new Vector2(0, 370f));
             prompt = CreateLabel("Prompt", OriginalType.Hud, new Vector2(0, -440f));

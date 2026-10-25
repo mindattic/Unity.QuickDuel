@@ -64,6 +64,81 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void The_strike_counter_counts_milliseconds_from_the_cue_at_full_alpha()
+        {
+            var duel = StartedDuel(out var cue);
+            duel.Tick(cue - 0.5);
+            Assert.That(duel.ReactionCount(cue - 0.5), Is.EqualTo(0), "nothing before the cue");
+            duel.Tick(cue);
+            // The cue's own step draws 1 (count = 0; count += 1), then one a millisecond, read off the clock.
+            Assert.That(duel.ReactionCount(cue), Is.EqualTo(1));
+            Assert.That(duel.ReactionCount(cue + 0.0004), Is.EqualTo(1));
+            Assert.That(duel.ReactionCount(cue + 0.0015), Is.EqualTo(2), "ceil(count)");
+            Assert.That(duel.ReactionCount(cue + 0.25), Is.EqualTo(250));
+            Assert.That(duel.ReactionCount(cue + 1.2345), Is.EqualTo(1235));
+            Assert.That(duel.ReactionCountAlpha(cue + 1.2345), Is.EqualTo(1), "alpha = default_alpha while it counts");
+            // Never past the strike timeout, even read before Tick ends the round.
+            Assert.That(duel.ReactionCount(cue + 10), Is.EqualTo(3000));
+        }
+
+        [Test]
+        public void The_first_strike_freezes_the_counter_which_then_fades_0_003_a_60_fps_step()
+        {
+            var duel = StartedDuel(out var cue);
+            duel.Tick(cue);
+            duel.Strike(Side.Right, cue + 0.212);
+            Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Strike));
+            Assert.That(duel.ReactionCount(cue + 0.4), Is.EqualTo(212), "frozen at the first strike");
+            Assert.That(duel.ReactionCountAlpha(cue + 0.212), Is.EqualTo(1).Within(1e-9));
+            // Ten 60 fps steps on: 1 - 10 * 0.003.
+            Assert.That(duel.ReactionCountAlpha(cue + 0.212 + 10 / 60.0), Is.EqualTo(0.97).Within(1e-9));
+
+            duel.Strike(Side.Left, cue + 0.3);
+            Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Resolved));
+            Assert.That(duel.ReactionCount(cue + 1), Is.EqualTo(212), "the verdict keeps the winner's count");
+            Assert.That(duel.ReactionCountAlpha(cue + 0.212 + 1), Is.EqualTo(0.82).Within(1e-9));
+            // Gone after the original's 333 steps (5.6 s).
+            Assert.That(duel.ReactionCountAlpha(cue + 0.212 + 334 / 60.0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void A_later_delivered_earlier_strike_refreezes_the_counter_at_the_earlier_time()
+        {
+            var duel = StartedDuel(out var cue);
+            duel.Tick(cue);
+            duel.Strike(Side.Left, cue + 0.3);
+            Assert.That(duel.ReactionCount(cue + 0.31), Is.EqualTo(300));
+            duel.Strike(Side.Right, cue + 0.25);
+            Assert.That(duel.ReactionCount(cue + 0.31), Is.EqualTo(250));
+        }
+
+        [Test]
+        public void No_counter_after_a_round_decided_without_a_reaction()
+        {
+            var early = StartedDuel(out var cue);
+            early.Tick(4.0);
+            early.Strike(Side.Left, cue - 0.5);
+            Assert.That(early.ReactionCount(cue), Is.EqualTo(0), "an early strike");
+
+            var nobody = StartedDuel(out cue);
+            nobody.Tick(cue);
+            nobody.Tick(cue + 3.0);
+            Assert.That(nobody.Phase, Is.EqualTo(DuelPhase.Resolved));
+            Assert.That(nobody.ReactionCount(cue + 3.0), Is.EqualTo(0), "nobody struck");
+            Assert.That(nobody.ReactionCountAlpha(cue + 3.0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Counter_figures_hold_at_their_edges()
+        {
+            Assert.That(ReactionCounter.Count(double.NaN), Is.EqualTo(1));
+            Assert.That(ReactionCounter.Count(-1), Is.EqualTo(1));
+            Assert.That(ReactionCounter.FrozenAlpha(-0.1), Is.EqualTo(1));
+            Assert.That(ReactionCounter.FrozenAlpha(double.NaN), Is.EqualTo(0));
+            Assert.That(ReactionCounter.FrozenAlpha(60), Is.EqualTo(0));
+        }
+
+        [Test]
         public void Number_alpha_holds_at_zero_and_is_zero_before_it_appears()
         {
             Assert.That(CountdownBanner.NumberAlpha(-0.1), Is.EqualTo(0));

@@ -82,7 +82,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Ready` | until Space / Start | title and controls |
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
-| `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed |
+| `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
 | `Resolved` | until the next round | slash, the loser falls, reaction times in ms, headline |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
@@ -385,6 +385,20 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     rebuild's `CountdownSeconds` is 4 (`tuning.json`, UQD-T57), split the same way by `Duel.CountdownNumber`, so the
     two agree exactly; at any other `CountdownSeconds` the quarters scale with it, while the fade stays at the
     original's 1.2 alpha a second.
+- ✅ Live reaction counter (UQD-T38; `DuelTests`, `DuelViewTests`): while the cue is up `obj_gameclock` draws
+  `string(ceil(count))` in the centre (`room_height/2 - 16`, where the countdown's number was) in the Old English
+  outlined 1, and `gameclock_action.gml` runs the action at `actionFPS` = 1000, so `count` is milliseconds since the
+  cue, 1 on the cue's own step. `Duel.ReactionCount` reads it off the event clock (`ReactionCounter.Count`), never the
+  rendered frame (UQD-LAW-2), capped at the strike timeout. The first strike freezes it at that strike's own count
+  (`action_attack.gml`: `reaction_time = gameclock.count`), and from there it fades at `gameclock_aftermath.gml`'s 0.003
+  alpha a 60 fps step (gone 333 steps, 5.6 s, later; `Duel.ReactionCountAlpha`), held through the verdict of a round
+  decided by reaction; an early strike or nobody striking shows none. Online, each peer's count freezes at the first
+  strike its own round saw.
+  - **The first strike, matches**: in the original the first strike ends the action (`mode = "aftermath"`), so the
+    number stops there; the rebuild's Strike phase waits `SettleSeconds` (or the second strike) before its verdict, and
+    the count is frozen from the first strike all the same.
+  - **The cue moved up, deviation**: the red "!" (the rebuild's own, see the cue above) sat where the count is drawn,
+    so it now sits on Get Ready's line, 44 original pixels above, leaving the count where the original drew it.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

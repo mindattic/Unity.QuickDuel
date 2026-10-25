@@ -91,6 +91,61 @@ namespace Unity.QuickDuel.Tests
             Screenshots.Capture("05-resolved");
         }
 
+        // gameclock_action (UQD-T38): while the cue is up the centre counts the milliseconds since the cue off the clock,
+        // where the countdown's number was, beneath the cue; the first strike freezes it, and it fades from there.
+        [UnityTest]
+        public IEnumerator TheStrikeCounterCountsUpFreezesAtTheFirstStrikeAndFades()
+        {
+            yield return null;
+            var settings = DuelSceneTests.FastSettings();
+            settings.StrikeTimeoutSeconds = 5;
+            settings.MinStandoffSeconds = settings.MaxStandoffSeconds = 0.5;
+            // Long enough that the round waits for the second strike, so the frozen count is seen while the cue is up.
+            settings.SettleSeconds = 2;
+            controller.Settings = settings;
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Standoff);
+            yield return null;
+            if (controller.Phase == DuelPhase.Standoff)
+                Assert.That(view.CounterText, Is.Empty, "nothing counts before the cue");
+
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
+            yield return new WaitForSecondsRealtime(0.2f);
+            yield return null;
+            var cue = controller.CueAt;
+            var shown = int.Parse(view.CounterText);
+            var expected = (controller.Now - cue) * 1000;
+            Assert.That(shown, Is.InRange(150, (int)expected + 1), "milliseconds since the cue, read off the clock");
+            Assert.That(view.CounterAlpha, Is.EqualTo(1f), "drawn at default_alpha while it counts");
+            var counter = view.Root.Q<OutlinedText>("Counter");
+            var cueLabel = view.Root.Q<OutlinedText>("Cue");
+            yield return null;
+            Assert.That(cueLabel.worldBound.center.y, Is.LessThan(counter.worldBound.center.y), "the cue sits above the count");
+            yield return new WaitForSecondsRealtime(0.1f);
+            Assert.That(int.Parse(view.CounterText), Is.GreaterThan(shown), "it keeps counting");
+            Screenshots.Capture("04b-strike-counter");
+
+            var struck = controller.Now;
+            var frozen = ReactionCounter.Count(struck - cue).ToString();
+            controller.Strike(Side.Left, struck);
+            yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Strike), "the right fighter has not struck yet");
+            Assert.That(view.CounterText, Is.EqualTo(frozen), "the first strike freezes it");
+            yield return new WaitForSecondsRealtime(0.3f);
+            Assert.That(view.CounterText, Is.EqualTo(frozen));
+            Assert.That(view.CounterAlpha, Is.LessThan(1f).And.GreaterThan(0.5f), "fading 0.003 a 60 fps step");
+
+            controller.Strike(Side.Right, controller.Now);
+            yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved));
+            Assert.That(view.CounterText, Is.EqualTo(frozen), "the verdict keeps the winner's count");
+            Screenshots.Capture("05b-strike-counter-frozen");
+
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return null;
+            Assert.That(view.CounterText, Is.Empty, "the next round starts without it");
+        }
+
         // gameclock_countdown (UQD-T37), at the original's 4 s: Get Ready above the number throughout, nothing numbered
         // for the first second, then each of 3, 2, 1 at full alpha as it appears, faded out 50 steps (0.83 s) later.
         [UnityTest]

@@ -128,6 +128,33 @@ namespace Unity.QuickDuel.Core
             return CountdownBanner.NumberAlpha(elapsed - quarter * quarterLength);
         }
 
+        // The counting-up number in the centre while the cue is up (UQD-T38, ReactionCounter): milliseconds since the cue
+        // at gameclock_action's 1 ms a tick, read from the clock, never the frame, and capped at the strike timeout. The
+        // first strike freezes it at that strike's own count, and it stays frozen through the verdict of a round decided
+        // by reaction. 0 means nothing is shown: before the cue, and after a round decided without a reaction (an
+        // early strike, nobody striking).
+        public int ReactionCount(double now)
+        {
+            if (!ShowsReactionCount)
+                return 0;
+            if (firstStrikeAt.HasValue)
+                return ReactionCounter.Count(firstStrikeAt.Value - CueAt);
+            return ReactionCounter.Count(Math.Min(now - CueAt, settings.StrikeTimeoutSeconds));
+        }
+
+        // The alpha that number is drawn at: 1 while it counts, and from the first strike falling at
+        // gameclock_aftermath's 0.003 a 60 fps step (ReactionCounter.FrozenAlpha), timed by the clock.
+        public double ReactionCountAlpha(double now)
+        {
+            if (!ShowsReactionCount)
+                return 0;
+            return firstStrikeAt.HasValue ? ReactionCounter.FrozenAlpha(now - firstStrikeAt.Value) : 1;
+        }
+
+        private bool ShowsReactionCount => Phase == DuelPhase.Strike
+            || (Phase == DuelPhase.Resolved && firstStrikeAt.HasValue && Result != null
+                && (Result.Outcome == DuelOutcome.FasterStrike || Result.Outcome == DuelOutcome.Tie));
+
         public void Tick(double now)
         {
             if (Phase == DuelPhase.Countdown && now >= countdownEndsAt)
