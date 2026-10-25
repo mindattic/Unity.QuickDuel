@@ -41,6 +41,7 @@ namespace Unity.QuickDuel.EditorTools
             view.SetArenas(Arenas());
             view.SetFighters(Fighters());
             duel.AddComponent<DuelTaunt>();
+            duel.AddComponent<DuelBlood>().SetSprites(BloodDrops(), Splatters(), Frames(Manifest(), "spr_flash", "the flash")[0]);
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));
@@ -83,6 +84,63 @@ namespace Unity.QuickDuel.EditorTools
                     Frames(manifest, fighter.GroundWeapon, owner)[0]));
             }
             return fighters;
+        }
+
+        // spr_blood_drop1 and 2 (UQD-T40), in that order.
+        public static List<Sprite> BloodDrops()
+        {
+            var manifest = Manifest();
+            return new List<Sprite>
+            {
+                Frames(manifest, "spr_blood_drop1", "the blood")[0],
+                Frames(manifest, "spr_blood_drop2", "the blood")[0],
+            };
+        }
+
+        // spr_splatter1 to 10 (UQD-T40), in order, each with the box a click must land in: GameMaker's automatic
+        // rectangle mask, the bounds of the image's opaque pixels, measured here from the file (it matches every
+        // bbox_* the original's .sprite.gmx records).
+        public static List<SplatterLook> Splatters()
+        {
+            var manifest = Manifest();
+            var looks = new List<SplatterLook>();
+            for (var i = 1; i <= SplatterField.Kinds; i++)
+            {
+                var id = $"spr_splatter{i}";
+                var sprite = Frames(manifest, id, "the splatters")[0];
+                looks.Add(new SplatterLook(sprite, OpaqueBounds($"{OriginalAssetGenerator.GameFolder}/{manifest.Sprite(id).Frames[0]}")));
+            }
+            return looks;
+        }
+
+        // The box, from the image's top left with width and height counting both edges, that holds every pixel with any
+        // alpha, as GameMaker's automatic bounding box (tolerance 0).
+        public static RectInt OpaqueBounds(string path)
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            try
+            {
+                if (!texture.LoadImage(File.ReadAllBytes(path)))
+                    throw new InvalidOperationException($"QuickDuel: could not read {path}.");
+                var pixels = texture.GetPixels32();
+                int w = texture.width, h = texture.height;
+                int left = w, right = -1, top = h, bottom = -1;
+                for (var y = 0; y < h; y++)
+                for (var x = 0; x < w; x++)
+                {
+                    if (pixels[y * w + x].a == 0) continue;
+                    var row = h - 1 - y; // GetPixels32 runs from the bottom row up
+                    left = Math.Min(left, x);
+                    right = Math.Max(right, x);
+                    top = Math.Min(top, row);
+                    bottom = Math.Max(bottom, row);
+                }
+                return right < 0 ? new RectInt(0, 0, w, h) : new RectInt(left, top, right - left + 1, bottom - top + 1);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
         }
 
         // A manifest that fails validation stops the build rather than shipping a scene with a guess.

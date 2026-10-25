@@ -37,12 +37,12 @@ namespace Unity.QuickDuel
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour
     {
-        private const float StageWidth = 1920f;
-        private const float StageHeight = 1080f;
+        internal const float StageWidth = 1920f;
+        internal const float StageHeight = 1080f;
         private const float LetterboxHeight = 150f;
 
         // The original's 640 x 480 room drawn on the 1080-high stage: every original pixel is 2.25 stage pixels.
-        private const float PixelScale = StageHeight / FighterLineup.OriginalHeight;
+        internal const float PixelScale = StageHeight / FighterLineup.OriginalHeight;
 
         // Where the fighters stand, y up from the stage centre: vertical_position, two thirds of the way down.
         private static readonly float FighterY = StageHeight / 2f - (float)FighterLineup.Y * StageHeight;
@@ -164,8 +164,11 @@ namespace Unity.QuickDuel
         // The sprite that fighter shows (idle, run, or a frame of its attack or defeat strip); null without fighters.
         public Sprite FighterShows(Side side) => (side == Side.Left ? left : right).Sprite;
 
-        // Other components (DuelSession, DuelTaunt) hang their own labels off this same tree.
+        // Other components (DuelSession, DuelTaunt, DuelBlood) hang their own labels off this same tree.
         public VisualElement Root { get; private set; }
+
+        // The fixed 1920 x 1080 stage the fighters and centred labels stand on (DuelBlood draws its drops on it).
+        public VisualElement Stage => stage;
 
         private void Awake()
         {

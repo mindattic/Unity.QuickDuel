@@ -83,7 +83,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
-| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
+| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
 `SettleSeconds` (50 ms) for a later-delivered input event that happened earlier, then resolves.
@@ -421,6 +421,36 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **A dead heat, fixed defect**: `determine_winner.gml` sets no `last_winner` on a draw, so the original would have
     put "Wins!" over the previous round's loser naming the previous winner; the rebuild's tie shows no banner and no
     slide, the count held at the centre under the "Draw" headline.
+- ✅ Blood, splatter and flash (UQD-T40; `BloodSprayTests`, `SplatterFieldTests`, `WhiteFlashTests`, `DuelBloodTests`):
+  `gameclock_aftermath.gml`'s first pass creates `obj_blood_emitter` at `room_width/2, vertical_position`, 6 to 12
+  `obj_splatter` and one `obj_flash`. The emitter's alarm creates an `obj_blood_drop` every 2 steps (`spr_blood_drop1`
+  or `2`, even odds); each drop leaves at `velocityX = irandom_range(-5,5)`, `velocityY = irandom_range(2,12)`, one in 32
+  a "huge spurt" of `irandom_range(12,24)`, and every 2 steps moves `x += velocityX; y -= velocityY; velocityY -= 1;
+  y += 1` until it is below `room_height + sprite_height`. A splatter is one of `spr_splatter1` to `10` centred anywhere
+  from half a sprite off one edge to half off the other, at `image_alpha` 0.95 falling 0.0003 a step (about 53 s), and
+  0.01 a step (about 1.6 s) once a left or right click lands on it or the cursor is dragged into it with a button held;
+  nothing else removes one, so they outlive the round. The flash is `spr_flash` (plain white) stretched over the room
+  at 0.6, toggled every step for ten blinks (white on steps 0 and 1, then every odd step, gone on step 20). Depths are
+  kept: drops (1) behind the fighters and text (0), splatters (-100) over them, the flash (-1000) over those and the
+  letterbox (-10000) over all. Core holds the rules (`BloodSpray`, `SplatterField`, `WhiteFlash`); `DuelBlood` draws
+  them, stepping at 60 a second off the controller's clock (UQD-LAW-2), the drops on the stage at the fighters' pixel
+  scale and the splatters spread over the real screen. The scene carries the two drops, the ten splatters with each
+  one's click box and the flash (`DuelSceneBuilder`, from the asset manifest).
+  - **Which rounds bleed, matches**: in the original every strike sends the round to the aftermath, so every one bleeds;
+    the rebuild spills on a fair win, an early strike and a tie (the original's clash went on to an aftermath too), and
+    not for its own endings where nobody is cut (nobody striking, a forfeit).
+  - **The emitter's end, matches**: the original destroys it when the loading fade (0.005 a step, 200 steps) has covered
+    the screen after the 3 s aftermath, so it spurts for 380 steps; the rebuild stops it there, or sooner when the next
+    round begins, and drops already in the air fall on.
+  - **The click box, matches**: `obj_splatter`'s mouse events use the sprite's automatic rectangle mask (colkind 1,
+    bboxmode 0); the builder measures each splatter's opaque-pixel bounds from its image, which equal every `bbox_*`
+    the original's `.sprite.gmx` records, and only a click inside that box wipes it. The pointer is only read, so the
+    click still strikes. The original has no key that wipes splatters, so neither does the rebuild.
+  - **Splatter height, fixed defect**: `obj_splatter` draws its y from `irandom_range(-(sprite_height/2), room_width +
+    (sprite_height/2))`, the room's width (640) where its height (480) was meant, so about a quarter of the splatters
+    fell below the screen; the rebuild spreads them over the screen's height.
+  - **The start, matches**: as with the sliding number, the original's aftermath begins at the first strike and the
+    rebuild's at the verdict, up to `SettleSeconds` (50 ms) later.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
