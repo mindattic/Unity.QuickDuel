@@ -114,6 +114,20 @@ namespace Unity.QuickDuel.Core
             return quarter < 1 ? 0 : Math.Max(1, 4 - Math.Min(quarter, 3));
         }
 
+        // The alpha the countdown's number is drawn at (UQD-T37): each of 3, 2, 1 appears at full alpha as its quarter
+        // begins and fades at gameclock_countdown.gml's 0.02 a 60 fps step (CountdownBanner.NumberAlpha). 0 during
+        // Get Ready's first quarter, before the countdown began, and once it is over.
+        public double CountdownNumberAlpha(double now)
+        {
+            var length = settings.CountdownSeconds;
+            if (Phase != DuelPhase.Countdown || length <= 0 || CountdownNumber(now) == 0)
+                return 0;
+            var elapsed = length - CountdownRemaining(now);
+            var quarterLength = length / 4;
+            var quarter = Math.Min(3, (int)Math.Floor(elapsed / quarterLength));
+            return CountdownBanner.NumberAlpha(elapsed - quarter * quarterLength);
+        }
+
         public void Tick(double now)
         {
             if (Phase == DuelPhase.Countdown && now >= countdownEndsAt)

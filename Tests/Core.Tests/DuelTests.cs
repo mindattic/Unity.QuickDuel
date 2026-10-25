@@ -45,6 +45,34 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void Each_number_appears_at_full_alpha_and_fades_0_02_a_60_fps_step()
+        {
+            var duel = StartedDuel(out _);
+            // Nothing numbered during Get Ready.
+            Assert.That(duel.CountdownNumberAlpha(0.5), Is.EqualTo(0));
+            foreach (var appears in new[] { 1.0, 2.0, 3.0 })
+            {
+                Assert.That(duel.CountdownNumberAlpha(appears), Is.EqualTo(1).Within(1e-9));
+                // Ten steps on: 1 - 10 * 0.02.
+                Assert.That(duel.CountdownNumberAlpha(appears + 10 / 60.0), Is.EqualTo(0.8).Within(1e-9));
+                // Gone after the original's 50 steps, before the next number.
+                Assert.That(duel.CountdownNumberAlpha(appears + 50 / 60.0), Is.EqualTo(0).Within(1e-9));
+                Assert.That(duel.CountdownNumberAlpha(appears + 0.99), Is.EqualTo(0));
+            }
+            duel.Tick(4.0);
+            Assert.That(duel.CountdownNumberAlpha(4.0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Number_alpha_holds_at_zero_and_is_zero_before_it_appears()
+        {
+            Assert.That(CountdownBanner.NumberAlpha(-0.1), Is.EqualTo(0));
+            Assert.That(CountdownBanner.NumberAlpha(double.NaN), Is.EqualTo(0));
+            Assert.That(CountdownBanner.NumberAlpha(5), Is.EqualTo(0));
+            Assert.That(CountdownBanner.NumberAlpha(0.5), Is.EqualTo(0.4).Within(1e-9));
+        }
+
+        [Test]
         public void Faster_strike_wins()
         {
             var duel = StartedDuel(out var cue);

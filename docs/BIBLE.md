@@ -80,7 +80,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | Phase | Lasts | On screen and in the ear |
 | --- | --- | --- |
 | `Ready` | until Space / Start | title and controls |
-| `Countdown` | `CountdownSeconds` (4) | Get Ready for the first quarter, then 3-2-1 at 25%, 50% and 75%, a beep on each number |
+| `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed |
 | `Resolved` | until the next round | slash, the loser falls, reaction times in ms, headline |
@@ -374,6 +374,17 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     other five `.ttf` files belong to the Android builds (§2.4 of RECONSTRUCTION). The rebuild therefore draws the
     original's own baked glyphs, pixel for pixel, rather than re-rasterising look-alike faces; `oldenglish.ttf` stays
     imported (UQD-T32) and the Android faces are not brought in.
+- ✅ Get Ready and a fading 3-2-1 (UQD-T37; `DuelTests`, `DuelViewTests`): `obj_gameclock`'s draw event shows
+  "Get Ready" (`CountdownBanner.Text`) at `default_alpha` for the whole countdown, 44 original pixels above the number
+  (`room_height/2 - 60` against `- 16`), in the Old English outlined 1 of `OriginalType.Countdown`. Each of 3, 2, 1
+  appears at full alpha with its `sfx_beep` as its quarter begins and fades at `gameclock_countdown.gml`'s 0.02 alpha a
+  60 fps step (`alpha -= 0.02`), so it is gone 50 steps (0.83 s) later, before the next one; `Duel.CountdownNumberAlpha`
+  times the fade by the clock, never by the rendered frame.
+  - **Countdown length, matches**: the original's countdown is `countdown_time = 4 * room_speed`, which reads as 1 s of
+    Get Ready alone (`count < countdown_time * 0.25` draws no number) plus a 3 s count of 3, 2, 1, a second each. The
+    rebuild's `CountdownSeconds` is 4 (`tuning.json`, UQD-T57), split the same way by `Duel.CountdownNumber`, so the
+    two agree exactly; at any other `CountdownSeconds` the quarters scale with it, while the fade stays at the
+    original's 1.2 alpha a second.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

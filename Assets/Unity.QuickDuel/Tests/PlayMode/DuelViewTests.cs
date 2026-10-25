@@ -39,12 +39,14 @@ namespace Unity.QuickDuel.Tests
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => view.CountdownText == "2");
             Assert.That(view.CountdownText, Is.EqualTo("2"));
+            Assert.That(view.GetReadyText, Is.EqualTo("Get Ready"));
             Assert.That(view.PromptText, Is.Empty);
             Screenshots.Capture("02-countdown");
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Standoff);
             yield return DuelSceneTests.WaitUntil(() => view.LetterboxAmount > 0.9f || controller.Phase != DuelPhase.Standoff);
             Assert.That(view.CountdownText, Is.Empty);
+            Assert.That(view.GetReadyText, Is.Empty);
             Assert.That(view.Inverted, Is.False);
             Screenshots.Capture("03-standoff");
 
@@ -87,6 +89,49 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.Motion(Side.Right).XFraction, Is.LessThan(0.5), "the winner dashes on past the middle");
             Assert.That(view.PromptText, Does.Contain("next round"));
             Screenshots.Capture("05-resolved");
+        }
+
+        // gameclock_countdown (UQD-T37), at the original's 4 s: Get Ready above the number throughout, nothing numbered
+        // for the first second, then each of 3, 2, 1 at full alpha as it appears, faded out 50 steps (0.83 s) later.
+        [UnityTest]
+        public IEnumerator TheCountdownIsGetReadyThenAFading321()
+        {
+            yield return null;
+            var settings = DuelSceneTests.FastSettings();
+            settings.CountdownSeconds = 4;
+            controller.Settings = settings;
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return null;
+
+            Assert.That(view.GetReadyText, Is.EqualTo("Get Ready"));
+            Assert.That(view.CountdownText, Is.Empty, "nothing numbered for Get Ready's quarter");
+            var getReady = view.Root.Q<OutlinedText>("GetReady");
+            var number = view.Root.Q<OutlinedText>("Countdown");
+            Assert.That(getReady.style.opacity.value, Is.EqualTo(1f), "Get Ready is drawn at default_alpha");
+
+            foreach (var shown in new[] { "3", "2", "1" })
+            {
+                yield return DuelSceneTests.WaitUntil(() => view.CountdownText == shown);
+                Assert.That(view.CountdownAlpha, Is.GreaterThan(0.85f), $"{shown} appears at full alpha");
+                Assert.That(view.GetReadyText, Is.EqualTo("Get Ready"));
+                if (shown == "3")
+                {
+                    yield return null;
+                    yield return null;
+                    Assert.That(getReady.worldBound.center.y, Is.LessThan(number.worldBound.center.y), "Get Ready sits above the number");
+                    Screenshots.Capture("02b-get-ready-3");
+                }
+                var appeared = controller.CountdownRemaining;
+                yield return DuelSceneTests.WaitUntil(() => controller.CountdownRemaining <= appeared - 0.95 || view.CountdownText != shown);
+                yield return null;
+                if (view.CountdownText == shown)
+                    Assert.That(view.CountdownAlpha, Is.EqualTo(0f), $"{shown} has faded out at 0.02 a step");
+            }
+
+            yield return DuelSceneTests.WaitUntil(() => controller.Phase != DuelPhase.Countdown);
+            yield return null;
+            Assert.That(view.GetReadyText, Is.Empty);
+            Assert.That(view.CountdownText, Is.Empty);
         }
 
         // The scene carries the 11 original arenas, each with its art, and draws the one the round's roll lands on,

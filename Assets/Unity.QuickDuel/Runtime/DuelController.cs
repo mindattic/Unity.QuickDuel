@@ -115,6 +115,7 @@ namespace Unity.QuickDuel
         public double CueAt => CurrentDuel?.CueAt ?? 0;
         public double CountdownRemaining => CurrentDuel?.CountdownRemaining(Now) ?? 0;
         public int CountdownNumber => CurrentDuel?.CountdownNumber(Now) ?? 0;
+        public double CountdownNumberAlpha => CurrentDuel?.CountdownNumberAlpha(Now) ?? 0;
 
         // Between rounds. Online that means no round is being played here and the last one has its verdict, so a
         // client can still quit between rounds even though only the host may begin the next one.

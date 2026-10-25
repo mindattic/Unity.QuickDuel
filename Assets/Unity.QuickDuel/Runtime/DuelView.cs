@@ -47,6 +47,9 @@ namespace Unity.QuickDuel
         // Where the fighters stand, y up from the stage centre: vertical_position, two thirds of the way down.
         private static readonly float FighterY = StageHeight / 2f - (float)FighterLineup.Y * StageHeight;
 
+        // The countdown's number, y up from the stage centre.
+        private const float CountdownY = 120f;
+
         // Below the fighters' feet (their 128-pixel sprites are centred on FighterY).
         private const float ReactionY = -370f;
 
@@ -70,6 +73,7 @@ namespace Unity.QuickDuel
         private Fighter left;
         private Fighter right;
         private OutlinedText title;
+        private OutlinedText getReady;
         private OutlinedText countdown;
         private OutlinedText cue;
         private OutlinedText headline;
@@ -115,6 +119,12 @@ namespace Unity.QuickDuel
         public float FighterAlpha(Side side) => (side == Side.Left ? left : right).Alpha;
         public float LetterboxAmount => letterbox;
         public string CountdownText => IsVisible(countdown) ? countdown.text : "";
+
+        // obj_gameclock's "Get Ready", drawn above the number for the whole countdown (UQD-T37); empty otherwise.
+        public string GetReadyText => IsVisible(getReady) ? getReady.text : "";
+
+        // The alpha the countdown's number is drawn at: 1 as each of 3, 2, 1 appears, fading 0.02 a 60 fps step.
+        public float CountdownAlpha => IsVisible(countdown) ? countdown.style.opacity.value : 0f;
         public string CueText => IsVisible(cue) ? cue.text : "";
         public string HeadlineText => IsVisible(headline) ? headline.text : "";
         public string PromptText => IsVisible(prompt) ? prompt.text : "";
@@ -193,12 +203,16 @@ namespace Unity.QuickDuel
             ShowArena(controller.ArenaRoll);
             ShowFighters(controller.FighterRoll);
 
+            // gameclock_countdown (UQD-T37): Get Ready at full alpha throughout, and each of 3, 2, 1 at full alpha as it
+            // appears, fading at 0.02 a 60 fps step.
             var countingDown = phase == DuelPhase.Countdown;
+            SetVisible(getReady, countingDown);
             SetVisible(countdown, countingDown);
             if (countingDown)
             {
                 var number = controller.CountdownNumber;
                 countdown.text = number > 0 ? number.ToString() : "";
+                countdown.style.opacity = (float)controller.CountdownNumberAlpha;
             }
 
             var tense = phase == DuelPhase.Standoff || phase == DuelPhase.Strike;
@@ -356,7 +370,11 @@ namespace Unity.QuickDuel
             // "Game Over", the prompt in the basic face the original's buttons and HUD used.
             title = CreateLabel("Title", OriginalType.Title, new Vector2(0, 260f));
             title.text = "QuickDuel";
-            countdown = CreateLabel("Countdown", OriginalType.Countdown, new Vector2(0, 120f));
+            countdown = CreateLabel("Countdown", OriginalType.Countdown, new Vector2(0, CountdownY));
+            // obj_gameclock draws Get Ready 44 original pixels above the number (room_height/2 - 60 against - 16).
+            getReady = CreateLabel("GetReady", OriginalType.Countdown, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale));
+            getReady.text = CountdownBanner.Text;
+            getReady.style.opacity = 1f; // draw_text_outline_alpha(..., default_alpha), and default_alpha is 1
             // Not the original's (its cue is the invert alone): kept at twice the banner's scale so it reads at once.
             cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, 120f), CueRed, 2f);
             cue.text = "!";
