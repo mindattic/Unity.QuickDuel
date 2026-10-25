@@ -34,6 +34,30 @@ Build the Windows player to `Build/QuickDuel/QuickDuel.exe` (exits non-zero on f
 powershell -File deploy.ps1
 ```
 
+Launch a playable build for development (builds it first if `Build/QuickDuel/QuickDuel.exe` is missing;
+`-Build` rebuilds, `-Wait` waits for it to exit, the log goes to `Logs/play.log`):
+
+```
+powershell -File play.ps1
+```
+
+### Muted launches
+
+`play.ps1` launches muted: it sets `MINDATTIC_CLI_MUTED=1` and passes `-muted`, so a CLI or agent starting
+the game never blasts audio. Pass `-Sound` to launch with audio. Either switch works on its own when you
+start `QuickDuel.exe` (or the editor) yourself:
+
+```
+$env:MINDATTIC_CLI_MUTED = '1'; .\Build\QuickDuel\QuickDuel.exe
+.\Build\QuickDuel\QuickDuel.exe -muted
+```
+
+The mute is the shared `com.mindattic.unity.shared` session mute: read before the first scene loads, it
+makes the player profile's settings report sound muted for that run only, and `SessionAudio` silences the
+listener. The player's saved `settings.json` is never written, so the next normal launch has sound. A
+profile whose own settings mute sound effects is honoured the same way. The `-batchmode` runs in
+`deploy.ps1` and the tests play nothing audible and don't need it.
+
 Controls: left player A or gamepad 1 south button, right player L or gamepad 2 south button,
 Space or Start begins the next round. Tab or Select (between rounds) cycles local PvP and vs AI
 (Easy, Normal, Hard; the AI plays the right side). Escape, or gamepad Select held while pressing

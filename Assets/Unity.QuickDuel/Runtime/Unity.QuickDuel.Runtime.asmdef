@@ -3,7 +3,8 @@
     "rootNamespace": "Unity.QuickDuel",
     "references": [
         "Unity.QuickDuel.Core",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Shared.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

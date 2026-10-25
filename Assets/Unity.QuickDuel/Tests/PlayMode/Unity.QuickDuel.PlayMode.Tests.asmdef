@@ -5,6 +5,7 @@
         "Unity.QuickDuel.Core",
         "Unity.QuickDuel.Runtime",
         "Unity.InputSystem",
+        "Unity.Shared.Core",
         "Unity.InputSystem.TestFramework",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
