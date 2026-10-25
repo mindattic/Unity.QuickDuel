@@ -68,6 +68,23 @@ namespace Unity.QuickDuel.EditorTools
             // The intro (UQD-T44): obj_cloud1 to 4's clouds.
             for (var i = 1; i <= 4; i++)
                 list.Add(new SpriteEntry($"spr_cloud{i}", "cloud", "Art/Intro"));
+            list.AddRange(Ambient());
+            return list;
+        }
+
+        /// <summary>
+        /// The arenas' ambient particles (UQD-T49): obj_sand, obj_butterfly, obj_snow, obj_fly, and the unused
+        /// obj_raindrop, obj_leaf_emitter and obj_firefly's sprites. Fog draws spr_cloud1, already listed for the intro.
+        /// </summary>
+        public static List<SpriteEntry> Ambient()
+        {
+            var list = new List<SpriteEntry>();
+            foreach (var id in new[]
+                     {
+                         "spr_sand1", "spr_sand2", "spr_butterfly", "spr_snow1", "spr_snow2", "spr_fly", "spr_fly2",
+                         "spr_rain", "spr_leaf1", "spr_leaf2", "spr_firefly", "spr_firefly_dark",
+                     })
+                list.Add(new SpriteEntry(id, "ambient", "Art/Ambient"));
             return list;
         }
 

@@ -18,7 +18,7 @@ namespace Unity.QuickDuel.Core
         // The groups a sprite can belong to, in the order the manifest lists them.
         public static readonly IReadOnlyList<string> SpriteGroups = new[]
         {
-            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor", "cloud", "background", "button",
+            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor", "cloud", "ambient", "background", "button",
         };
 
         private readonly Dictionary<string, OriginalSprite> spritesById = new Dictionary<string, OriginalSprite>();
@@ -233,8 +233,15 @@ namespace Unity.QuickDuel.Core
                 var description = r.Text("description");
                 var sprite = r.Text("sprite");
                 r.Check(spriteIds.Contains(sprite), "sprite", $"must name a sprite in 'sprites' (is \"{sprite}\")");
+                // The ambient effect (UQD-T49): the emitter setup_arena_properties.gml created, or "none"; the
+                // original's unused rain, leaf and firefly may be named too. Its sprites must all be in the manifest.
+                var ambientName = r.Text("ambient");
+                if (!AmbientKinds.TryParse(ambientName, out var ambient))
+                    r.Check(false, "ambient", $"must be one of {string.Join(", ", AmbientKinds.Names)} (is \"{ambientName}\")");
+                foreach (var needed in AmbientKinds.SpritesOf(ambient))
+                    r.Check(spriteIds.Contains(needed), "ambient", $"draws {needed}, which is not in 'sprites'");
                 r.Done();
-                arenas.Add(new OriginalArena(entry.Key, name, description, sprite));
+                arenas.Add(new OriginalArena(entry.Key, name, description, sprite, ambient));
             }
             arenaReader.Done();
 
@@ -382,16 +389,19 @@ namespace Unity.QuickDuel.Core
     }
 
     // An arena as load_arenas.gml named it: its display name, its description ("#" line breaks turned into
-    // newlines) and its backdrop sprite.
+    // newlines) and its backdrop sprite; and the ambient effect setup_arena_properties.gml gave it (UQD-T49).
     public sealed class OriginalArena
     {
-        public OriginalArena(string id, string name, string description, string sprite)
+        public OriginalArena(string id, string name, string description, string sprite, AmbientKind ambient = AmbientKind.None)
         {
             Id = id;
             Name = name;
             Description = description;
             Sprite = sprite;
+            Ambient = ambient;
         }
+
+        public AmbientKind Ambient { get; }
 
         public string Id { get; }
         public string Name { get; }

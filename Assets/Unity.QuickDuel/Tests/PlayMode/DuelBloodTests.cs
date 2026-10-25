@@ -52,9 +52,11 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.Stage.IndexOf(blood.DropLayer), Is.EqualTo(0));
             var root = view.Root;
             var stage = root.IndexOf(view.Stage);
-            Assert.That(root.IndexOf(blood.SplatterLayer), Is.EqualTo(stage + 1));
-            Assert.That(root.IndexOf(blood.FlashBox), Is.EqualTo(stage + 2));
-            Assert.That(root.IndexOf(root.Q("LetterboxTop")), Is.GreaterThan(stage + 2));
+            // The ambient layer over the fighters (depth -1, UQD-T49) sits between the stage and the splatters.
+            var splatters = root.IndexOf(blood.SplatterLayer);
+            Assert.That(splatters, Is.EqualTo(stage + 2));
+            Assert.That(root.IndexOf(blood.FlashBox), Is.EqualTo(splatters + 1));
+            Assert.That(root.IndexOf(root.Q("LetterboxTop")), Is.GreaterThan(splatters + 1));
             Assert.That(blood.SplatterLayer.pickingMode, Is.EqualTo(PickingMode.Ignore));
             Assert.That(blood.FlashBox.pickingMode, Is.EqualTo(PickingMode.Ignore));
         }

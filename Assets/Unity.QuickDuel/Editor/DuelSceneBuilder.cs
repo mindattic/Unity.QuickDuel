@@ -54,6 +54,8 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelCornerArt>().SetSprites(
                 Frames(Manifest(), "spr_cornerart_left2", "the corner art")[0],
                 Frames(Manifest(), "spr_cornerart_right2", "the corner art")[0]);
+            // The arenas' ambient emitters (UQD-T49): the sprites of all eight, the original's unused three included.
+            duel.AddComponent<DuelAmbient>().SetLooks(AmbientLooks());
             // obj_mouse (UQD-T46): the katana cursor in place of the system cursor.
             duel.AddComponent<KatanaCursor>().SetSprite(Frames(Manifest(), "spr_katana_cursor", "the cursor")[0]);
             duel.AddComponent<DuelSession>();
@@ -86,7 +88,8 @@ namespace Unity.QuickDuel.EditorTools
             var manifest = Manifest();
             var arenas = new List<ArenaBackdrop>();
             foreach (var arena in manifest.Arenas)
-                arenas.Add(new ArenaBackdrop(arena.Id, arena.Name, arena.Description, Frames(manifest, arena.Sprite, $"arena '{arena.Id}'")[0]));
+                arenas.Add(new ArenaBackdrop(arena.Id, arena.Name, arena.Description, Frames(manifest, arena.Sprite, $"arena '{arena.Id}'")[0],
+                    arena.Ambient));
             return arenas;
         }
 
@@ -119,6 +122,23 @@ namespace Unity.QuickDuel.EditorTools
                 Frames(manifest, "spr_blood_drop1", "the blood")[0],
                 Frames(manifest, "spr_blood_drop2", "the blood")[0],
             };
+        }
+
+        // Every sprite an ambient effect draws (UQD-T49), each with all its frames, its size and its GameMaker origin.
+        public static List<AmbientLook> AmbientLooks()
+        {
+            var manifest = Manifest();
+            var looks = new List<AmbientLook>();
+            var ids = new HashSet<string>();
+            foreach (AmbientKind kind in Enum.GetValues(typeof(AmbientKind)))
+                foreach (var id in AmbientKinds.SpritesOf(kind))
+                {
+                    if (!ids.Add(id)) continue;
+                    var sprite = manifest.Sprite(id);
+                    looks.Add(new AmbientLook(id, Frames(manifest, id, "the ambient effects"),
+                        new Vector2(sprite.Width, sprite.Height), new Vector2(sprite.OriginX, sprite.OriginY)));
+                }
+            return looks;
         }
 
         // spr_loading1 to 14 (UQD-T42), in order.

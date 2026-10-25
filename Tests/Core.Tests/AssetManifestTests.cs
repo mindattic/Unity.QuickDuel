@@ -196,6 +196,47 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(loading, Does.Contain("spritePivot: {x: 0, y: 1}"), "a top-left GameMaker origin pivots at the top left");
         }
 
+        // The arenas' ambient effects (UQD-T49): setup_arena_properties.gml's five emitters, every other arena still air,
+        // and every sprite the eight effects draw (the unused rain, leaf and firefly's too) in the manifest.
+        [Test]
+        public void The_shipped_arenas_carry_the_originals_ambient_emitters()
+        {
+            var m = Shipped.Value;
+            var ambient = m.Arenas.ToDictionary(a => a.Id, a => a.Ambient);
+            Assert.That(ambient["desert"], Is.EqualTo(AmbientKind.Sand));
+            Assert.That(ambient["pastelfields"], Is.EqualTo(AmbientKind.Butterfly));
+            Assert.That(ambient["snow"], Is.EqualTo(AmbientKind.Snow));
+            Assert.That(ambient["fumaroles"], Is.EqualTo(AmbientKind.Fog));
+            Assert.That(ambient["aridplains"], Is.EqualTo(AmbientKind.Fly));
+            Assert.That(ambient.Values.Count(k => k == AmbientKind.None), Is.EqualTo(6));
+            Assert.That(ambient.Values.Any(AmbientKinds.Unused), Is.False, "no arena created rain, leaves or fireflies");
+            foreach (AmbientKind kind in Enum.GetValues(typeof(AmbientKind)))
+                foreach (var id in AmbientKinds.SpritesOf(kind))
+                    Assert.That(m.HasSprite(id), Is.True, id);
+            Assert.That(m.InGroup("ambient"), Has.Count.EqualTo(12));
+            Assert.That(m.Sprite(AmbientField.Butterfly).Frames, Has.Count.EqualTo(AmbientField.ButterflyFrames));
+            Assert.That(m.Sprite(AmbientField.Sand1).Width, Is.EqualTo(AmbientField.SandSize));
+            Assert.That(m.Sprite(AmbientField.Snow1).Height, Is.EqualTo(AmbientField.SnowSize));
+            Assert.That(m.Sprite(AmbientField.Cloud).Width, Is.EqualTo(AmbientField.CloudWidth));
+            Assert.That(m.Sprite(AmbientField.Cloud).Height, Is.EqualTo(AmbientField.CloudHeight));
+            Assert.That(m.Sprite(AmbientField.Rain).Height, Is.EqualTo(AmbientField.RainHeight));
+        }
+
+        [Test]
+        public void An_arena_may_name_any_of_the_eight_effects_and_nothing_else()
+        {
+            const string none = "\"ambient\": \"none\"";
+            var rain = Good.Replace(none, "\"ambient\": \"rain\"")
+                .Replace("\"sprites\": {", "\"sprites\": {\n    \"spr_rain\": { \"group\": \"ambient\", \"width\": 1, \"height\": 4, " +
+                                           "\"originX\": 0, \"originY\": 0, \"frames\": [ \"Art/r_0.png\" ] },");
+            Assert.That(Load(rain).Arenas.Single().Ambient, Is.EqualTo(AmbientKind.Rain));
+
+            var errors = Errors(Good.Replace(none, "\"ambient\": \"hail\""));
+            Assert.That(errors, Has.Some.Contains("'ambient' must be one of none, sand, butterfly"));
+            errors = Errors(Good.Replace(none, "\"ambient\": \"snow\""));
+            Assert.That(errors, Has.Some.Contains("draws spr_snow1, which is not in 'sprites'"));
+        }
+
         [Test]
         public void A_GameMaker_origin_becomes_a_bottom_left_pivot()
         {
@@ -215,7 +256,7 @@ namespace Unity.QuickDuel.Core.Tests
   ""sounds"": { ""sfx_a"": { ""path"": ""Audio/sfx_a.ogg"" } },
   ""fonts"": { ""fnt_a"": { ""face"": ""A"", ""size"": 10, ""atlas"": ""Fonts/fnt_a.png"", ""glyphs"": ""Fonts/fnt_a.glyphs.xml"" } },
   ""typefaces"": { ""a"": { ""path"": ""Fonts/a.ttf"" } },
-  ""arenas"": { ""a"": { ""name"": ""A"", ""description"": ""An arena."", ""sprite"": ""spr_a"" } },
+  ""arenas"": { ""a"": { ""name"": ""A"", ""description"": ""An arena."", ""sprite"": ""spr_a"", ""ambient"": ""none"" } },
   ""fighters"": { ""f"": { ""name"": ""F"", ""idle"": ""spr_f"", ""run"": ""spr_f"", ""attack"": ""spr_f"", ""defeat"": ""spr_f"", ""weapon"": ""spr_w"", ""groundWeapon"": ""spr_w"" } },
   ""text"": { ""intro"": ""A story."", ""author"": ""An Author"" },
   ""credits"": ""Data/credits.txt""

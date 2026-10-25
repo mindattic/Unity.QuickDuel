@@ -79,6 +79,7 @@ namespace Unity.QuickDuel.EditorTools
                 sprites.Add(CopySprite(root, entry.Id, entry.Group, entry.Folder));
 
             var arenas = ReadArenas(Path.Combine(root, "scripts", "load_arenas.gml"));
+            ReadAmbients(Path.Combine(root, "scripts", "setup_arena_properties.gml"), arenas);
             var arenaSprites = new List<SpriteRecord>();
             foreach (var arena in arenas)
                 if (arenaSprites.FindIndex(s => s.Id == arena.Sprite) < 0)
@@ -312,6 +313,41 @@ namespace Unity.QuickDuel.EditorTools
             return arenas;
         }
 
+        private static readonly Regex AmbientCase = new Regex(@"^\s*case\s+id_(\w+)\s*:", RegexOptions.Compiled);
+        private static readonly Regex AmbientEmitter = new Regex(@"instance_create\s*\([^,]*,[^,]*,\s*(obj_\w+_emitter)\s*\)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// The ambient effect each arena plays (UQD-T49): the emitter setup_arena_properties.gml creates under the arena's
+        /// <c>case id_x:</c>, or none. An arena the switch does not create an emitter for stays "none".
+        /// </summary>
+        public static void ReadAmbients(string script, List<ArenaRecord> arenas)
+        {
+            foreach (var arena in arenas)
+                arena.Ambient = AmbientKind.None;
+            ArenaRecord current = null;
+            foreach (var line in File.ReadAllLines(script))
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("//", StringComparison.Ordinal))
+                    continue;
+                var match = AmbientCase.Match(line);
+                if (match.Success)
+                {
+                    var id = match.Groups[1].Value;
+                    current = arenas.Find(a => a.Id == id)
+                        ?? throw new InvalidDataException($"setup_arena_properties.gml names an arena load_arenas.gml does not: id_{id}");
+                    continue;
+                }
+                var emitter = AmbientEmitter.Match(line);
+                if (!emitter.Success || current == null)
+                    continue;
+                var kind = AmbientKinds.FromEmitter(emitter.Groups[1].Value);
+                if (kind == AmbientKind.None)
+                    throw new InvalidDataException($"setup_arena_properties.gml creates an emitter the rebuild does not know: {emitter.Groups[1].Value}");
+                current.Ambient = kind;
+            }
+        }
+
         private static readonly Regex FighterId = new Regex(
             @"^\s*globalvar\s+id_(\w+)\s*;\s*id_\w+\s*=\s*(\d+)\s*;", RegexOptions.Compiled);
 
@@ -445,6 +481,7 @@ namespace Unity.QuickDuel.EditorTools
             public string Name;
             public string Description;
             public string Sprite;
+            public AmbientKind Ambient;
         }
 
         // Writes assets.json by hand in a fixed layout, so a rerun on the same original is byte-identical.
@@ -496,7 +533,8 @@ namespace Unity.QuickDuel.EditorTools
                 for (var i = 0; i < arenas.Count; i++)
                 {
                     var a = arenas[i];
-                    Line(2, $"{Str(a.Id)}: {{ \"name\": {Str(a.Name)}, \"description\": {Str(a.Description)}, \"sprite\": {Str(a.Sprite)} }}{Comma(i, arenas.Count)}");
+                    Line(2, $"{Str(a.Id)}: {{ \"name\": {Str(a.Name)}, \"description\": {Str(a.Description)}, \"sprite\": {Str(a.Sprite)}, " +
+                            $"\"ambient\": {Str(AmbientKinds.NameOf(a.Ambient))} }}{Comma(i, arenas.Count)}");
                 }
                 Line(1, "},");
 

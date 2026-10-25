@@ -634,6 +634,38 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     Over's style. Neither room placed `obj_mouse`, so with the system cursor hidden the button had no visible pointer;
     the katana cursor is drawn over the verdict.
   - **Dropped**: `obj_virtue` x7 and `spr_virtue_*` (the virtues went with stats), and the HP bars.
+- ✅ The arenas' ambient effects (UQD-T49; `AmbientFieldTests` and `AssetManifestTests` in Core, `DuelAmbientTests` in
+  PlayMode, screenshots `12-ambient-*`): `setup_arena_properties.gml` created one particle emitter per arena when the
+  game began, and the rebuild plays it for the arena on screen (`AmbientField` in Core, drawn by `DuelAmbient`). The
+  generator reads the switch into the manifest's per-arena `ambient` ("sand", "butterfly", "snow", "fog", "fly", or
+  "none"), so the list is the original's: sand in the Wastes of Nod, butterflies in Pastel Fields, snow in the Frozen
+  Tundra, fog in the Fumaroles, flies in the Arid Plains, still air in the other six.
+  - **Matches**: every figure of the emitters, their particles and `ai_butterfly` / `ai_fly` / `ai_firefly` (counts,
+    spawn ranges, speeds, alphas, the spin of 1 degree a step, the alarms' 5 to 30 or 60 steps, the bands and the
+    screen-edge turns, the butterflies' 6 flapping frames and facing, the clouds wrapping round), stepped at 60 a second
+    off the clock. Every particle's step sat inside `if (gameclock.mode != "action")`: nothing moves while the duel
+    waits on the first strike (the butterflies' wings stop too), though the alarms run on. Depths: sand, snow, fog and
+    rain (-1) draw over the fighters and under the splatters; butterflies, flies and fireflies (0, the fighters' own)
+    just behind the fighters and over the blood drops (1). They are not inverted on the cue: `obj_arena` inverted only
+    what was drawn before it, at depth 100.
+  - **Per round, deliberate**: the original rolled its arena once per game ([§6](#UQD-§6), UQD-T33), so its emitter ran
+    for the whole game; the rebuild's arena changes each round, under the loading fade's full image, and the new arena's
+    effect starts afresh there as the original's did with the room (the streams start from an empty sky).
+  - **Options**: the original's rain (`obj_rain_emitter` / `obj_raindrop`), leaf (`obj_leaf_emitter`) and firefly
+    (`obj_firefly_emitter` / `obj_firefly`, `ai_firefly`) emitters, which no arena created, are built with their
+    figures: an arena's `ambient` may name "rain", "leaf" or "firefly", and `DuelAmbient.Override` plays any of the
+    eight. Their sprites ship in the manifest's `ambient` group.
+  - **Fixed defects**: the emitters themselves had no action check and, stepping at the action's 1000 fps, piled up
+    frozen particles off screen (2 grains of sand or 1 flake a millisecond) to pour in after the cut; they wait with their
+    particles. `irandom_range(0.5, 2)` could give a snowflake no fall at all, to hang above the screen for ever; a flake
+    falls 1 or 2. `obj_fly` set `image_index`, not `sprite_index`, to `choose(spr_fly, spr_fly2)`, so every fly was
+    spr_fly; half are spr_fly2. `ai_fly` and `ai_firefly` turned a fly back above (`room_height/2`) but not below, so the
+    swarm wandered off the bottom of the screen in time; one below its spawn band (`room_height - 40`) turns back up.
+    Sand blown off the right edge was never destroyed (only `y > room_height` was); it is. `obj_leaf_emitter`, its
+    sprite spr_leaf1, created raindrops (there was no `obj_leaf`); it lets spr_leaf1 and spr_leaf2 fall as `obj_snow`'s
+    flakes do.
+  - **Dropped**: `obj_tree_emitter` / `obj_tree1` (never placed; it put its tree at `y = room_width`), `obj_lens` (an
+    additive white sheet, never placed) and `obj_spotlight` (the dropped character select's).
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
