@@ -6,7 +6,8 @@ namespace Unity.QuickDuel.EditorTools
     /// Which of the original's resources the rebuild uses (UQD-T32), by their GameMaker names, and where each
     /// lands under <see cref="OriginalAssetGenerator.GameFolder"/>. Only what a parity ticket draws or plays is
     /// listed (docs/RECONSTRUCTION.md section 2.4): the stats, skills, overworld, portrait and menu-button art
-    /// is dropped with the features it belonged to. Arenas are not listed here; they are read from
+    /// is dropped with the features it belonged to
+    /// (the main menu's buttons are listed, UQD-T45). Arenas are not listed here; they are read from
     /// <c>load_arenas.gml</c> so the list matches the original exactly.
     /// </summary>
     public static class OriginalAssetCatalog
@@ -74,7 +75,28 @@ namespace Unity.QuickDuel.EditorTools
         /// GameMaker backgrounds (a <c>.background.gmx</c> and one image) the rebuild draws, listed with the sprites in
         /// the "background" group: the intro room's bg_mapscreen (UQD-T44).
         /// </summary>
-        public static readonly SpriteEntry[] Backgrounds = { new SpriteEntry("bg_mapscreen", "background", "Art/Intro") };
+        public static readonly SpriteEntry[] Backgrounds =
+        {
+            new SpriteEntry("bg_mapscreen", "background", "Art/Intro"),
+            // The main menu room's background, scrolling behind the title's cut-out logo (UQD-T45).
+            new SpriteEntry("bg_splatter_scroll", "background", "Art/Menu"),
+        };
+
+        /// <summary>
+        /// The main menu's buttons (UQD-T45), each with the "_over" twin drawn under the mouse, listed after the backgrounds
+        /// in the "button" group: New Game (right1), Versus (right2), the difficulty in Options' slot (right3) and Quit
+        /// (left4). Credits' left1 comes with the credits screen (UQD-T47); Scores' left3 was a stub and is dropped.
+        /// </summary>
+        public static List<SpriteEntry> Buttons()
+        {
+            var list = new List<SpriteEntry>();
+            foreach (var id in new[] { "spr_btn_right1", "spr_btn_right2", "spr_btn_right3", "spr_btn_left4" })
+            {
+                list.Add(new SpriteEntry(id, "button", "Art/Menu"));
+                list.Add(new SpriteEntry(id + "_over", "button", "Art/Menu"));
+            }
+            return list;
+        }
 
         public const string ArenaFolder = "Art/Arenas";
         public const string AudioFolder = "Audio";

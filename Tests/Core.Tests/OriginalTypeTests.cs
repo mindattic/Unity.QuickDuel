@@ -32,6 +32,7 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(OriginalType.Intro, Is.EqualTo(new TypeStyle("fnt_mono", 2)));
             Assert.That(OriginalType.Hud, Is.EqualTo(new TypeStyle("fnt_basic", 1)));
             Assert.That(OriginalType.Button, Is.EqualTo(new TypeStyle("fnt_basic", 1)));
+            Assert.That(OriginalType.Message, Is.EqualTo(new TypeStyle("fnt_basic", 0)), "mouseover_message_draw: plain draw_text");
             Assert.That(OriginalType.Small, Is.EqualTo(new TypeStyle("fnt_tiny", 1)));
             Assert.That(OriginalType.Fill, Is.EqualTo(new Rgb(255, 255, 255)));
             Assert.That(OriginalType.Outline, Is.EqualTo(new Rgb(0, 0, 0)));

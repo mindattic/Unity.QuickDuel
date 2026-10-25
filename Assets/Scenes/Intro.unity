@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &62541575
+--- !u!1 &1010197158
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,95 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 62541578}
-  - component: {fileID: 62541577}
-  - component: {fileID: 62541576}
+  - component: {fileID: 1010197160}
+  - component: {fileID: 1010197159}
+  m_Layer: 0
+  m_Name: Intro
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1010197159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010197158}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75814b03fe64cfd41ba5dee28f6029a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.IntroController
+  nextScene: MainMenu
+  background: {fileID: 21300000, guid: c5367ccf0c3636f47b7f55690e69b769, type: 3}
+  clouds:
+  - {fileID: 21300000, guid: 8d4bfb3788a0086438a8d284e979f3c7, type: 3}
+  - {fileID: 21300000, guid: d5f72a02f60edd648806e6e6bf447db6, type: 3}
+  - {fileID: 21300000, guid: b74c03da6cfd04141ae2644db2ea3cb9, type: 3}
+  - {fileID: 21300000, guid: 89e7334d006123c4a83b1a87474fd585, type: 3}
+  loadingImages:
+  - {fileID: 21300000, guid: 46c98b2dd47ec5e4f8c84c948669b8b7, type: 3}
+  - {fileID: 21300000, guid: 90af57710fe26b742a83236897b4f377, type: 3}
+  - {fileID: 21300000, guid: fea3e9eece88b5946a051d3861e9526c, type: 3}
+  - {fileID: 21300000, guid: 04036d5f485286a47bce4f28cd255963, type: 3}
+  - {fileID: 21300000, guid: 2a182829d3f53b64484ad87ba2fe7778, type: 3}
+  - {fileID: 21300000, guid: a40966b8f0cf0384893cfc475d81ce58, type: 3}
+  - {fileID: 21300000, guid: f5a80aa310f9a0c4c9945fcc4c6cf53f, type: 3}
+  - {fileID: 21300000, guid: 60dbdecc051129d4790d9940b22971dc, type: 3}
+  - {fileID: 21300000, guid: 5c217a768d1488447af50be24b53cecc, type: 3}
+  - {fileID: 21300000, guid: a3eac48b587d0034cad92ae43485a4b5, type: 3}
+  - {fileID: 21300000, guid: 2fdb79e9394247e48beeb357ae32678b, type: 3}
+  - {fileID: 21300000, guid: 95fcfa23383b4dc4b980c6a6b36cbb5e, type: 3}
+  - {fileID: 21300000, guid: 0d6515f4c92e21b46be5832719378848, type: 3}
+  - {fileID: 21300000, guid: a23d1655b8f9afe4bae08ef4673153c4, type: 3}
+  story: 'For centuries the empire had been fragmented.
+
+    Factions waged war endlessly
+    against eachother.
+
+
+    Then a descendant of the royal bloodline was found.
+
+    A
+    young boy was crowned the Enlightened Ruler.
+
+
+    Old ways were outlawed; the
+    caste system abolished.
+
+    The end of a way of life had begun.
+
+
+    The Bushido
+    Coda.'
+--- !u!4 &1010197160
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010197158}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1196345429
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1196345432}
+  - component: {fileID: 1196345431}
+  - component: {fileID: 1196345430}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,21 +223,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &62541576
+--- !u!81 &1196345430
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 62541575}
+  m_GameObject: {fileID: 1196345429}
   m_Enabled: 1
---- !u!20 &62541577
+--- !u!20 &1196345431
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 62541575}
+  m_GameObject: {fileID: 1196345429}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -196,102 +282,16 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &62541578
+--- !u!4 &1196345432
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 62541575}
+  m_GameObject: {fileID: 1196345429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &754143262
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 754143264}
-  - component: {fileID: 754143263}
-  m_Layer: 0
-  m_Name: Intro
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &754143263
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 754143262}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75814b03fe64cfd41ba5dee28f6029a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.IntroController
-  nextScene: Duel
-  background: {fileID: 21300000, guid: c5367ccf0c3636f47b7f55690e69b769, type: 3}
-  clouds:
-  - {fileID: 21300000, guid: 8d4bfb3788a0086438a8d284e979f3c7, type: 3}
-  - {fileID: 21300000, guid: d5f72a02f60edd648806e6e6bf447db6, type: 3}
-  - {fileID: 21300000, guid: b74c03da6cfd04141ae2644db2ea3cb9, type: 3}
-  - {fileID: 21300000, guid: 89e7334d006123c4a83b1a87474fd585, type: 3}
-  loadingImages:
-  - {fileID: 21300000, guid: 46c98b2dd47ec5e4f8c84c948669b8b7, type: 3}
-  - {fileID: 21300000, guid: 90af57710fe26b742a83236897b4f377, type: 3}
-  - {fileID: 21300000, guid: fea3e9eece88b5946a051d3861e9526c, type: 3}
-  - {fileID: 21300000, guid: 04036d5f485286a47bce4f28cd255963, type: 3}
-  - {fileID: 21300000, guid: 2a182829d3f53b64484ad87ba2fe7778, type: 3}
-  - {fileID: 21300000, guid: a40966b8f0cf0384893cfc475d81ce58, type: 3}
-  - {fileID: 21300000, guid: f5a80aa310f9a0c4c9945fcc4c6cf53f, type: 3}
-  - {fileID: 21300000, guid: 60dbdecc051129d4790d9940b22971dc, type: 3}
-  - {fileID: 21300000, guid: 5c217a768d1488447af50be24b53cecc, type: 3}
-  - {fileID: 21300000, guid: a3eac48b587d0034cad92ae43485a4b5, type: 3}
-  - {fileID: 21300000, guid: 2fdb79e9394247e48beeb357ae32678b, type: 3}
-  - {fileID: 21300000, guid: 95fcfa23383b4dc4b980c6a6b36cbb5e, type: 3}
-  - {fileID: 21300000, guid: 0d6515f4c92e21b46be5832719378848, type: 3}
-  - {fileID: 21300000, guid: a23d1655b8f9afe4bae08ef4673153c4, type: 3}
-  story: 'For centuries the empire had been fragmented.
-
-    Factions waged war endlessly
-    against eachother.
-
-
-    Then a descendant of the royal bloodline was found.
-
-    A
-    young boy was crowned the Enlightened Ruler.
-
-
-    Old ways were outlawed; the
-    caste system abolished.
-
-    The end of a way of life had begun.
-
-
-    The Bushido
-    Coda.'
---- !u!4 &754143264
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 754143262}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -301,5 +301,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 62541578}
-  - {fileID: 754143264}
+  - {fileID: 1196345432}
+  - {fileID: 1010197160}

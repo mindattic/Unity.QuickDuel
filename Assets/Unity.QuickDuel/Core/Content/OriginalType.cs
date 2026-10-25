@@ -14,6 +14,7 @@ namespace Unity.QuickDuel.Core
     //   obj_typewriter(_intro):                fnt_mono, draw_text_outline_alpha(..., 2, ...)         -> Intro
     //   obj_gameclock debug, obj_time, obj_btn_*: fnt_basic, outline 1                                -> Hud, Button
     //   health, focus, skill, buff readouts:   fnt_tiny, outline 1                                    -> Tiny
+    //   mouseover_message_draw:                fnt_basic, plain draw_text, a menu button's message    -> Message
     //
     // draw_text_outline draws the text in black at every offset of a (2t + 1) x (2t + 1) square around the spot (x
     // outer, y inner, the spot itself included) and then once in white on top; OutlineOffsets is that loop.
@@ -35,6 +36,7 @@ namespace Unity.QuickDuel.Core
         public static readonly TypeStyle Intro = new TypeStyle(Mono, 2);
         public static readonly TypeStyle Hud = new TypeStyle(Basic, 1);
         public static readonly TypeStyle Button = new TypeStyle(Basic, 1);
+        public static readonly TypeStyle Message = new TypeStyle(Basic, 0);
         public static readonly TypeStyle Small = new TypeStyle(Tiny, 1);
 
         // draw_text_outline's own colours: a black outline under white text.

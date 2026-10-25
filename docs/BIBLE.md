@@ -225,13 +225,15 @@ at the frame that notices it. No rule may read `Time.frameCount`, `deltaTime` or
 
 ### UQD-LAW-3 — One moment only {#UQD-LAW-3}
 A change that adds stats, items, skills, maps or any input other than "strike" and "next round" (plus the
-between-rounds mode toggle) is out of scope unless this Bible is changed first ([§3](#UQD-§3)).
+between-rounds mode toggle, and the main menu's choice of mode and computer difficulty, UQD-T45) is out of scope
+unless this Bible is changed first ([§3](#UQD-§3)).
 
 ### UQD-LAW-4 — The scene is generated {#UQD-LAW-4}
 `Assets/Scenes/Duel.unity` is written by `DuelSceneBuilder` (menu *QuickDuel → Rebuild Duel Scene*, or
-batch mode) and `Assets/Scenes/Intro.unity` by `IntroSceneBuilder` (*QuickDuel → Rebuild Intro Scene*, UQD-T44); the
-UI Toolkit trees are built in code by `DuelView` (UQD-T31) and `IntroController`, and the build settings keep the
-scenes in the order the game runs them (`BuildScenes`: the intro first). Never hand-edit the scene YAML.
+batch mode), `Assets/Scenes/Intro.unity` by `IntroSceneBuilder` (*QuickDuel → Rebuild Intro Scene*, UQD-T44) and
+`Assets/Scenes/MainMenu.unity` by `MainMenuSceneBuilder` (*QuickDuel → Rebuild Main Menu Scene*, UQD-T45); the UI Toolkit
+trees are built in code by `DuelView` (UQD-T31), `IntroController` and `MainMenuController`, and the build settings keep
+the scenes in the order the game runs them (`BuildScenes`: intro, main menu, duel). Never hand-edit the scene YAML.
 
 ### UQD-LAW-5 — One home per fact {#UQD-LAW-5}
 Rules live here; history and the surveyed old builds live in [ORIGINS](ORIGINS.md); story and ticket status
@@ -537,9 +539,41 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **Skip, deliberate**: the original skipped only on a left click (`obj_intro`'s global left press starts the fade).
     A click still does, and so does any key and a pad's South or Start, so a keyboard or pad player is never stuck
     watching it. Skipping starts the same fade, at once, from any moment; a second press changes nothing.
-  - **Where it leads, deliberate until UQD-T45**: the original went on to `mainmenu`; until the main menu is built the
-    intro leads to the Duel scene's Ready screen, which opens under the intro's image as the menu did. F1 (fullscreen)
-    is UQD-T50's.
+  - **Where it leads, matches**: the intro goes on to the main menu (UQD-T45), which opens under the intro's image.
+    F1 (fullscreen) is UQD-T50's.
+- ✅ The main menu (UQD-T45; `MainMenuTests` in Core and PlayMode): the intro now leads to the original's `mainmenu`
+  room, built in `Assets/Scenes/MainMenu.unity`. Core holds the room (`MainMenu`, `MenuFade`), stepped at 60 a second
+  off the clock from the scene's start (UQD-LAW-2); `MainMenuController` draws it at the original's pixel scale on a
+  640 x 480 area centred on a black screen. The art is data: `bg_splatter_scroll` and the buttons' `spr_btn_right1`,
+  `right2`, `right3` and `left4` with their `_over` twins are in the asset manifest (the "button" group).
+  - **Room, matches**: `bg_splatter_scroll` (1279 x 480, white with blood) is the room's background, tiled and moving
+    left a pixel a step; `obj_title` draws `spr_titlescreen` over it at depth 100, a black screen with the logo cut out
+    of it, so the blood scrolls through the letters. The buttons draw over the title (depth 0).
+  - **Buttons, match**: New Game (`spr_btn_right1` at (576, 320)), Versus (`right2` at (576, 384)) and Quit (`left4` at
+    (64, 448)), origin (64, 32). Moving the mouse onto one (its sprite's rectangle mask, the `.sprite.gmx` bbox, which is
+    the bounds of its opaque pixels) plays `sfx_flick` once and draws its `_over` sprite and its message ("Start a new
+    game", "Player vs. Player", "Quit the game") in `fnt_basic`, white and not outlined, centred at (320, 450), until the
+    mouse leaves. The label is `fnt_basic` outlined 1, centred 6 px right of x on the right-hand buttons and 6 px left on
+    the left-hand one, its top 6 px above y. A press plays `sfx_click`; New Game sets `is_singleplayer`, Versus clears
+    it, and both start the fade to the duel; pressing the other one during the fade only changes the mode. Quit and
+    Escape end the game at once.
+  - **Loading fade, matches `obj_fade_mainmenu`**: the menu opens under the intro's image (`LoadingHandoff`; spr_loading1
+    when started on its own) fading out 0.01 a step; the step after it runs out, "off" chooses the random image the menu
+    will leave under. Its `firstPass` is shared as in the original: a button pressed during the opening fade turns it
+    round, the opening image fading back in from where it had got to; one pressed afterwards fades the chosen image in
+    from nothing; either way the duel follows the step after it is full, opening under that image (`DuelFade`).
+  - **The mode, deliberate**: `is_singleplayer` goes on to the Duel scene (`DuelModeHandoff`): New Game plays the
+    computer, Versus two players. Tab / Select still cycles the mode between rounds in the duel, as the shortcut; a Duel
+    scene loaded without the menu plays two players.
+  - **Difficulty, deliberate**: the original's computer adapted (its ART); the rebuild's has fixed Easy / Normal / Hard
+    ([RECONSTRUCTION §5](RECONSTRUCTION.md)), so the menu chooses it. It takes the slot of the original's Options button (`spr_btn_right3` at
+    (576, 448)), an empty stub: its label is the difficulty, a click plays the click and steps Easy, Normal, Hard, and
+    its message says what New Game will play. The choice is kept for the menu's next visit.
+  - **Keyboard and pad, deliberate**: the original's menu was mouse-only. The arrow keys or the d-pad also walk the
+    buttons (highlighting and flicking as the mouse does), and Enter, Space or a pad's South or Start press the
+    highlighted one, so a keyboard or pad player is never stuck on the menu.
+  - **Dropped**: Options and Scores were empty stubs (Scores jumped to the dropped `travel` room); Credits is UQD-T47's;
+    the katana cursor (`obj_mouse`) UQD-T46's; F1 fullscreen UQD-T50's. The original's menu played no music.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

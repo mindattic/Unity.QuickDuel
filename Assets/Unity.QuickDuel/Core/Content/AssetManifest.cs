@@ -18,7 +18,7 @@ namespace Unity.QuickDuel.Core
         // The groups a sprite can belong to, in the order the manifest lists them.
         public static readonly IReadOnlyList<string> SpriteGroups = new[]
         {
-            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor", "cloud", "background",
+            "fighter", "weapon", "arena", "loading", "title", "cornerart", "blood", "splatter", "flash", "cursor", "cloud", "background", "button",
         };
 
         private readonly Dictionary<string, OriginalSprite> spritesById = new Dictionary<string, OriginalSprite>();

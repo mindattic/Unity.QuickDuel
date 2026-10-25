@@ -75,6 +75,8 @@ namespace Unity.QuickDuel.EditorTools
                 sprites.Add(CopySprite(root, entry.Id, entry.Group, entry.Folder));
             foreach (var entry in OriginalAssetCatalog.Backgrounds)
                 sprites.Add(CopyBackground(root, entry.Id, entry.Group, entry.Folder));
+            foreach (var entry in OriginalAssetCatalog.Buttons())
+                sprites.Add(CopySprite(root, entry.Id, entry.Group, entry.Folder));
 
             var arenas = ReadArenas(Path.Combine(root, "scripts", "load_arenas.gml"));
             var arenaSprites = new List<SpriteRecord>();

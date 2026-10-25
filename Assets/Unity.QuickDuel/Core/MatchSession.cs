@@ -71,6 +71,10 @@ namespace Unity.QuickDuel.Core
         public static AiDifficulty DifficultyOf(DuelMode mode) =>
             mode == DuelMode.VsAiEasy ? AiDifficulty.Easy : mode == DuelMode.VsAiHard ? AiDifficulty.Hard : AiDifficulty.Normal;
 
+        // The vs-AI mode that plays the computer at `difficulty` (the main menu's New Game, UQD-T45).
+        public static DuelMode VsAi(AiDifficulty difficulty) =>
+            difficulty == AiDifficulty.Easy ? DuelMode.VsAiEasy : difficulty == AiDifficulty.Hard ? DuelMode.VsAiHard : DuelMode.VsAiNormal;
+
         public double CountdownRemaining(double now) => Duel?.CountdownRemaining(now) ?? 0;
         public int CountdownNumber(double now) => Duel?.CountdownNumber(now) ?? 0;
 

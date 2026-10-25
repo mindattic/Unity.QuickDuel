@@ -84,7 +84,16 @@
     "spr_cloud2": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud2_0.png" ] },
     "spr_cloud3": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud3_0.png" ] },
     "spr_cloud4": { "group": "cloud", "width": 256, "height": 48, "originX": 0, "originY": 0, "frames": [ "Art/Intro/spr_cloud4_0.png" ] },
-    "bg_mapscreen": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Intro/bg_mapscreen.png" ] }
+    "bg_mapscreen": { "group": "background", "width": 640, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Intro/bg_mapscreen.png" ] },
+    "bg_splatter_scroll": { "group": "background", "width": 1279, "height": 480, "originX": 0, "originY": 0, "frames": [ "Art/Menu/bg_splatter_scroll.png" ] },
+    "spr_btn_right1": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right1_0.png" ] },
+    "spr_btn_right1_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right1_over_0.png" ] },
+    "spr_btn_right2": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right2_0.png" ] },
+    "spr_btn_right2_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right2_over_0.png" ] },
+    "spr_btn_right3": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right3_0.png" ] },
+    "spr_btn_right3_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right3_over_0.png" ] },
+    "spr_btn_left4": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_0.png" ] },
+    "spr_btn_left4_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_over_0.png" ] }
   },
   "sounds": {
     "sfx_beep": { "path": "Audio/sfx_beep.ogg" },

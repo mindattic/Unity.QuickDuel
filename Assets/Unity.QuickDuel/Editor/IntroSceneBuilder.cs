@@ -15,8 +15,8 @@ namespace Unity.QuickDuel.EditorTools
     {
         public const string ScenePath = "Assets/Scenes/Intro.unity";
 
-        // Where the intro leads: the original's mainmenu, which the duel's Ready screen stands in for until UQD-T45.
-        public const string NextScene = "Duel";
+        // Where the intro leads: the original's mainmenu (UQD-T45).
+        public const string NextScene = MainMenuSceneBuilder.SceneName;
 
         [MenuItem("QuickDuel/Rebuild Intro Scene")]
         public static void Build()
@@ -64,10 +64,11 @@ namespace Unity.QuickDuel.EditorTools
         }
     }
 
-    // The player's scenes, in the order the game runs them: the intro first (UQD-T44), then the duel.
+    // The player's scenes, in the order the game runs them: the intro first (UQD-T44), the main menu (UQD-T45), then the
+    // duel.
     public static class BuildScenes
     {
-        public static readonly string[] Order = { IntroSceneBuilder.ScenePath, DuelSceneBuilder.ScenePath };
+        public static readonly string[] Order = { IntroSceneBuilder.ScenePath, MainMenuSceneBuilder.ScenePath, DuelSceneBuilder.ScenePath };
 
         // Adds `path` to the build settings, keeping the scenes this game knows in Order and any others after them.
         public static void Register(string path)

@@ -57,7 +57,7 @@ namespace Unity.QuickDuel.Tests
         {
             yield return Load();
             Assert.That(SceneManager.GetActiveScene().buildIndex, Is.Zero, "the game opens on the intro");
-            Assert.That(intro.NextScene, Is.EqualTo("Duel"), "the Ready screen stands in for the main menu (UQD-T45)");
+            Assert.That(intro.NextScene, Is.EqualTo("MainMenu"), "the intro leads to the main menu (UQD-T45)");
             Assert.That(intro.Background.name, Does.StartWith("bg_mapscreen"));
             Assert.That(intro.Clouds.Select(c => c.name.Substring(0, 10)), Is.EqualTo(new[] { "spr_cloud1", "spr_cloud2", "spr_cloud3", "spr_cloud4" }));
             Assert.That(intro.LoadingImages, Has.Count.EqualTo(LoadingFade.Images));
@@ -138,7 +138,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(leftFor, Is.Null);
 
             yield return AtStep(IntroScene.StepFadingIn(length) + 100);
-            Assert.That(leftFor, Is.EqualTo("Duel"));
+            Assert.That(leftFor, Is.EqualTo("MainMenu"));
             Assert.That(LoadingHandoff.Pending, Is.EqualTo(intro.Scene.Fade.Image), "fade_asset goes on to the next room");
         }
 
@@ -207,11 +207,11 @@ namespace Unity.QuickDuel.Tests
             Assert.That(intro.Scene.Fade.Mode, Is.EqualTo(LoadingFadeMode.FadeIn));
             Assert.That(intro.Scene.Fade.Alpha, Is.EqualTo(0.01).Within(1e-9));
             yield return AtStep(501);
-            Assert.That(leftFor, Is.EqualTo("Duel"));
+            Assert.That(leftFor, Is.EqualTo("MainMenu"));
         }
 
         [UnityTest]
-        public IEnumerator AClickSkipsTheIntroIntoTheDuelWhichOpensUnderTheSameImage()
+        public IEnumerator AClickSkipsTheIntroIntoTheMainMenuWhichOpensUnderTheSameImage()
         {
             yield return Load(reallyLeave: true);
             var mouse = InputSystem.AddDevice<Mouse>();
@@ -224,27 +224,16 @@ namespace Unity.QuickDuel.Tests
 
             yield return AtStep(111);
             Assert.That(intro.HasLeft, Is.True);
-            for (var frame = 0; frame < 30 && SceneManager.GetActiveScene().name != "Duel"; frame++)
+            for (var frame = 0; frame < 30 && SceneManager.GetActiveScene().name != "MainMenu"; frame++)
                 yield return null;
-            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Duel"));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("MainMenu"));
             yield return null;
 
-            var controller = Object.FindAnyObjectByType<DuelController>();
-            var fade = controller.GetComponent<DuelFade>();
-            Assert.That(fade.ArrivalImage, Is.EqualTo(image), "obj_fade_mainmenu opens under fade_asset");
-            Assert.That(fade.ArrivalAlpha, Is.GreaterThan(0f).And.LessThan(1f));
-            Assert.That(fade.Overlay.style.backgroundImage.value.sprite, Is.SameAs(fade.Images[image]));
+            var menu = Object.FindAnyObjectByType<MainMenuController>();
+            Assert.That(menu.Menu.Fade.Image, Is.EqualTo(image), "obj_fade_mainmenu opens under fade_asset");
+            Assert.That(menu.Overlay.style.backgroundImage.value.sprite, Is.SameAs(menu.LoadingImages[image]));
+            Assert.That(menu.Overlay.style.opacity.value, Is.GreaterThan(0f).And.LessThan(1f));
             Assert.That(LoadingHandoff.Pending, Is.Null, "taken once");
-
-            var arrived = fade.ArrivedAt;
-            controller.Clock = () => arrived + 0.5 / 60 + 49.0 / 60;
-            yield return null;
-            Assert.That(fade.ArrivalAlpha, Is.EqualTo(0.5f).Within(1e-4f), "0.01 a step");
-            Assert.That(fade.Overlay.style.opacity.value, Is.EqualTo(0.5f).Within(1e-4f));
-            controller.Clock = () => arrived + 3;
-            yield return null;
-            Assert.That(fade.ArrivalImage, Is.Null);
-            Assert.That(fade.Overlay.style.display.value, Is.EqualTo(DisplayStyle.None));
         }
     }
 }

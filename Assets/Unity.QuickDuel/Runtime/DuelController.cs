@@ -31,7 +31,10 @@ namespace Unity.QuickDuel
         // Built lazily (like Settings) rather than in Awake: DuelView and DuelSession read it from their
         // own Awake, and Unity does not guarantee this component's Awake runs first. The tuning is a
         // provider, not a value read once, so a profile swapped later still reaches the next mode change.
-        internal MatchSession Session => session ?? (session = new MatchSession(() => TuningStore.Profile.Ai, TuningStore.Profile.Match.WinsNeeded));
+        // It plays the mode the main menu chose (DuelModeHandoff, UQD-T45), or two players when the scene was loaded
+        // without the menu.
+        internal MatchSession Session => session ?? (session = new MatchSession(() => TuningStore.Profile.Ai,
+            TuningStore.Profile.Match.WinsNeeded, DuelModeHandoff.TakeOr(DuelMode.LocalPvp)));
 
         private MatchSession session;
 

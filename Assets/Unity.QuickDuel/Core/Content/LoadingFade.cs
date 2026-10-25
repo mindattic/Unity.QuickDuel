@@ -15,7 +15,7 @@ namespace Unity.QuickDuel.Core
         FadeIn
     }
 
-    // A room's own loading fade (UQD-T44), as obj_fade_intro and obj_fade_mainmenu have it. Every figure is the original's
+    // A room's own loading fade (UQD-T44), as obj_fade_intro has it (obj_fade_mainmenu's differs: MenuFade). Every figure is the original's
     // own, read from BushidoCoda.gmx, not a tuning choice:
     //
     //   Create   sprite_index = fade_asset; image_alpha = 1; mode = "fadeout"; fadespeed = 0.01; firstPass = true

@@ -95,6 +95,34 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(m.IntroText, Does.Not.Contain("#"));
         }
 
+        // The main menu (UQD-T45): bg_splatter_scroll and the buttons it draws, each with its "_over" twin.
+        [Test]
+        public void The_shipped_manifest_carries_the_main_menu()
+        {
+            var m = Shipped.Value;
+            var scroll = m.Sprite("bg_splatter_scroll");
+            Assert.That(scroll.Group, Is.EqualTo("background"));
+            Assert.That((scroll.Width, scroll.Height), Is.EqualTo((MainMenu.ScrollWidth, MainMenu.ScrollHeight)));
+            var title = m.Sprite("spr_titlescreen");
+            Assert.That((title.Width, title.Height), Is.EqualTo((MainMenu.RoomWidth, MainMenu.RoomHeight)));
+
+            var menu = new MainMenu(0, AiDifficulty.Normal, new System.Random(0));
+            var ids = new System.Collections.Generic.List<string>();
+            foreach (var button in menu.Buttons)
+            {
+                ids.Add(button.Sprite);
+                ids.Add(button.OverSprite);
+            }
+            Assert.That(m.InGroup("button").Select(s => s.Id), Is.EqualTo(ids));
+            foreach (var sprite in m.InGroup("button"))
+            {
+                Assert.That((sprite.Width, sprite.Height), Is.EqualTo((MenuButton.Width, MenuButton.Height)), sprite.Id);
+                Assert.That((sprite.OriginX, sprite.OriginY), Is.EqualTo((MenuButton.OriginX, MenuButton.OriginY)), sprite.Id);
+            }
+            Assert.That(m.Sound("sfx_flick").Path, Is.EqualTo("Audio/sfx_flick.ogg"));
+            Assert.That(m.Sound("sfx_click").Path, Is.EqualTo("Audio/sfx_click.ogg"));
+        }
+
         [Test]
         public void The_shipped_manifest_lists_the_sounds_fonts_and_credits()
         {

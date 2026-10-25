@@ -20,9 +20,8 @@ namespace Unity.QuickDuel
     // the map and the loading image cover the whole screen. The whole tree is built here in code.
     public sealed class IntroController : MonoBehaviour
     {
-        // The scene the intro leads to: the original's mainmenu; until the main menu is built (UQD-T45), the duel's
-        // Ready screen. Written by IntroSceneBuilder.
-        [SerializeField] private string nextScene = "Duel";
+        // The scene the intro leads to: the original's mainmenu (UQD-T45). Written by IntroSceneBuilder.
+        [SerializeField] private string nextScene = "MainMenu";
 
         // bg_mapscreen, spr_cloud1 to 4 and spr_loading1 to 14, in order. Written by IntroSceneBuilder.
         [SerializeField] private Sprite background;
