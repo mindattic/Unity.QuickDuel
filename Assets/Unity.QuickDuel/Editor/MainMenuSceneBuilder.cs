@@ -51,6 +51,8 @@ namespace Unity.QuickDuel.EditorTools
             menu.AddComponent<MainMenuController>().SetAssets(NextScene, Sprite(manifest, "bg_splatter_scroll"),
                 Sprite(manifest, "spr_titlescreen"), DuelSceneBuilder.LoadingImages(), buttons, buttonsOver,
                 Clip(manifest, "sfx_flick"), Clip(manifest, "sfx_click"));
+            // obj_mouse (UQD-T46): the katana cursor in place of the system cursor.
+            menu.AddComponent<KatanaCursor>().SetSprite(Sprite(manifest, "spr_katana_cursor"));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             BuildScenes.Register(ScenePath);

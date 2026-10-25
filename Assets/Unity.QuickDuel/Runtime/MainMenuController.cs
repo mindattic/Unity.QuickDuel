@@ -18,7 +18,7 @@ namespace Unity.QuickDuel
     // Everything steps at the original's 60 a second counted off Clock, from the moment the scene starts. The room is
     // drawn at the original's pixel scale on a 640 x 480 area centred on the screen, black around it; the loading image
     // covers the whole screen. The whole tree is built here in code.
-    public sealed class MainMenuController : MonoBehaviour
+    public sealed class MainMenuController : MonoBehaviour, IKatanaCursorHost
     {
         // The scene New Game and Versus lead to. Written by MainMenuSceneBuilder.
         [SerializeField] private string nextScene = "Duel";
@@ -116,6 +116,9 @@ namespace Unity.QuickDuel
         public IReadOnlyList<OutlinedText> Labels => labels;
         public OutlinedText MessageText => message;
         public VisualElement Overlay => overlay;
+
+        // obj_mouse (depth -5000) draws under obj_fade_mainmenu (-10000) and over the rest (UQD-T46).
+        public VisualElement CursorCeiling => overlay;
 
         private void Awake()
         {

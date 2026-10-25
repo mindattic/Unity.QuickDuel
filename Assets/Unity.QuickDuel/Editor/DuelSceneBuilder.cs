@@ -54,6 +54,8 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelCornerArt>().SetSprites(
                 Frames(Manifest(), "spr_cornerart_left2", "the corner art")[0],
                 Frames(Manifest(), "spr_cornerart_right2", "the corner art")[0]);
+            // obj_mouse (UQD-T46): the katana cursor in place of the system cursor.
+            duel.AddComponent<KatanaCursor>().SetSprite(Frames(Manifest(), "spr_katana_cursor", "the cursor")[0]);
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));

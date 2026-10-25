@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1687180102
+--- !u!1 &229564350
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,83 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1687180104}
-  - component: {fileID: 1687180103}
-  m_Layer: 0
-  m_Name: MainMenu
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1687180103
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687180102}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80ff75b88cdfbe148a46c7d2173c2c9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.MainMenuController
-  nextScene: Duel
-  background: {fileID: 21300000, guid: a114f612e2698d74681351d501201cb3, type: 3}
-  title: {fileID: 21300000, guid: 3e08edb988c305140abfaf764f416363, type: 3}
-  loadingImages:
-  - {fileID: 21300000, guid: 46c98b2dd47ec5e4f8c84c948669b8b7, type: 3}
-  - {fileID: 21300000, guid: 90af57710fe26b742a83236897b4f377, type: 3}
-  - {fileID: 21300000, guid: fea3e9eece88b5946a051d3861e9526c, type: 3}
-  - {fileID: 21300000, guid: 04036d5f485286a47bce4f28cd255963, type: 3}
-  - {fileID: 21300000, guid: 2a182829d3f53b64484ad87ba2fe7778, type: 3}
-  - {fileID: 21300000, guid: a40966b8f0cf0384893cfc475d81ce58, type: 3}
-  - {fileID: 21300000, guid: f5a80aa310f9a0c4c9945fcc4c6cf53f, type: 3}
-  - {fileID: 21300000, guid: 60dbdecc051129d4790d9940b22971dc, type: 3}
-  - {fileID: 21300000, guid: 5c217a768d1488447af50be24b53cecc, type: 3}
-  - {fileID: 21300000, guid: a3eac48b587d0034cad92ae43485a4b5, type: 3}
-  - {fileID: 21300000, guid: 2fdb79e9394247e48beeb357ae32678b, type: 3}
-  - {fileID: 21300000, guid: 95fcfa23383b4dc4b980c6a6b36cbb5e, type: 3}
-  - {fileID: 21300000, guid: 0d6515f4c92e21b46be5832719378848, type: 3}
-  - {fileID: 21300000, guid: a23d1655b8f9afe4bae08ef4673153c4, type: 3}
-  buttonSprites:
-  - {fileID: 21300000, guid: 8d56882253963284584a3f96b12f440f, type: 3}
-  - {fileID: 21300000, guid: c4a5986543b08ea4b839213c87f149e3, type: 3}
-  - {fileID: 21300000, guid: ea7f8806dd6c7d346bf92ce8a5d4f580, type: 3}
-  - {fileID: 21300000, guid: 95c1d53eb53be2148856fcfe8a89f3eb, type: 3}
-  buttonOverSprites:
-  - {fileID: 21300000, guid: eaac137ee5119d542bc2b3c337b26e7a, type: 3}
-  - {fileID: 21300000, guid: bc22467e488394b49a1a18b974e7ed31, type: 3}
-  - {fileID: 21300000, guid: d985f70865bf93c4bbba7dd7aa518956, type: 3}
-  - {fileID: 21300000, guid: 919ed0d2cf747a7408e4f2ee39a4b1aa, type: 3}
-  flick: {fileID: 8300000, guid: 0861f6d5be8e7014daca43fd2a269657, type: 3}
-  click: {fileID: 8300000, guid: 98794c45f5d82b640ad9c542f016495a, type: 3}
---- !u!4 &1687180104
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687180102}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2009066333
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2009066336}
-  - component: {fileID: 2009066335}
-  - component: {fileID: 2009066334}
+  - component: {fileID: 229564353}
+  - component: {fileID: 229564352}
+  - component: {fileID: 229564351}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -211,21 +137,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &2009066334
+--- !u!81 &229564351
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2009066333}
+  m_GameObject: {fileID: 229564350}
   m_Enabled: 1
---- !u!20 &2009066335
+--- !u!20 &229564352
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2009066333}
+  m_GameObject: {fileID: 229564350}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -270,16 +196,104 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &2009066336
+--- !u!4 &229564353
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2009066333}
+  m_GameObject: {fileID: 229564350}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &521229724
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 521229727}
+  - component: {fileID: 521229726}
+  - component: {fileID: 521229725}
+  m_Layer: 0
+  m_Name: MainMenu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &521229725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521229724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab7bea3c705ce64abe01a4a9c8a4c64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.KatanaCursor
+  sprite: {fileID: 21300000, guid: dd4d754885783b141ae56ffdf29ebb07, type: 3}
+--- !u!114 &521229726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521229724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80ff75b88cdfbe148a46c7d2173c2c9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.MainMenuController
+  nextScene: Duel
+  background: {fileID: 21300000, guid: a114f612e2698d74681351d501201cb3, type: 3}
+  title: {fileID: 21300000, guid: 3e08edb988c305140abfaf764f416363, type: 3}
+  loadingImages:
+  - {fileID: 21300000, guid: 46c98b2dd47ec5e4f8c84c948669b8b7, type: 3}
+  - {fileID: 21300000, guid: 90af57710fe26b742a83236897b4f377, type: 3}
+  - {fileID: 21300000, guid: fea3e9eece88b5946a051d3861e9526c, type: 3}
+  - {fileID: 21300000, guid: 04036d5f485286a47bce4f28cd255963, type: 3}
+  - {fileID: 21300000, guid: 2a182829d3f53b64484ad87ba2fe7778, type: 3}
+  - {fileID: 21300000, guid: a40966b8f0cf0384893cfc475d81ce58, type: 3}
+  - {fileID: 21300000, guid: f5a80aa310f9a0c4c9945fcc4c6cf53f, type: 3}
+  - {fileID: 21300000, guid: 60dbdecc051129d4790d9940b22971dc, type: 3}
+  - {fileID: 21300000, guid: 5c217a768d1488447af50be24b53cecc, type: 3}
+  - {fileID: 21300000, guid: a3eac48b587d0034cad92ae43485a4b5, type: 3}
+  - {fileID: 21300000, guid: 2fdb79e9394247e48beeb357ae32678b, type: 3}
+  - {fileID: 21300000, guid: 95fcfa23383b4dc4b980c6a6b36cbb5e, type: 3}
+  - {fileID: 21300000, guid: 0d6515f4c92e21b46be5832719378848, type: 3}
+  - {fileID: 21300000, guid: a23d1655b8f9afe4bae08ef4673153c4, type: 3}
+  buttonSprites:
+  - {fileID: 21300000, guid: 8d56882253963284584a3f96b12f440f, type: 3}
+  - {fileID: 21300000, guid: c4a5986543b08ea4b839213c87f149e3, type: 3}
+  - {fileID: 21300000, guid: ea7f8806dd6c7d346bf92ce8a5d4f580, type: 3}
+  - {fileID: 21300000, guid: 95c1d53eb53be2148856fcfe8a89f3eb, type: 3}
+  buttonOverSprites:
+  - {fileID: 21300000, guid: eaac137ee5119d542bc2b3c337b26e7a, type: 3}
+  - {fileID: 21300000, guid: bc22467e488394b49a1a18b974e7ed31, type: 3}
+  - {fileID: 21300000, guid: d985f70865bf93c4bbba7dd7aa518956, type: 3}
+  - {fileID: 21300000, guid: 919ed0d2cf747a7408e4f2ee39a4b1aa, type: 3}
+  flick: {fileID: 8300000, guid: 0861f6d5be8e7014daca43fd2a269657, type: 3}
+  click: {fileID: 8300000, guid: 98794c45f5d82b640ad9c542f016495a, type: 3}
+--- !u!4 &521229727
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521229724}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -289,5 +303,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 2009066336}
-  - {fileID: 1687180104}
+  - {fileID: 229564353}
+  - {fileID: 521229727}

@@ -573,7 +573,19 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     buttons (highlighting and flicking as the mouse does), and Enter, Space or a pad's South or Start press the
     highlighted one, so a keyboard or pad player is never stuck on the menu.
   - **Dropped**: Options and Scores were empty stubs (Scores jumped to the dropped `travel` room); Credits is UQD-T47's;
-    the katana cursor (`obj_mouse`) UQD-T46's; F1 fullscreen UQD-T50's. The original's menu played no music.
+    F1 fullscreen UQD-T50's. The original's menu played no music.
+- ✅ The katana cursor (UQD-T46; `KatanaCursorTests` in PlayMode): `obj_mouse`, placed in `mainmenu` and `gamescreen`,
+  is `KatanaCursor` on the main menu and the duel (`IKatanaCursorHost`: `MainMenuController`, `DuelView`).
+  - **Matches**: the original's Global Game Settings hid the system cursor (`option_showcursor` False) and `obj_mouse`
+    moved to (`mouse_x`, `mouse_y`) each step and drew `spr_katana_cursor` (40 x 40, origin (0, 0)) in Draw GUI at depth
+    -5000. The system cursor is hidden while either scene runs and the sprite's top-left corner, the blade's tip, is at
+    the pointer, at the original's pixel scale. It draws over everything the room drew (the corner arts at -101 among
+    them) and under the letterbox (the duel) and the loading fades (both scenes) at -10000, as the original's depths had it.
+  - **Gamepad, deliberate**: the original had no pad. While a gamepad is the device last used (any button, the d-pad or
+    a stick pushed) the katana is hidden, a pointer nothing is driving; it returns the moment the mouse moves or clicks.
+    Which device is active carries from scene to scene.
+  - **Not drawn**: the intro (`obj_mouse` was never placed in it; the system cursor shows there as before). With
+    `QUICKDUEL_MULTIPLAYER` the online menu, added to the duel's tree after the letterbox, draws over the katana.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

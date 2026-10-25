@@ -35,7 +35,7 @@ namespace Unity.QuickDuel
     // its defeat strip at the middle; three seconds on the winner shows its idle sprite again, and the next round puts
     // both back on their idle marks.
     [RequireComponent(typeof(DuelController))]
-    public sealed class DuelView : MonoBehaviour
+    public sealed class DuelView : MonoBehaviour, IKatanaCursorHost
     {
         internal const float StageWidth = 1920f;
         internal const float StageHeight = 1080f;
@@ -177,6 +177,9 @@ namespace Unity.QuickDuel
 
         // The top letterbox bar (obj_letterbox, depth -10000): whatever must draw under it and over the rest goes before it.
         public VisualElement LetterboxTop => letterboxTop;
+
+        // obj_mouse (depth -5000) draws under the letterbox and the loading fade (-10000) and over the rest (UQD-T46).
+        public VisualElement CursorCeiling => letterboxTop;
 
         private void Awake()
         {
