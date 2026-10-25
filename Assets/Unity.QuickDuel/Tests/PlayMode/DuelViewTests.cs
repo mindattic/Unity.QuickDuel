@@ -78,7 +78,10 @@ namespace Unity.QuickDuel.Tests
             for (var i = 0; i < 20; i++) yield return null;
 
             Assert.That(view.Inverted, Is.False);
-            Assert.That(view.HeadlineText, Is.EqualTo("Right wins"));
+            Assert.That(view.WinsText, Is.EqualTo("Wins!"));
+            Assert.That(view.WinsSide, Is.EqualTo(Side.Left));
+            Assert.That(view.WinnerNameText, Is.EqualTo(view.FighterIn(Side.Right).Name));
+            Assert.That(view.HeadlineText, Is.Empty, "the original's banner says who won");
             Assert.That(view.ReactionText(Side.Left), Is.EqualTo("312 ms"));
             Assert.That(view.ReactionText(Side.Right), Is.EqualTo("187 ms"));
             Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));
@@ -89,6 +92,59 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.Motion(Side.Right).XFraction, Is.LessThan(0.5), "the winner dashes on past the middle");
             Assert.That(view.PromptText, Does.Contain("next round"));
             Screenshots.Capture("05-resolved");
+        }
+
+        // gameclock_aftermath (UQD-T39): a round won by reaction draws the winner's name over "Wins!" above the loser's
+        // idle mark, and the winner's frozen number slides away from the loser one original pixel a 60 fps step.
+        [UnityTest]
+        public IEnumerator TheAftermathShowsTheWinnerOnTheLosersSideAndSlidesTheNumberAway()
+        {
+            yield return null;
+            foreach (var winner in new[] { Side.Right, Side.Left })
+            {
+                var settings = DuelSceneTests.FastSettings();
+                settings.StrikeTimeoutSeconds = 5;
+                controller.Settings = settings;
+                Assert.That(controller.BeginRound(), Is.True);
+                yield return null;
+                Assert.That(view.WinsText, Is.Empty, "nothing before a verdict");
+                yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
+                var cue = controller.CueAt;
+                var loser = winner == Side.Left ? Side.Right : Side.Left;
+                controller.Strike(winner, cue + 0.15);
+                controller.Strike(loser, cue + 0.25);
+                yield return null;
+                Assert.That(controller.Result.Winner, Is.EqualTo(winner));
+                Assert.That(view.WinsText, Is.EqualTo("Wins!"));
+                Assert.That(view.WinnerNameText, Is.EqualTo(view.FighterIn(winner).Name));
+                Assert.That(view.WinsSide, Is.EqualTo(loser));
+                Assert.That(view.CounterText, Is.EqualTo("150"), "the winner's reaction");
+                yield return null;
+                var stage = view.Root.Q("Stage").worldBound;
+                var wins = view.Root.Q<OutlinedText>("Wins").worldBound;
+                var name = view.Root.Q<OutlinedText>("WinnerName").worldBound;
+                var loserHalf = loser == Side.Left ? wins.center.x < stage.center.x : wins.center.x > stage.center.x;
+                Assert.That(loserHalf, Is.True, "above the loser's side");
+                Assert.That(name.center.x, Is.EqualTo(wins.center.x).Within(1f));
+                Assert.That(name.center.y, Is.LessThan(wins.center.y), "the name over Wins!");
+
+                var first = view.CounterOffset;
+                yield return new WaitForSecondsRealtime(0.25f);
+                yield return null;
+                var later = view.CounterOffset;
+                var away = winner == Side.Left ? -1f : 1f;
+                Assert.That(later * away, Is.GreaterThan(first * away), "sliding away from the loser");
+                var expected = (float)((controller.Now - (cue + 0.15)) * 60 * (1080.0 / 480));
+                Assert.That(Mathf.Abs(later), Is.InRange(expected * 0.5f, expected * 1.5f), "one original pixel a 60 fps step");
+                var counter = view.Root.Q<OutlinedText>("Counter").worldBound;
+                Assert.That((counter.center.x - stage.center.x) * away, Is.GreaterThan(0f), "drawn where it slid");
+                Screenshots.Capture(winner == Side.Right ? "05c-aftermath-right-wins" : "05d-aftermath-left-wins");
+            }
+
+            Assert.That(controller.BeginRound(), Is.True);
+            yield return null;
+            Assert.That(view.WinsText, Is.Empty, "the next round clears the banner");
+            Assert.That(view.CounterOffset, Is.EqualTo(0f));
         }
 
         // gameclock_action (UQD-T38): while the cue is up the centre counts the milliseconds since the cue off the clock,

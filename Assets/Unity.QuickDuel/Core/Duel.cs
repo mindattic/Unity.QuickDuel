@@ -151,7 +151,10 @@ namespace Unity.QuickDuel.Core
             return firstStrikeAt.HasValue ? ReactionCounter.FrozenAlpha(now - firstStrikeAt.Value) : 1;
         }
 
-        private bool ShowsReactionCount => Phase == DuelPhase.Strike
+        // When this round saw its first strike after the cue (the original's aftermath began there); null before one.
+        public double? FirstStrikeAt => firstStrikeAt;
+
+        private bool ShowsReactionCount =>Phase == DuelPhase.Strike
             || (Phase == DuelPhase.Resolved && firstStrikeAt.HasValue && Result != null
                 && (Result.Outcome == DuelOutcome.FasterStrike || Result.Outcome == DuelOutcome.Tie));
 

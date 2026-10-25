@@ -50,6 +50,13 @@ namespace Unity.QuickDuel
         // The countdown's number, y up from the stage centre.
         private const float CountdownY = 120f;
 
+        // Get Ready's line, 44 original pixels above the number, where the original also drew "Wins!" and
+        // "Premature Strike!" (DuelTaunt draws its line there).
+        public static readonly float BannerY = CountdownY + VerdictBanner.BannerAboveNumber * PixelScale;
+
+        // The winner's name, 20 original pixels above "Wins!".
+        private static readonly float WinnerNameY = BannerY + VerdictBanner.NameAboveBanner * PixelScale;
+
         // Below the fighters' feet (their 128-pixel sprites are centred on FighterY).
         private const float ReactionY = -370f;
 
@@ -78,6 +85,8 @@ namespace Unity.QuickDuel
         private OutlinedText counter;
         private OutlinedText cue;
         private OutlinedText headline;
+        private OutlinedText winnerName;
+        private OutlinedText wins;
         private OutlinedText prompt;
         private OutlinedText leftReaction;
         private OutlinedText rightReaction;
@@ -134,6 +143,17 @@ namespace Unity.QuickDuel
 
         // The alpha it is drawn at: 1 while it counts, fading 0.003 a 60 fps step from the first strike.
         public float CounterAlpha => IsVisible(counter) ? counter.style.opacity.value : 0f;
+
+        // How far the counter has slid from the centre, in stage pixels (x right): the winner's number moving away from
+        // the loser one original pixel a 60 fps step through the aftermath (UQD-T39).
+        public float CounterOffset => IsVisible(counter) ? counter.style.translate.value.x.value : 0f;
+
+        // The aftermath's banner on the loser's side (UQD-T39): the winner's name over "Wins!"; empty when none is drawn.
+        public string WinnerNameText => IsVisible(winnerName) ? winnerName.text : "";
+        public string WinsText => IsVisible(wins) ? wins.text : "";
+
+        // The side that banner stands on: the loser's; null when none is drawn.
+        public Side? WinsSide { get; private set; }
         public string HeadlineText => IsVisible(headline) ? headline.text : "";
         public string PromptText => IsVisible(prompt) ? prompt.text : "";
         public string ReactionText(Side side) => (side == Side.Left ? leftReaction : rightReaction).text;
@@ -242,10 +262,18 @@ namespace Unity.QuickDuel
                 counter.text = count.ToString();
                 counter.style.opacity = counterAlpha;
             }
+            // gameclock_aftermath (UQD-T39): a round won by reaction slides the winner's number away from the loser.
+            counter.style.translate = new Translate((float)controller.ReactionCountSlide * PixelScale, 0f);
 
             var resolved = phase == DuelPhase.Resolved;
-            SetVisible(headline, resolved);
-            if (resolved) headline.text = controller.Result != null ? Headline(controller.Result, RightName) : AwaitingVerdictText;
+            var verdict = resolved ? controller.Result : null;
+            ShowWinner(verdict);
+            // The original's own aftermath text says who won, or that someone struck early (DuelTaunt); the headline is
+            // kept only for the rebuild's outcomes the original never drew (a tie, nobody striking, a forfeit) and while
+            // an online verdict is on its way.
+            var headlined = resolved && !VerdictBanner.ShowsWinner(verdict) && !VerdictBanner.ShowsPremature(verdict);
+            SetVisible(headline, headlined);
+            if (headlined) headline.text = verdict != null ? Headline(verdict, RightName) : AwaitingVerdictText;
             SetVisible(title, phase == DuelPhase.Ready);
             SetVisible(prompt, phase == DuelPhase.Ready || resolved);
             prompt.text = controller.IsOnline ? OnlinePrompt(phase) : phase == DuelPhase.Ready
@@ -262,6 +290,36 @@ namespace Unity.QuickDuel
             }
             left.Animate(dt, cueUp);
             right.Animate(dt, cueUp);
+        }
+
+        // obj_gameclock's aftermath (UQD-T39): the winner's name over "Wins!" at full alpha above the loser's idle mark.
+        private void ShowWinner(DuelResult verdict)
+        {
+            var show = VerdictBanner.ShowsWinner(verdict);
+            SetVisible(winnerName, show);
+            SetVisible(wins, show);
+            if (!show)
+            {
+                WinsSide = null;
+                return;
+            }
+            var winner = verdict.Winner.Value;
+            var side = VerdictBanner.BannerSide(winner);
+            if (WinsSide != side)
+            {
+                WinsSide = side;
+                Reposition(winnerName, StageX(side), WinnerNameY);
+                Reposition(wins, StageX(side), BannerY);
+            }
+            winnerName.text = WinnerName(winner);
+        }
+
+        // The winner's character_name: the fighter in its seat, or its seat's name in a scene that carries none.
+        private string WinnerName(Side winner)
+        {
+            var look = FighterIn(winner);
+            if (look != null && !string.IsNullOrEmpty(look.Name)) return look.Name;
+            return winner == Side.Left ? "Left" : RightName;
         }
 
         // The headline while this side's round is over but the host's verdict is still on its way (online only).
@@ -402,6 +460,12 @@ namespace Unity.QuickDuel
             cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale), CueRed, 2f);
             cue.text = "!";
             headline = CreateLabel("Headline", OriginalType.Banner, new Vector2(0, 370f));
+            // The aftermath's winner banner (UQD-T39), moved to the loser's side when shown, drawn at default_alpha.
+            winnerName = CreateLabel("WinnerName", OriginalType.Name, new Vector2(0, WinnerNameY));
+            wins = CreateLabel("Wins", OriginalType.Banner, new Vector2(0, BannerY));
+            wins.text = VerdictBanner.Wins;
+            SetVisible(winnerName, false);
+            SetVisible(wins, false);
             prompt = CreateLabel("Prompt", OriginalType.Hud, new Vector2(0, -440f));
         }
 

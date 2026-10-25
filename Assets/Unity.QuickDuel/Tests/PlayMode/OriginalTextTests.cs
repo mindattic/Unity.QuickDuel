@@ -50,6 +50,8 @@ namespace Unity.QuickDuel.Tests
             AssertStyle(view.Root.Q<OutlinedText>("LeftReaction"), OriginalType.Countdown);
             AssertStyle(view.Root.Q<OutlinedText>("LeftScore"), OriginalType.Hud);
             AssertStyle(view.Root.Q<OutlinedText>("Taunt"), OriginalType.Banner);
+            AssertStyle(view.Root.Q<OutlinedText>("Wins"), OriginalType.Banner);
+            AssertStyle(view.Root.Q<OutlinedText>("WinnerName"), OriginalType.Name);
 
             var prompt = view.Root.Q<OutlinedText>("Prompt");
             Assert.That(prompt.FillLayer.text, Is.EqualTo(view.PromptText));

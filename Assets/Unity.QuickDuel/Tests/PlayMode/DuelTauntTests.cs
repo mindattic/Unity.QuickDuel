@@ -1,6 +1,8 @@
 using System.Collections;
 using NUnit.Framework;
 using Unity.QuickDuel.Core;
+using UnityEngine;
+using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
@@ -32,6 +34,15 @@ namespace Unity.QuickDuel.Tests
 
             Assert.That(DuelTaunt.Lines, Does.Contain(taunt.Current));
             for (var i = 0; i < 30; i++) yield return null;
+            // Where the GameMaker build drew "Premature Strike!": centred, white, on Get Ready's line, with no winner
+            // banner or headline beside it.
+            var view = controller.GetComponent<DuelView>();
+            var label = view.Root.Q<OutlinedText>("Taunt");
+            var stage = view.Root.Q("Stage").worldBound;
+            Assert.That(label.worldBound.center.x, Is.EqualTo(stage.center.x).Within(3f), "centred");
+            Assert.That(label.FillLayer.resolvedStyle.color, Is.EqualTo(Color.white));
+            Assert.That(view.WinsText, Is.Empty);
+            Assert.That(view.HeadlineText, Is.Empty);
             Screenshots.Capture("06-taunt");
 
             controller.BeginRound();

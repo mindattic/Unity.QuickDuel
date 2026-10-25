@@ -107,7 +107,8 @@ namespace Unity.QuickDuel.Online.Tests
                 Assert.That(controller.Result.Winner, Is.EqualTo(Side.Right));
                 Assert.That(controller.Result.LeftReaction, Is.EqualTo(0.30).Within(1e-6));
                 Assert.That(controller.Result.RightReaction, Is.EqualTo(0.20).Within(1e-6));
-                Assert.That(view.HeadlineText, Is.EqualTo("Right wins"));
+                Assert.That(view.WinsText, Is.EqualTo("Wins!"));
+                Assert.That(view.WinsSide, Is.EqualTo(Side.Left), "the host's verdict puts the banner on the loser's side");
                 Assert.That(view.ReactionText(Side.Right), Is.EqualTo("200 ms"));
                 Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Defeated));
                 Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));

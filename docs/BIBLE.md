@@ -83,7 +83,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
-| `Resolved` | until the next round | slash, the loser falls, reaction times in ms, headline |
+| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
 `SettleSeconds` (50 ms) for a later-delivered input event that happened earlier, then resolves.
@@ -256,7 +256,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     number shown follows the same quarters (`Duel.CountdownNumber`).
   - **Standoff, 3 to 6.5 s**: `drumroll_time = irandom_range(3 * room_speed, 6.5 * room_speed)`; matches.
   - **Taunts**: the ten lines of `RandomPrematureString` in the Android `BattleSystem.java`, drawn uniformly
-    (`GetRandomNumber(1, 10)`); matches exactly. (The GameMaker build shows only "Premature Strike!".)
+    (`GetRandomNumber(1, 10)`); matches exactly. (The GameMaker build shows only "Premature Strike!"; the rebuild
+    draws the Android line where and as the GameMaker build drew its own, UQD-T39.)
   - **AI reaction ranges (Easy 450-700, Normal 300-450, Hard 200-300 ms)**: the original has none. Its computer
     strikes at `ART + irandom_range(-LCK, LCK)` ticks at 1000 fps with LCK 5 to 10, and ART starts at 15
     (`obj_player`), set from the human's ART at `obj_game` creation and thereafter fed only by its own past
@@ -399,6 +400,27 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     the count is frozen from the first strike all the same.
   - **The cue moved up, deviation**: the red "!" (the rebuild's own, see the cue above) sat where the count is drawn,
     so it now sits on Get Ready's line, 44 original pixels above, leaving the count where the original drew it.
+- ✅ Winner banner and sliding reaction (UQD-T39; `VerdictBannerTests`, `DuelViewTests`, `DuelTauntTests`): in the
+  aftermath `obj_gameclock` draws, above the loser's idle mark (`right_position_idle` when the left won,
+  `left_position_idle` otherwise), the winner's `character_name` in `fnt_oldenglish_small` at `room_height/2 - 80` over
+  "Wins!" in `fnt_oldenglish` at `room_height/2 - 60`, both outlined 1 at `default_alpha`; and the winner's
+  `ceil(reaction_time)` at `aftermathX`, `room_height/2 - 16`, which `gameclock_aftermath.gml` moves one pixel a 60 fps
+  step away from the loser (`aftermathX -= 1` when the left won, `+= 1` otherwise) while its alpha falls 0.003 a step.
+  The rebuild's `DuelView` draws the name (the winner's `FighterLook.Name`) and "Wins!" there (`VerdictBanner`), and
+  slides UQD-T38's frozen count by `VerdictBanner.Slide`, timed by the clock from the first strike, the same start as
+  its fade (`DuelController.ReactionCountSlide`; online the host's verdict sets the direction). A premature strike draws
+  its line centred on that same `room_height/2 - 60`, white, `fnt_oldenglish` outlined 1 (`DuelTaunt`). The headline
+  ("Left wins") is no longer drawn over either; it stays only for the rebuild's own outcomes the original never drew (a
+  tie, nobody striking, a forfeit) and for "..." while an online verdict is on its way. The per-side reaction times under
+  the fighters stay, the rebuild's own.
+  - **Taunt wording, deviation**: the GameMaker build's line is always "Premature Strike!"; the rebuild keeps the
+    Android build's ten taunts (`tuning.json` `taunts`, which include "Premature Strike"), drawn in its place.
+  - **The slide's start, matches**: the original's aftermath, its fade and its slide all begin at the first strike; the
+    rebuild's verdict waits `SettleSeconds` (50 ms) or the second strike, so when the banner appears the number has
+    already slid the 3 or so original pixels of that wait, rather than starting from the centre late.
+  - **A dead heat, fixed defect**: `determine_winner.gml` sets no `last_winner` on a draw, so the original would have
+    put "Wins!" over the previous round's loser naming the previous winner; the rebuild's tie shows no banner and no
+    slide, the count held at the centre under the "Draw" headline.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

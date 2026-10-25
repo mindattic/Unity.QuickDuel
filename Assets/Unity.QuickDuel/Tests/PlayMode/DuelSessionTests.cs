@@ -39,7 +39,11 @@ namespace Unity.QuickDuel.Tests
             Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));
             Assert.That(session.ScoreText(Side.Right), Does.StartWith("AI  1/2"));
             yield return null;
-            Assert.That(controller.GetComponent<DuelView>().HeadlineText, Is.EqualTo("AI wins"));
+            var view = controller.GetComponent<DuelView>();
+            Assert.That(view.WinsText, Is.EqualTo("Wins!"), "the original's banner says the AI won");
+            Assert.That(view.WinsSide, Is.EqualTo(Side.Left), "on the loser's side");
+            Assert.That(view.WinnerNameText, Is.EqualTo(view.FighterIn(Side.Right)?.Name ?? "AI"));
+            Assert.That(view.HeadlineText, Is.Empty);
         }
 
         [UnityTest]
