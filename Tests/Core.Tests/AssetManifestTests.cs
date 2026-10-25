@@ -60,6 +60,19 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void The_corner_arts_slide_by_the_size_the_manifest_gives_them()
+        {
+            var m = Shipped.Value;
+            foreach (var id in new[] { "spr_cornerart_left2", "spr_cornerart_right2" })
+            {
+                Assert.That(m.Sprite(id).Width, Is.EqualTo(CornerArt.SpriteWidth), id);
+                Assert.That(m.Sprite(id).Height, Is.EqualTo(CornerArt.SpriteHeight), id);
+                Assert.That(m.Sprite(id).OriginX, Is.Zero, id);
+                Assert.That(m.Sprite(id).OriginY, Is.Zero, id);
+            }
+        }
+
+        [Test]
         public void The_shipped_manifest_lists_the_sounds_fonts_and_credits()
         {
             var m = Shipped.Value;

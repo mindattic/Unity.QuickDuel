@@ -50,6 +50,10 @@ namespace Unity.QuickDuel.EditorTools
                 new[] { Clip("sfx_hitground1"), Clip("sfx_hitground2"), Clip("sfx_hitground3"), Clip("sfx_hitground4") });
             // obj_fade_gamescreen (UQD-T42): the 14 loading images the round transition draws one of.
             duel.AddComponent<DuelFade>().SetImages(LoadingImages());
+            // obj_cornerart_left and right (UQD-T43): the "2" corner arts they draw, sliding in on start.
+            duel.AddComponent<DuelCornerArt>().SetSprites(
+                Frames(Manifest(), "spr_cornerart_left2", "the corner art")[0],
+                Frames(Manifest(), "spr_cornerart_right2", "the corner art")[0]);
             duel.AddComponent<DuelSession>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));

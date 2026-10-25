@@ -175,6 +175,9 @@ namespace Unity.QuickDuel
         // The fixed 1920 x 1080 stage the fighters and centred labels stand on (DuelBlood draws its drops on it).
         public VisualElement Stage => stage;
 
+        // The top letterbox bar (obj_letterbox, depth -10000): whatever must draw under it and over the rest goes before it.
+        public VisualElement LetterboxTop => letterboxTop;
+
         private void Awake()
         {
             controller = GetComponent<DuelController>();

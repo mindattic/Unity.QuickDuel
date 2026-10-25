@@ -493,6 +493,21 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     Space or Start before the reset does nothing, and the "next round" prompt is only shown from the reset on.
   - **A round begun early**: online the host may begin the next round before a client's fade is done; the client's
     image then simply goes, and the new round resets the battle as it always did.
+- ✅ The corner arts (UQD-T43; `CornerArtTests`, `DuelCornerArtTests`): `gamescreen.room` places `obj_cornerart_left`
+  at (0, 24) and `obj_cornerart_right` at (488, 24), drawing `spr_cornerart_left2` and `right2` (152 x 32, top-left
+  origin; the plain `left` / `right` sprites are an earlier cut nothing draws) in Draw GUI at depth -101. Their create
+  events put them a whole sprite width off the screen (`x = -sprite_width`, `x = room_width`) and each step, until
+  `in_position`, closes `1 + 0.05` of the distance left (`x += 1 + abs(x) * 0.05`, mirrored on the right), snapping home
+  once the step finds it there or past. So the two move as mirror images of one distance, 152 off, `0.95 d - 1` a step:
+  the room's first step runs before its first draw, step 42 carries them 0.03 of a pixel past their places and step 43
+  snaps them home, about 0.7 s in, where they stay for the scene (the loading fade does not touch them). Core holds the
+  rule (`CornerArt`); `DuelCornerArt` draws them at the stage's pixel scale against the real screen edges, stepping at
+  60 a second off the controller's clock from the scene's start (UQD-LAW-2).
+  - **Placement, deliberate**: the original's 640 x 480 room was its screen, so its corners were the screen's; the
+    rebuild's screen is wider than the room, and the arts go to the real screen corners (24 original pixels below the
+    room's top) rather than the room's, so the frame still frames the screen.
+  - **Layering, matches**: Draw GUI runs after every ordinary draw, so the arts lie over the fighters, the blood, the
+    splatters and the flash, and under the letterbox and the loading fade (-10000).
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
