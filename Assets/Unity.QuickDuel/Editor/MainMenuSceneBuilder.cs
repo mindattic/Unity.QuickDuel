@@ -51,6 +51,13 @@ namespace Unity.QuickDuel.EditorTools
             menu.AddComponent<MainMenuController>().SetAssets(NextScene, Sprite(manifest, "bg_splatter_scroll"),
                 Sprite(manifest, "spr_titlescreen"), DuelSceneBuilder.LoadingImages(), buttons, buttonsOver,
                 Clip(manifest, "sfx_flick"), Clip(manifest, "sfx_click"));
+            // The credits screen (UQD-T47): the original's credits.txt, read by the menu when it starts, and the author.
+            var creditsPath = $"{OriginalAssetGenerator.GameFolder}/{manifest.Credits}";
+            var creditsText = AssetDatabase.LoadAssetAtPath<TextAsset>(creditsPath);
+            if (creditsText == null)
+                throw new InvalidOperationException($"QuickDuel: the main menu has no credits text at {creditsPath}.");
+            CreditsRoll.FromText(manifest.Author, creditsText.text); // a credits file that does not read stops the build
+            menu.GetComponent<MainMenuController>().SetCredits(creditsText, manifest.Author);
             // obj_mouse (UQD-T46): the katana cursor in place of the system cursor.
             menu.AddComponent<KatanaCursor>().SetSprite(Sprite(manifest, "spr_katana_cursor"));
 

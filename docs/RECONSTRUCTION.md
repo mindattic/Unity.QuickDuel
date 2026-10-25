@@ -58,7 +58,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Room | Contents | Disposition |
 | --- | --- | --- |
 | `intro` | `obj_intro`, four cloud layers x3, `obj_typewriter_intro`, `obj_fade_intro` | built (UQD-T44): `Intro.unity`, the game's first scene (`IntroScene`, `IntroController`); it leads to the main menu (UQD-T45) |
-| `mainmenu` | `obj_title`, buttons New Game, Versus, Options, Quit, Credits, Scores, `obj_mainmenu`, `obj_mouse`, `obj_fade_mainmenu` | built (UQD-T45): `MainMenu.unity` (`MainMenu`, `MenuFade`, `MainMenuController`), New Game, Versus, Quit and the computer's difficulty in Options' slot; cursor built (UQD-T46: `KatanaCursor`), Credits T47 (Options, Scores were empty stubs: dropped) |
+| `mainmenu` | `obj_title`, buttons New Game, Versus, Options, Quit, Credits, Scores, `obj_mainmenu`, `obj_mouse`, `obj_fade_mainmenu` | built (UQD-T45): `MainMenu.unity` (`MainMenu`, `MenuFade`, `MainMenuController`), New Game, Versus, Quit and the computer's difficulty in Options' slot; cursor built (UQD-T46: `KatanaCursor`), Credits built (UQD-T47: `CreditsRoll`; its screen never existed: fixed) (Options, Scores were empty stubs: dropped) |
 | `gamescreen` | `obj_jukebox`, `obj_game`, corner arts, `obj_mouse`, `obj_fade_gamescreen`, `obj_letterbox` | partly built; remainder UQD-T33 to T43 |
 | `victory`, `gameover` | `obj_victory`, `obj_virtue` x7, retry and continue buttons | missing, UQD-T48 (verdict screen; HP and virtues dropped) |
 | `characterselect`, `room2` | `obj_characterselect`, five `obj_btn_<fighter>`, `obj_doll`, `obj_descbox`, typewriter | dropped: choosing a fighter (fighters become cosmetic, UQD-T34) |
@@ -74,7 +74,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen fade built (UQD-T42: `RoundFade`, `DuelFade`); intro fade built (UQD-T44: `LoadingFade`, its random image fixed), and the Duel scene opens under the intro's image as the menu did; mainmenu fade built (UQD-T45: `MenuFade`, its shared first pass kept); the rest dropped |
 | Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | corner arts built (UQD-T43: `CornerArt`, `DuelCornerArt`, sliding in from off the screen on start, `x += 1 + 0.05` of the distance left a step); title built (UQD-T45), katana cursor built (UQD-T46: `KatanaCursor` on the menu and the duel, tip at the pointer, under the letterbox and fades, hidden while a gamepad is in use); clock missing, UQD-T50 |
 | Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | built (UQD-T44: `IntroScene`, `IntroController`); a key or pad button skips as well as the click (deliberate) |
-| Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit built (UQD-T45), Options' slot holds the difficulty; Credits, Retry: T47, T48; Scores, Start: dropped |
+| Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit built (UQD-T45), Options' slot holds the difficulty; Credits built (UQD-T47); Retry: T48; Scores, Start: dropped |
 | Ambient | `obj_sand_emitter` / `obj_sand`, `obj_butterfly_emitter` / `obj_butterfly`, `obj_snow_emitter` / `obj_snow`, `obj_fog_emitter` / `obj_fog`, `obj_fly_emitter` / `obj_fly`, `obj_rain_emitter` / `obj_raindrop`, `obj_leaf_emitter`, `obj_firefly_emitter` / `obj_firefly`, `obj_tree_emitter` / `obj_tree1`, `obj_lens`, `obj_spotlight` | missing, UQD-T49 (rain, leaf, firefly, tree, lens, spotlight were unused or location-only: optional) |
 | Clash | `obj_clash` | dropped |
 | Stats and combat | `obj_healthbar`, `obj_focusbar`, `obj_focusmeter`, `obj_focusarrow`, `obj_meterarrow`, `obj_artmeter`, `obj_skill`, `obj_skills`, `obj_stances`, `obj_combo`, `obj_buff`, `obj_debufficon`, `obj_criticalhit`, `obj_counter`, `obj_float_text`, `obj_flash_text` | dropped: stats, focus, skills, combos |
@@ -118,7 +118,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Sound: duel | `sfx_beep`, `sfx_drumroll`, `sfx_unsheath`, `sfx_slash`, `sfx_victory`, `sfx_defeat` | built (UQD-T5, T24) |
 | Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), hit-ground played as a thrown weapon lands (UQD-T41), flick and click by the main menu's buttons (UQD-T45) |
 | Sound: dropped | `sfx_disabled`, `sfx_bomb`, `sfx_powerup_activate` (focus and skills); `music_*` x8 (no script plays them) | dropped |
-| Data | `datafiles/credits.txt` (arena photo credits) | imported as `Data/credits.txt` (UQD-T32), shown by UQD-T47 |
+| Data | `datafiles/credits.txt` (arena photo credits) | imported as `Data/credits.txt` (UQD-T32), shown on the main menu's credits screen (UQD-T47), with the project's `option_author` as the author's credit |
 | Project | `bushidocoda.ico`, splash images, `help.rtf`, `html` / `Install` web and installer pages | icon and product name: UQD-T50; the rest dropped |
 
 ## 3. The audit result

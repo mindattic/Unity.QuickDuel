@@ -26,9 +26,11 @@ namespace Unity.QuickDuel.Core
         private readonly Dictionary<string, OriginalFont> fontsById = new Dictionary<string, OriginalFont>();
 
         private AssetManifest(List<OriginalSprite> sprites, List<OriginalSound> sounds, List<OriginalFont> fonts,
-            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, List<OriginalFighter> fighters, string introText, string credits)
+            List<OriginalTypeface> typefaces, List<OriginalArena> arenas, List<OriginalFighter> fighters, string introText, string author,
+            string credits)
         {
             IntroText = introText;
+            Author = author;
             Sprites = sprites;
             Sounds = sounds;
             Fonts = fonts;
@@ -62,6 +64,10 @@ namespace Unity.QuickDuel.Core
 
         // The intro's story (load_text.gml's introText, UQD-T44), "#" line breaks turned into newlines.
         public string IntroText { get; }
+
+        // The game's author, the original project's option_author (Configs/Default.config.gmx), credited on the credits
+        // screen (UQD-T47).
+        public string Author { get; }
 
         // The credits text (the arena photo sources, datafiles/credits.txt).
         public string Credits { get; }
@@ -256,13 +262,14 @@ namespace Unity.QuickDuel.Core
 
             var textReader = reader.Section("text");
             var introText = textReader.Text("intro");
+            var author = textReader.Text("author");
             textReader.Done();
 
             var credits = reader.Text("credits");
             CheckPath(reader, "credits", credits, ".txt");
             reader.Done();
 
-            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, fighters, introText, credits);
+            return errors.Count > 0 ? null : new AssetManifest(sprites, sounds, fonts, typefaces, arenas, fighters, introText, author, credits);
         }
 
         // A fighter's sprite: the id of a sprite in 'sprites' of the expected group.

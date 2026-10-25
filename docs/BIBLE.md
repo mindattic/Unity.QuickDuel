@@ -572,8 +572,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **Keyboard and pad, deliberate**: the original's menu was mouse-only. The arrow keys or the d-pad also walk the
     buttons (highlighting and flicking as the mouse does), and Enter, Space or a pad's South or Start press the
     highlighted one, so a keyboard or pad player is never stuck on the menu.
-  - **Dropped**: Options and Scores were empty stubs (Scores jumped to the dropped `travel` room); Credits is UQD-T47's;
-    F1 fullscreen UQD-T50's. The original's menu played no music.
+  - **Dropped**: Options and Scores were empty stubs (Scores jumped to the dropped `travel` room); Credits is built
+    below (UQD-T47); F1 fullscreen UQD-T50's. The original's menu played no music.
 - ✅ The katana cursor (UQD-T46; `KatanaCursorTests` in PlayMode): `obj_mouse`, placed in `mainmenu` and `gamescreen`,
   is `KatanaCursor` on the main menu and the duel (`IKatanaCursorHost`: `MainMenuController`, `DuelView`).
   - **Matches**: the original's Global Game Settings hid the system cursor (`option_showcursor` False) and `obj_mouse`
@@ -586,6 +586,26 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     Which device is active carries from scene to scene.
   - **Not drawn**: the intro (`obj_mouse` was never placed in it; the system cursor shows there as before). With
     `QUICKDUEL_MULTIPLAYER` the online menu, added to the duel's tree after the letterbox, draws over the katana.
+- ✅ The credits (UQD-T47; `CreditsRollTests` in Core, `MainMenuTests` in Core and PlayMode): `obj_btn_credits` on the
+  main menu opens a credits screen (`CreditsRoll`, drawn by `MainMenuController`).
+  - **The button, matches**: `spr_btn_left1` (bbox 0, 2 to 127, 58) at (64, 384), labelled "Credits" 6 px left of x,
+    its message "Who made what?", flicking and clicking as the other buttons do. It is fifth in the room's instance
+    order, after Quit, so the arrow keys reach it after Quit.
+  - **Credits screen, fixed defect**: the original's button only played `sfx_click`; its `room_goto` was commented out
+    and no credits room was ever made, so the arena photo credits in `datafiles/credits.txt` were never shown. The
+    rebuild shows them: "Credits" in `fnt_oldenglish`, "A game by" and the author (the project's `option_author`,
+    Ryan DeBraal, read by the asset generator from `Configs/Default.config.gmx` into the manifest's `text.author`) in
+    `fnt_oldenglish_small`, then "Arena photographs" and each picture credits.txt names (Dusty Junction, The Fumaroles,
+    Sozza's Point, Southern Ridge, Arid Plains, Interior Sea, Tu'Verone Forest, farmlands, forest2, cliffside, riverbed,
+    fumaroles2, Panoramas) with its source addresses, the names in `fnt_basic` and the addresses in `fnt_tiny`, all
+    white outlined 1, exactly as the file has them. credits.txt ships as `Data/credits.txt` and the menu reads it when
+    it starts; a file that does not read (no credit, or a name without an address) stops the scene build.
+  - **Layout, deliberate**: with no original screen to match, the lines roll up the 640 x 480 room from its foot a
+    pixel a 60 fps step (the menu background's own speed) and start again from the foot once the last has gone over
+    the top; the title, buttons and message stand down and a black shade at 0.8 covers the room, the blood scrolling on
+    through it. The line advances (44, 18, 34, 26, 17 and 13 px) and the 12 px gap after each credit are the
+    rebuild's own. A click anywhere, Enter, Space, a pad's South or Start, or Escape closes the credits with the click
+    (Escape does not end the game while they are up), and the roll starts from the foot each time it is opened.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

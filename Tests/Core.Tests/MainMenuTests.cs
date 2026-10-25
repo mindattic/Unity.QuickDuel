@@ -17,11 +17,12 @@ namespace Unity.QuickDuel.Core.Tests
         {
             var menu = Menu();
             Assert.That(menu.Buttons.Select(b => b.Kind), Is.EqualTo(new[]
-                { MenuButtonKind.NewGame, MenuButtonKind.Versus, MenuButtonKind.Difficulty, MenuButtonKind.Quit }));
-            Assert.That(menu.Buttons.Select(b => (b.X, b.Y)), Is.EqualTo(new[] { (576, 320), (576, 384), (576, 448), (64, 448) }));
-            Assert.That(menu.Buttons.Select(b => b.Sprite), Is.EqualTo(new[] { "spr_btn_right1", "spr_btn_right2", "spr_btn_right3", "spr_btn_left4" }));
-            Assert.That(menu.Buttons.Select(b => b.OverSprite), Is.EqualTo(new[] { "spr_btn_right1_over", "spr_btn_right2_over", "spr_btn_right3_over", "spr_btn_left4_over" }));
-            Assert.That(menu.Buttons.Select(b => b.Label), Is.EqualTo(new[] { "New Game", "Versus", "Normal", "Quit" }));
+                { MenuButtonKind.NewGame, MenuButtonKind.Versus, MenuButtonKind.Difficulty, MenuButtonKind.Quit, MenuButtonKind.Credits }));
+            Assert.That(menu.Buttons.Select(b => (b.X, b.Y)), Is.EqualTo(new[] { (576, 320), (576, 384), (576, 448), (64, 448), (64, 384) }));
+            Assert.That(menu.Buttons.Select(b => b.Sprite), Is.EqualTo(new[] { "spr_btn_right1", "spr_btn_right2", "spr_btn_right3", "spr_btn_left4", "spr_btn_left1" }));
+            Assert.That(menu.Buttons.Select(b => b.OverSprite), Is.EqualTo(new[] { "spr_btn_right1_over", "spr_btn_right2_over", "spr_btn_right3_over", "spr_btn_left4_over", "spr_btn_left1_over" }));
+            Assert.That(menu.Buttons.Select(b => b.Label), Is.EqualTo(new[] { "New Game", "Versus", "Normal", "Quit", "Credits" }));
+            Assert.That(menu.Button(MenuButtonKind.Credits).Message, Is.EqualTo("Who made what?"));
             Assert.That(menu.Button(MenuButtonKind.NewGame).Message, Is.EqualTo("Start a new game"));
             Assert.That(menu.Button(MenuButtonKind.Versus).Message, Is.EqualTo("Player vs. Player"));
             Assert.That(menu.Button(MenuButtonKind.Quit).Message, Is.EqualTo("Quit the game"));
@@ -45,6 +46,9 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(newGame.Contains(600, 352), Is.False);
             var quit = Menu().Button(MenuButtonKind.Quit);
             Assert.That((quit.Left, quit.Top, quit.Right, quit.Bottom), Is.EqualTo((0, 419, 122, 476)));
+            // spr_btn_left1: bbox 0, 2 to 127, 58, at (64, 384).
+            var credits = Menu().Button(MenuButtonKind.Credits);
+            Assert.That((credits.Left, credits.Top, credits.Right, credits.Bottom), Is.EqualTo((0, 354, 127, 410)));
         }
 
         [Test]
@@ -220,7 +224,7 @@ namespace Unity.QuickDuel.Core.Tests
             menu.FocusNext();
             menu.FocusPrevious();
             menu.FocusPrevious();
-            Assert.That(flicks, Is.EqualTo(new[] { MenuButtonKind.NewGame, MenuButtonKind.Versus, MenuButtonKind.NewGame, MenuButtonKind.Quit }));
+            Assert.That(flicks, Is.EqualTo(new[] { MenuButtonKind.NewGame, MenuButtonKind.Versus, MenuButtonKind.NewGame, MenuButtonKind.Credits }));
             menu.FocusNext();
             menu.FocusNext();
             menu.Activate();

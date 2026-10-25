@@ -9,11 +9,13 @@ using UnityEngine.UIElements;
 namespace Unity.QuickDuel
 {
     // The main menu (UQD-T45), as the original's mainmenu room drew it (MainMenu): bg_splatter_scroll scrolling left
-    // behind the title's cut-out logo, New Game, Versus, the computer's difficulty and Quit on the original's button art,
-    // each flicking (sfx_flick) and showing its "_over" sprite and its message while the mouse is over it and clicking
-    // (sfx_click) when pressed. New Game and Versus fade a loading image in (MenuFade) and enter the duel under it with the
-    // mode chosen (DuelModeHandoff); Quit and Escape end the game. The arrow keys or a pad's d-pad walk the buttons, and
-    // Enter, Space or the pad's South or Start press the highlighted one, so the menu can be played without a mouse.
+    // behind the title's cut-out logo, New Game, Versus, the computer's difficulty, Quit and Credits on the original's
+    // button art, each flicking (sfx_flick) and showing its "_over" sprite and its message while the mouse is over it and
+    // clicking (sfx_click) when pressed. New Game and Versus fade a loading image in (MenuFade) and enter the duel under it
+    // with the mode chosen (DuelModeHandoff); Quit and Escape end the game; Credits rolls the author's credit and the
+    // arena photo credits of the original's credits.txt (CreditsRoll, UQD-T47) up the room until a click, Enter, Space,
+    // a pad's South or Start, or Escape closes them. The arrow keys or a pad's d-pad walk the buttons, and Enter, Space
+    // or the pad's South or Start press the highlighted one, so the menu can be played without a mouse.
     //
     // Everything steps at the original's 60 a second counted off Clock, from the moment the scene starts. The room is
     // drawn at the original's pixel scale on a 640 x 480 area centred on the screen, black around it; the loading image
@@ -35,6 +37,11 @@ namespace Unity.QuickDuel
         [SerializeField] private AudioClip flick;
         [SerializeField] private AudioClip click;
 
+        // The original's datafiles/credits.txt, read when the room starts, and the game's author (the manifest's
+        // text.author). Written by MainMenuSceneBuilder.
+        [SerializeField] private TextAsset creditsText;
+        [SerializeField] private string author = MainMenu.DefaultAuthor;
+
         public const string FlickCue = "flick";
         public const string ClickCue = "click";
 
@@ -48,6 +55,9 @@ namespace Unity.QuickDuel
         private readonly List<VisualElement> buttonElements = new List<VisualElement>();
         private readonly List<OutlinedText> labels = new List<OutlinedText>();
         private OutlinedText message;
+        private VisualElement credits;
+        private readonly List<OutlinedText> creditLines = new List<OutlinedText>();
+        private bool? shownCredits;
         private VisualElement overlay;
         private AudioSource sounds;
         private InputAction press;
@@ -73,7 +83,15 @@ namespace Unity.QuickDuel
             click = clickClip;
         }
 
+        public void SetCredits(TextAsset text, string gameAuthor)
+        {
+            creditsText = text;
+            author = string.IsNullOrWhiteSpace(gameAuthor) ? throw new ArgumentException("The credits need an author.", nameof(gameAuthor)) : gameAuthor;
+        }
+
         public string NextScene => nextScene;
+        public TextAsset CreditsText => creditsText;
+        public string Author => author;
         public Sprite Background => background;
         public Sprite Title => title;
         public IReadOnlyList<Sprite> LoadingImages => loadingImages;
@@ -115,6 +133,8 @@ namespace Unity.QuickDuel
         public IReadOnlyList<VisualElement> ButtonElements => buttonElements;
         public IReadOnlyList<OutlinedText> Labels => labels;
         public OutlinedText MessageText => message;
+        public VisualElement Credits => credits;
+        public IReadOnlyList<OutlinedText> CreditLines => creditLines;
         public VisualElement Overlay => overlay;
 
         // obj_mouse (depth -5000) draws under obj_fade_mainmenu (-10000) and over the rest (UQD-T46).
@@ -201,7 +221,7 @@ namespace Unity.QuickDuel
                 Menu.Clicked -= OnClicked;
                 Menu.Quit -= OnMenuQuit;
             }
-            Menu = new MainMenu(image, DuelModeHandoff.Difficulty, random);
+            Menu = new MainMenu(image, DuelModeHandoff.Difficulty, random, ReadCredits());
             Menu.Flicked += OnFlicked;
             Menu.Clicked += OnClicked;
             Menu.Quit += OnMenuQuit;
@@ -210,6 +230,7 @@ namespace Unity.QuickDuel
             left = false;
             shownImage = null;
             shownOver = null;
+            shownCredits = null;
             lastPointer = null;
             Played.Clear();
             Advance();
@@ -240,6 +261,10 @@ namespace Unity.QuickDuel
                 Leave?.Invoke(nextScene);
             }
         }
+
+        // credits.txt laid out under the author's credit; a scene that carries no credits shows the author alone.
+        private CreditsRoll ReadCredits() =>
+            creditsText != null ? CreditsRoll.FromText(author, creditsText.text) : new CreditsRoll(author, Array.Empty<CreditsEntry>());
 
         private void OnFlicked(MenuButton button) => Play(FlickCue, flick);
         private void OnClicked(MenuButton button) => Play(ClickCue, click);
@@ -334,6 +359,23 @@ namespace Unity.QuickDuel
             message = CenteredText("Message", OriginalType.Message, MainMenu.MessageX, MainMenu.MessageY);
             room.Add(message);
 
+            // The credits (UQD-T47): a black shade over the room and the roll's lines on it, over the buttons.
+            credits = new VisualElement { name = "Credits", pickingMode = PickingMode.Ignore };
+            credits.style.position = Position.Absolute;
+            credits.style.left = credits.style.top = 0;
+            credits.style.width = MainMenu.RoomWidth * PixelScale;
+            credits.style.height = MainMenu.RoomHeight * PixelScale;
+            credits.style.backgroundColor = new Color(0f, 0f, 0f, (float)CreditsRoll.Shade);
+            credits.style.display = DisplayStyle.None;
+            room.Add(credits);
+            foreach (var line in Menu.Credits.Lines)
+            {
+                var text = CenteredText("Credit" + line.Kind, line.Style, MainMenu.RoomWidth / 2, 0);
+                text.text = line.Text;
+                credits.Add(text);
+                creditLines.Add(text);
+            }
+
             // obj_fade_mainmenu (Draw GUI, depth -10000): the loading image over everything, stretched over the screen.
             overlay = new VisualElement { name = "LoadingFade", pickingMode = PickingMode.Ignore };
             overlay.style.position = Position.Absolute;
@@ -380,6 +422,25 @@ namespace Unity.QuickDuel
                 if (labels[i].text != button.Label) labels[i].text = button.Label;
             }
             if (message.text != Menu.Message) message.text = Menu.Message;
+
+            var open = Menu.CreditsOpen;
+            if (shownCredits != open)
+            {
+                shownCredits = open;
+                // The room's own drawing stands down under the credits; the blood scrolls on through the shade.
+                var menuShown = open ? DisplayStyle.None : DisplayStyle.Flex;
+                titleElement.style.display = menuShown;
+                foreach (var element in buttonElements) element.style.display = menuShown;
+                foreach (var label in labels) label.style.display = menuShown;
+                message.style.display = menuShown;
+                credits.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (open)
+            {
+                var lines = Menu.Credits.Lines;
+                for (var i = 0; i < lines.Count && i < creditLines.Count; i++)
+                    creditLines[i].style.top = Menu.Credits.LineY(lines[i]) * PixelScale;
+            }
 
             var fade = Menu.Fade;
             if (shownImage != fade.Image)

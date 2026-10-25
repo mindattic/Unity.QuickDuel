@@ -84,13 +84,13 @@ namespace Unity.QuickDuel.EditorTools
 
         /// <summary>
         /// The main menu's buttons (UQD-T45), each with the "_over" twin drawn under the mouse, listed after the backgrounds
-        /// in the "button" group: New Game (right1), Versus (right2), the difficulty in Options' slot (right3) and Quit
-        /// (left4). Credits' left1 comes with the credits screen (UQD-T47); Scores' left3 was a stub and is dropped.
+        /// in the "button" group: New Game (right1), Versus (right2), the difficulty in Options' slot (right3), Quit
+        /// (left4) and Credits (left1, UQD-T47); Scores' left3 was a stub and is dropped.
         /// </summary>
         public static List<SpriteEntry> Buttons()
         {
             var list = new List<SpriteEntry>();
-            foreach (var id in new[] { "spr_btn_right1", "spr_btn_right2", "spr_btn_right3", "spr_btn_left4" })
+            foreach (var id in new[] { "spr_btn_right1", "spr_btn_right2", "spr_btn_right3", "spr_btn_left4", "spr_btn_left1" })
             {
                 list.Add(new SpriteEntry(id, "button", "Art/Menu"));
                 list.Add(new SpriteEntry(id + "_over", "button", "Art/Menu"));

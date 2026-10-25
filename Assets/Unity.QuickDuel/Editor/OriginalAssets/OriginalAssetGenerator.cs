@@ -88,6 +88,7 @@ namespace Unity.QuickDuel.EditorTools
 
             var fighters = ReadFighters(Path.Combine(root, "scripts", "load_characters.gml"));
             var introText = ReadIntroText(Path.Combine(root, "scripts", "load_text.gml"));
+            var author = ReadAuthor(Path.Combine(root, "Configs", "Default.config.gmx"));
 
             var sounds = new List<KeyValuePair<string, string>>();
             foreach (var sound in OriginalAssetCatalog.Sounds)
@@ -119,7 +120,7 @@ namespace Unity.QuickDuel.EditorTools
 
             Copy(Path.Combine(root, "datafiles", "credits.txt"), CreditsFile);
 
-            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, fighters, introText, CreditsFile);
+            var text = json.Write(sprites, sounds, fonts, typefaces, arenas, fighters, introText, author, CreditsFile);
             Directory.CreateDirectory(Full(DataFolder));
             File.WriteAllText(Full(ManifestPath), text, new UTF8Encoding(false));
 
@@ -231,6 +232,20 @@ namespace Unity.QuickDuel.EditorTools
                 text.Append(Literal(match.Groups[2].Value, "load_text.gml"));
             }
             throw new InvalidDataException("load_text.gml never sets introText.");
+        }
+
+        /// <summary>
+        /// The game's author (UQD-T47): the project's <c>option_author</c> in Configs/Default.config.gmx, credited on the
+        /// credits screen.
+        /// </summary>
+        public static string ReadAuthor(string config)
+        {
+            var xml = new XmlDocument();
+            xml.Load(config);
+            var author = xml.SelectSingleNode("//option_author")?.InnerText.Trim();
+            if (string.IsNullOrEmpty(author))
+                throw new InvalidDataException($"{config} names no option_author.");
+            return author;
         }
 
         private static FontRecord CopyFont(string root, string id)
@@ -439,7 +454,7 @@ namespace Unity.QuickDuel.EditorTools
 
             public string Write(List<SpriteRecord> sprites, List<KeyValuePair<string, string>> sounds,
                 List<FontRecord> fonts, List<KeyValuePair<string, string>> typefaces, List<ArenaRecord> arenas,
-                List<FighterRecord> fighters, string introText, string credits)
+                List<FighterRecord> fighters, string introText, string author, string credits)
             {
                 sb.Append("{\n");
                 Line(1, $"\"format\": {Str(AssetManifest.Format)},");
@@ -495,7 +510,8 @@ namespace Unity.QuickDuel.EditorTools
                 Line(1, "},");
 
                 Line(1, "\"text\": {");
-                Line(2, $"\"intro\": {Str(introText)}");
+                Line(2, $"\"intro\": {Str(introText)},");
+                Line(2, $"\"author\": {Str(author)}");
                 Line(1, "},");
 
                 Line(1, $"\"credits\": {Str(credits)}");

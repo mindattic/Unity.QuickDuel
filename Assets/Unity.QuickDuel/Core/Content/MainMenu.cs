@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Unity.QuickDuel.Core
 {
-    // The main menu's buttons (UQD-T45): the original's New Game, Versus and Quit, and the computer's difficulty, which
-    // stands in the slot of the original's empty Options button.
-    public enum MenuButtonKind { NewGame, Versus, Difficulty, Quit }
+    // The main menu's buttons (UQD-T45): the original's New Game, Versus and Quit, the computer's difficulty, which
+    // stands in the slot of the original's empty Options button, and Credits (UQD-T47).
+    public enum MenuButtonKind { NewGame, Versus, Difficulty, Quit, Credits }
 
     // One of the menu's buttons as the original placed and drew it: the instance's room position (the sprite's origin,
     // 64, 32, sits on it), its sprite and the "_over" sprite drawn while the mouse is over it, its outlined label and the
@@ -87,6 +87,8 @@ namespace Unity.QuickDuel.Core
     //   obj_btn_newgame     spr_btn_right1 at (576, 320): "New Game", "Start a new game"; is_singleplayer = true
     //   obj_btn_versus      spr_btn_right2 at (576, 384): "Versus", "Player vs. Player"; is_singleplayer = false
     //   obj_btn_quit        spr_btn_left4 at (64, 448): "Quit", "Quit the game"; game_end()
+    //   obj_btn_credits     spr_btn_left1 at (64, 384): "Credits", "Who made what?"; its click went nowhere (its
+    //                       room_goto commented out and no credits room made): fixed, it opens the credits (UQD-T47)
     //   obj_btn_*           Mouse enter: showmsg = true; audio_play_sound(sfx_flick). Mouse leave: showmsg = false.
     //                       Left pressed: audio_play_sound(sfx_click), then the button's own action; New Game and Versus
     //                       set obj_fade_mainmenu.mode = "fadein" (MenuFade), which enters the duel once it is full.
@@ -96,9 +98,12 @@ namespace Unity.QuickDuel.Core
     //                       (room_width / 2, room_height - 30)
     //   obj_mainmenu        Escape: game_end()
     //
-    // Options (spr_btn_right3 at (576, 448)) and Scores were empty stubs and Credits is UQD-T47's; the Options slot holds
-    // the computer's difficulty instead, which the original never had: clicking it plays the click and steps Easy ->
-    // Normal -> Hard -> Easy, and New Game plays the computer at it (BIBLE).
+    // Options (spr_btn_right3 at (576, 448)) and Scores were empty stubs; the Options slot holds the computer's difficulty
+    // instead, which the original never had: clicking it plays the click and steps Easy -> Normal -> Hard -> Easy, and
+    // New Game plays the computer at it (BIBLE).
+    //
+    // Credits opens the credits screen (CreditsRoll) over the room: the buttons stand down, and a click, a press of
+    // Enter, Space or a pad's South or Start, or Escape closes it again with the click (BIBLE).
     //
     // Mouse events come before a step's Step events in GameMaker, and buttons do not move, so a button is entered or
     // left the moment the pointer moves on or off it, and a press acts at once; the fade it starts moves on the next step.
@@ -123,18 +128,24 @@ namespace Unity.QuickDuel.Core
         private bool singleplayer = true;
 
         // The room as it is created: nothing under the mouse, and the fade at `openingImage` (the loading image the intro
-        // faded in, the global fade_asset) full and about to fade out. `difficulty` is the computer's to start with.
-        public MainMenu(int openingImage, AiDifficulty difficulty, Random random)
+        // faded in, the global fade_asset) full and about to fade out. `difficulty` is the computer's to start with;
+        // `credits` is what the Credits button shows (the author's credit alone when none is given).
+        public MainMenu(int openingImage, AiDifficulty difficulty, Random random, CreditsRoll credits = null)
         {
             this.random = random ?? throw new ArgumentNullException(nameof(random));
             Fade = new MenuFade(openingImage);
             Difficulty = difficulty;
+            Credits = credits ?? new CreditsRoll(DefaultAuthor, Array.Empty<CreditsEntry>());
             buttons.Add(new MenuButton(MenuButtonKind.NewGame, 576, 320, "spr_btn_right1", true, "New Game", "Start a new game", 6, 3, 127, 63));
             buttons.Add(new MenuButton(MenuButtonKind.Versus, 576, 384, "spr_btn_right2", true, "Versus", "Player vs. Player", 7, 5, 127, 63));
             buttons.Add(new MenuButton(MenuButtonKind.Difficulty, 576, 448, "spr_btn_right3", true, "", "", 4, 4, 127, 63));
             buttons.Add(new MenuButton(MenuButtonKind.Quit, 64, 448, "spr_btn_left4", false, "Quit", "Quit the game", 0, 3, 122, 60));
+            buttons.Add(new MenuButton(MenuButtonKind.Credits, 64, 384, "spr_btn_left1", false, "Credits", "Who made what?", 0, 2, 127, 58));
             ShowDifficulty();
         }
+
+        // The original project's option_author, for a menu made without the shipped credits.
+        public const string DefaultAuthor = "Ryan DeBraal";
 
         // The buttons in the room's instance order.
         public IReadOnlyList<MenuButton> Buttons => buttons;
@@ -169,6 +180,12 @@ namespace Unity.QuickDuel.Core
         // The fade in is full: room_goto(gamescreen).
         public bool Finished => Fade.Finished;
 
+        // What the Credits button shows.
+        public CreditsRoll Credits { get; }
+
+        // The credits screen is up: the buttons stand down until it is closed.
+        public bool CreditsOpen { get; private set; }
+
         // game_end(): the Quit button or Escape.
         public bool QuitRequested { get; private set; }
 
@@ -185,7 +202,7 @@ namespace Unity.QuickDuel.Core
         // just come onto flicks.
         public void PointAt(double x, double y)
         {
-            if (Finished) return;
+            if (Finished || CreditsOpen) return;
             MenuButton under = null;
             foreach (var button in buttons)
                 if (button.Contains(x, y))
@@ -197,9 +214,14 @@ namespace Unity.QuickDuel.Core
         }
 
         // The left button went down with the mouse at room position (x, y), as a touch does too: the button there is
-        // entered, if it was not already, and pressed.
+        // entered, if it was not already, and pressed. Over the credits, a press anywhere closes them.
         public void Press(double x, double y)
         {
+            if (CreditsOpen)
+            {
+                CloseCredits();
+                return;
+            }
             PointAt(x, y);
             Activate();
         }
@@ -208,9 +230,15 @@ namespace Unity.QuickDuel.Core
         public void FocusNext() => FocusBy(1);
         public void FocusPrevious() => FocusBy(-1);
 
-        // A keyboard or pad presses the highlighted button; nothing if none is highlighted.
+        // A keyboard or pad presses the highlighted button; nothing if none is highlighted. Over the credits, it closes
+        // them.
         public void Activate()
         {
+            if (CreditsOpen)
+            {
+                CloseCredits();
+                return;
+            }
             if (Finished || Hovered == null) return;
             var button = Hovered;
             Clicked?.Invoke(button);
@@ -230,16 +258,27 @@ namespace Unity.QuickDuel.Core
                     Difficulty = (AiDifficulty)(((int)Difficulty + 1) % 3);
                     ShowDifficulty();
                     break;
+                case MenuButtonKind.Credits:
+                    // Nothing stays lit, so the menu comes back with no button under the pointer until it moves.
+                    Hovered = null;
+                    Credits.Restart();
+                    CreditsOpen = true;
+                    break;
                 default:
                     RequestQuit();
                     break;
             }
         }
 
-        // obj_mainmenu's Escape.
+        // obj_mainmenu's Escape; over the credits, it closes them instead.
         public void Cancel()
         {
             if (Finished) return;
+            if (CreditsOpen)
+            {
+                CloseCredits();
+                return;
+            }
             RequestQuit();
         }
 
@@ -250,12 +289,13 @@ namespace Unity.QuickDuel.Core
                 Step();
         }
 
-        // One 60 a second step: the fade fades, then the background moves on.
+        // One 60 a second step: the fade fades, then the background moves on, and the credits roll while they are up.
         public void Step()
         {
             if (Finished) return;
             Steps++;
             Fade.Step(random);
+            if (CreditsOpen) Credits.Step();
         }
 
         private void Hover(MenuButton button)
@@ -265,9 +305,15 @@ namespace Unity.QuickDuel.Core
             if (button != null) Flicked?.Invoke(button);
         }
 
+        private void CloseCredits()
+        {
+            CreditsOpen = false;
+            Clicked?.Invoke(Button(MenuButtonKind.Credits));
+        }
+
         private void FocusBy(int by)
         {
-            if (Finished) return;
+            if (Finished || CreditsOpen) return;
             var index = Hovered == null ? (by > 0 ? -1 : 0) : buttons.IndexOf(Hovered);
             Hover(buttons[((index + by) % buttons.Count + buttons.Count) % buttons.Count]);
         }

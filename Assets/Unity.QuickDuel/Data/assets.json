@@ -93,7 +93,9 @@
     "spr_btn_right3": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right3_0.png" ] },
     "spr_btn_right3_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_right3_over_0.png" ] },
     "spr_btn_left4": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_0.png" ] },
-    "spr_btn_left4_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_over_0.png" ] }
+    "spr_btn_left4_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left4_over_0.png" ] },
+    "spr_btn_left1": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left1_0.png" ] },
+    "spr_btn_left1_over": { "group": "button", "width": 128, "height": 64, "originX": 64, "originY": 32, "frames": [ "Art/Menu/spr_btn_left1_over_0.png" ] }
   },
   "sounds": {
     "sfx_beep": { "path": "Audio/sfx_beep.ogg" },
@@ -140,7 +142,8 @@
     "exile": { "name": "Exile", "idle": "spr_character_exile_idle", "run": "spr_character_exile_run", "attack": "spr_character_exile_attack", "defeat": "spr_character_exile_defeat", "weapon": "spr_weapon_exile", "groundWeapon": "spr_weapon_exile_ground" }
   },
   "text": {
-    "intro": "For centuries the empire had been fragmented.\nFactions waged war endlessly against eachother.\n\nThen a descendant of the royal bloodline was found.\nA young boy was crowned the Enlightened Ruler.\n\nOld ways were outlawed; the caste system abolished.\nThe end of a way of life had begun.\n\nThe Bushido Coda."
+    "intro": "For centuries the empire had been fragmented.\nFactions waged war endlessly against eachother.\n\nThen a descendant of the royal bloodline was found.\nA young boy was crowned the Enlightened Ruler.\n\nOld ways were outlawed; the caste system abolished.\nThe end of a way of life had begun.\n\nThe Bushido Coda.",
+    "author": "Ryan DeBraal"
   },
   "credits": "Data/credits.txt"
 }

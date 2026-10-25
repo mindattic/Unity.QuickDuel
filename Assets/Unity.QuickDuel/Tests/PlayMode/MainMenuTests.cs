@@ -78,8 +78,8 @@ namespace Unity.QuickDuel.Tests
             Assert.That(menu.Background.name, Does.StartWith("bg_splatter_scroll"));
             Assert.That(menu.Title.name, Does.StartWith("spr_titlescreen"));
             Assert.That(menu.LoadingImages, Has.Count.EqualTo(MenuFade.Images));
-            Assert.That(menu.ButtonSprites, Has.Count.EqualTo(4));
-            for (var i = 0; i < 4; i++)
+            Assert.That(menu.ButtonSprites, Has.Count.EqualTo(5));
+            for (var i = 0; i < 5; i++)
             {
                 Assert.That(menu.ButtonSprites[i].name, Does.StartWith(menu.Menu.Buttons[i].Sprite + "_0"));
                 Assert.That(menu.ButtonOverSprites[i].name, Does.StartWith(menu.Menu.Buttons[i].OverSprite));
@@ -123,6 +123,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(menu.Labels[1].text, Is.EqualTo("Versus"));
             Assert.That(menu.Labels[2].text, Is.EqualTo("Normal"));
             Assert.That(menu.Labels[3].text, Is.EqualTo("Quit"));
+            Assert.That(menu.Labels[4].text, Is.EqualTo("Credits"));
             Assert.That(menu.Labels[0].style.top.value.value, Is.EqualTo(314 * PixelScale).Within(1e-3f));
             Assert.That(menu.MessageText.text, Is.Empty);
             Assert.That(menu.MessageText.Style, Is.EqualTo(OriginalType.Message));
@@ -222,6 +223,60 @@ namespace Unity.QuickDuel.Tests
             yield return null;
             Assert.That(quits, Is.EqualTo(1), "obj_mainmenu's Escape");
             Assert.That(menu.Played, Is.Empty, "game_end() at once, no click");
+        }
+
+        // The credits (UQD-T47): the Credits button rolls the author's credit and credits.txt's arena photo credits up
+        // the room over a shade, the buttons standing down, until a click or Escape closes them.
+        [UnityTest]
+        public IEnumerator CreditsRollsTheAuthorAndTheArenaPhotoCreditsUntilAClickOrEscapeClosesThem()
+        {
+            yield return Load();
+            var mouse = InputSystem.AddDevice<Mouse>();
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+            Assert.That(menu.CreditsText, Is.Not.Null, "the scene carries the original's credits.txt");
+            Assert.That(menu.CreditsText.text, Does.Contain("Dusty Junction"));
+            Assert.That(menu.Author, Is.EqualTo("Ryan DeBraal"));
+            yield return AtStep(150);
+            Assert.That(menu.Credits.style.display.value, Is.EqualTo(DisplayStyle.None));
+            var credits = menu.ButtonElements[4];
+            Assert.That(credits.style.left.value.value, Is.EqualTo(0f).Within(1e-3f));
+            Assert.That(credits.style.top.value.value, Is.EqualTo((384 - 32) * PixelScale).Within(1e-3f));
+
+            yield return ClickAt(mouse, 60, 384);
+            Assert.That(menu.Menu.CreditsOpen, Is.True);
+            Assert.That(menu.Played, Is.EqualTo(new[] { MainMenuController.FlickCue, MainMenuController.ClickCue }));
+            var texts = new System.Collections.Generic.List<string>();
+            foreach (var line in menu.CreditLines) texts.Add(line.text);
+            Assert.That(texts, Does.Contain("Ryan DeBraal"));
+            foreach (var name in new[] { "Dusty Junction", "The Fumaroles", "Sozza's Point", "Southern Ridge", "Arid Plains" })
+                Assert.That(texts, Does.Contain(name));
+            Assert.That(texts, Does.Contain("http://commons.wikimedia.org/wiki/File:Serengeti_-_plains.jpg"));
+            Assert.That(menu.CreditLines[0].Style, Is.EqualTo(OriginalType.Banner));
+
+            // Opened at the 151st step; 200 steps later the roll is 200 pixels up from the foot.
+            yield return AtStep(351);
+            Assert.That(menu.Credits.style.display.value, Is.EqualTo(DisplayStyle.Flex));
+            Assert.That(menu.ButtonElements[0].style.display.value, Is.EqualTo(DisplayStyle.None), "the buttons stand down");
+            Assert.That(menu.TitleElement.style.display.value, Is.EqualTo(DisplayStyle.None));
+            Assert.That(menu.Room.IndexOf(menu.Credits), Is.GreaterThan(menu.Room.IndexOf(menu.ButtonElements[4])));
+            var top = menu.Menu.Credits.Top;
+            Assert.That(top, Is.EqualTo(MainMenu.RoomHeight - (int)menu.Menu.Credits.Steps));
+            Assert.That(menu.CreditLines[2].style.top.value.value,
+                Is.EqualTo((top + menu.Menu.Credits.Lines[2].Top) * PixelScale).Within(1e-3f));
+            Screenshots.Capture("menu-credits");
+
+            yield return ClickAt(mouse, 600, 320);
+            Assert.That(menu.Menu.CreditsOpen, Is.False);
+            Assert.That(menu.Menu.Chosen, Is.False, "the click that closes them presses nothing");
+            Assert.That(menu.Credits.style.display.value, Is.EqualTo(DisplayStyle.None));
+            Assert.That(menu.ButtonElements[0].style.display.value, Is.EqualTo(DisplayStyle.Flex));
+
+            menu.Menu.Press(60, 384);
+            Press(keyboard.escapeKey);
+            Release(keyboard.escapeKey);
+            yield return null;
+            Assert.That(menu.Menu.CreditsOpen, Is.False, "Escape closes them");
+            Assert.That(quits, Is.Zero, "and does not end the game");
         }
 
         [UnityTest]

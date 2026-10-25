@@ -136,6 +136,18 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(File.ReadAllText(Path.Combine(GameFolder, m.Credits)), Does.Contain("Dusty Junction"));
         }
 
+        // The credits screen (UQD-T47): the project's option_author, and credits.txt reading as its arena credits.
+        [Test]
+        public void The_shipped_manifest_carries_the_author_and_credits_that_read()
+        {
+            var m = Shipped.Value;
+            Assert.That(m.Author, Is.EqualTo("Ryan DeBraal"));
+            var roll = CreditsRoll.FromText(m.Author, File.ReadAllText(Path.Combine(GameFolder, m.Credits)));
+            Assert.That(roll.Entries.Select(e => e.Name).Take(7), Is.EqualTo(new[]
+                { "Dusty Junction", "The Fumaroles", "Sozza's Point", "Southern Ridge", "Arid Plains", "Interior Sea", "Tu'Verone Forest" }));
+            Assert.That(roll.Entries, Has.Count.EqualTo(13));
+        }
+
         [Test]
         public void Every_file_the_manifest_names_is_committed()
         {
@@ -187,7 +199,7 @@ namespace Unity.QuickDuel.Core.Tests
   ""typefaces"": { ""a"": { ""path"": ""Fonts/a.ttf"" } },
   ""arenas"": { ""a"": { ""name"": ""A"", ""description"": ""An arena."", ""sprite"": ""spr_a"" } },
   ""fighters"": { ""f"": { ""name"": ""F"", ""idle"": ""spr_f"", ""run"": ""spr_f"", ""attack"": ""spr_f"", ""defeat"": ""spr_f"", ""weapon"": ""spr_w"", ""groundWeapon"": ""spr_w"" } },
-  ""text"": { ""intro"": ""A story."" },
+  ""text"": { ""intro"": ""A story."", ""author"": ""An Author"" },
   ""credits"": ""Data/credits.txt""
 }".Replace("\r\n", "\n");
 
