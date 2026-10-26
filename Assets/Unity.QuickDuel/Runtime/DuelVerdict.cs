@@ -16,8 +16,8 @@ namespace Unity.QuickDuel
     // menu, each opening under the image this screen cut from (the original's fade_asset).
     //
     // Local play only: an online match has no verdict room, and its host replaces a finished match on the next round as
-    // before. The room is drawn at the original's pixel scale on a 640 x 480 area centred on the screen, black around it,
-    // over everything else on the panel (the katana cursor stays on top).
+    // before. The room is drawn at the original's pixel scale on the duel's 640 x 480 frame (OriginalFrame, UQD-T50),
+    // over everything else on it (the katana cursor stays on top).
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelVerdict : MonoBehaviour
     {

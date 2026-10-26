@@ -1,10 +1,7 @@
 fileFormatVersion: 2
 guid: 975cbe97cacd64c4f9563cb041d0ef0b
 TextureImporter:
-  internalIDToNameTable:
-  - first:
-      213: 5553082102321683225
-    second: spr_btn_left1_over_0_0
+  internalIDToNameTable: []
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -176,29 +173,7 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: spr_btn_left1_over_0_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 4
-        width: 128
-        height: 59
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 91b967520c2801d40800000000000000
-      internalID: 5553082102321683225
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     customData: 
     physicsShape: []

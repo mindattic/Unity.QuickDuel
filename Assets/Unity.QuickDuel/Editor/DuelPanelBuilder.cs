@@ -11,7 +11,7 @@ namespace Unity.QuickDuel.EditorTools
     /// it is now UI Toolkit, styled by <c>Resources/UI/Duel.uss</c> and set in the original's bitmap fonts
     /// (<c>Resources/UI/Fonts/fnt_*.asset</c>, UQD-T36), read by <see cref="DuelView"/> through <c>Resources.Load</c>
     /// the same way <see cref="DuelAudio"/> reads its clips. Like <see cref="RenderPipelineBuilder"/>, this
-    /// only creates the asset when it is missing, so rerunning it (and every import after it) leaves the
+    /// only creates the asset when it is missing (or brings its scaling into line), so rerunning it leaves the
     /// committed asset untouched. Run from the menu or in batch mode via
     /// <c>-executeMethod Unity.QuickDuel.EditorTools.DuelPanelBuilder.BuildPanel</c>; <see cref="DuelSceneBuilder"/>
     /// runs it first so the scene is never generated without a panel for its UIDocument to use.
@@ -30,21 +30,33 @@ namespace Unity.QuickDuel.EditorTools
         [MenuItem("QuickDuel/Build UI Panel Settings")]
         public static void BuildPanel() => Ensure();
 
-        /// <summary>Creates the panel settings asset if missing, matching the original Canvas's reference
-        /// resolution and scale-with-screen-size behaviour (CanvasScaler, matchWidthOrHeight 0.5).</summary>
+        /// <summary>The original's 640 x 480 room at 2.25 panel pixels a pixel (UQD-T50): the frame every scene
+        /// draws on (<see cref="OriginalFrame"/>).</summary>
+        public static readonly Vector2Int ReferenceResolution = new Vector2Int((int)OriginalFrame.Width, (int)OriginalFrame.Height);
+
+        /// <summary>Creates the panel settings asset if missing, scaling with the screen so the whole 1440 x 1080 frame
+        /// fits the window (Expand: the panel is never smaller than the frame either way), the room letterboxed into any window size as the original's kept its aspect
+        /// (UQD-T50). An existing asset with another scaling is brought into line; one already right is left
+        /// untouched.</summary>
         public static PanelSettings Ensure()
         {
             var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelPath);
             if (panel != null)
+            {
+                if (panel.scaleMode != PanelScaleMode.ScaleWithScreenSize || panel.referenceResolution != ReferenceResolution
+                    || panel.screenMatchMode != PanelScreenMatchMode.Expand)
+                {
+                    Frame(panel);
+                    EditorUtility.SetDirty(panel);
+                    AssetDatabase.SaveAssets();
+                }
                 return panel;
+            }
 
             Directory.CreateDirectory(Folder);
             panel = ScriptableObject.CreateInstance<PanelSettings>();
             panel.name = "DuelPanelSettings";
-            panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            panel.referenceResolution = new Vector2Int(1920, 1080);
-            panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-            panel.match = 0.5f;
+            Frame(panel);
             panel.clearColor = false;
             // panel.themeStyleSheet is left at whatever PanelSettings.OnEnable already auto-assigned
             // (Unity's own default runtime theme) -- see the class doc for why this panel keeps it.
@@ -52,6 +64,15 @@ namespace Unity.QuickDuel.EditorTools
             AssetDatabase.CreateAsset(panel, PanelPath);
             AssetDatabase.SaveAssets();
             return panel;
+        }
+
+        private static void Frame(PanelSettings panel)
+        {
+            panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+            panel.referenceResolution = ReferenceResolution;
+            // Expand, not Shrink: Shrink crops the panel to the frame in one direction, so a wide window cut the room's
+            // top and bottom off instead of barring its sides.
+            panel.screenMatchMode = PanelScreenMatchMode.Expand;
         }
     }
 }

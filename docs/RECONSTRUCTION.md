@@ -44,8 +44,8 @@ updated: 2026-10-25
 | --- | --- | --- |
 | Space or left mouse | Strike for the left fighter in single player; skips `startup` | Space / Start next round; mouse and touch strike for the left duelist (UQD-T25) |
 | Left / Right Ctrl | The two strikes in Versus | A / L, and one gamepad each (deliberate) |
-| F1 | Toggle fullscreen | Missing (UQD-T50) |
-| F12 | Toggle the debug overlay (frame counter, both reaction numbers, fps) | Missing (UQD-T50) |
+| F1 | Toggle fullscreen | Built (UQD-T50: `GameWindow` in every scene) |
+| F12 | Toggle the debug overlay (frame counter, both reaction numbers, fps) | Built as a developer toggle, off at start, editor and development builds only (UQD-T50: `DuelDebugOverlay`) |
 | R | Go to the `location` map | Dropped |
 | Escape | Back to character select (menu: `game_end`) | Quits the player (UQD-T23) |
 
@@ -72,7 +72,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Round | `obj_game`, `obj_gameclock`, `obj_letterbox`, `obj_arena`, `obj_player` | built as `Duel`, `DuelSession`, `DuelView` (letterbox, arena backdrop and its invert, UQD-T33), `obj_player` as the cosmetic fighters standing, facing and fading in (UQD-T34) and running, creeping, dashing and falling (UQD-T35, `FighterMotion`) |
 | Aftermath | `obj_blood_emitter`, `obj_blood_drop`, `obj_splatter`, `obj_flash`, `obj_weapon` | built: blood, splatter, flash (UQD-T40: `BloodSpray`, `SplatterField`, `WhiteFlash`, `DuelBlood`), `obj_weapon` (UQD-T41: `WeaponToss`, `DuelWeapons`) |
 | Transitions | `obj_fade`, `obj_fade_gamescreen`, `_intro`, `_mainmenu`, `_characterselect`, `_location`, `_travel` | gamescreen fade built (UQD-T42: `RoundFade`, `DuelFade`); intro fade built (UQD-T44: `LoadingFade`, its random image fixed), and the Duel scene opens under the intro's image as the menu did; mainmenu fade built (UQD-T45: `MenuFade`, its shared first pass kept); the rest dropped |
-| Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | corner arts built (UQD-T43: `CornerArt`, `DuelCornerArt`, sliding in from off the screen on start, `x += 1 + 0.05` of the distance left a step); title built (UQD-T45), katana cursor built (UQD-T46: `KatanaCursor` on the menu and the duel, tip at the pointer, under the letterbox and fades, hidden while a gamepad is in use); clock missing, UQD-T50 |
+| Frame | `obj_cornerart_left`, `obj_cornerart_right`, `obj_title`, `obj_mouse` (katana cursor), `obj_time` (clock) | corner arts built (UQD-T43: `CornerArt`, `DuelCornerArt`, sliding in from off the screen on start, `x += 1 + 0.05` of the distance left a step); title built (UQD-T45), katana cursor built (UQD-T46: `KatanaCursor` on the menu and the duel, tip at the pointer, under the letterbox and fades, hidden while a gamepad is in use); clock built (UQD-T50: `RoundClock`, `DuelClock`); the 640 x 480 room letterboxed into any window (UQD-T50: `OriginalFrame`) |
 | Intro | `obj_intro`, `obj_typewriter_intro`, `obj_cloud1` to `4`, `obj_cloud_parent` | built (UQD-T44: `IntroScene`, `IntroController`); a key or pad button skips as well as the click (deliberate) |
 | Menu | `obj_btn_newgame`, `_versus`, `_quit`, `_credits`, `_options`, `_scores`, `_start`, `_retry`, `_nextbattle` | New Game, Versus, Quit built (UQD-T45), Options' slot holds the difficulty; Credits built (UQD-T47); `_retry`, `_nextbattle` built (UQD-T48, the verdict's Retry and Continue); Scores, Start: dropped |
 | Ambient | `obj_sand_emitter` / `obj_sand`, `obj_butterfly_emitter` / `obj_butterfly`, `obj_snow_emitter` / `obj_snow`, `obj_fog_emitter` / `obj_fog`, `obj_fly_emitter` / `obj_fly`, `obj_rain_emitter` / `obj_raindrop`, `obj_leaf_emitter`, `obj_firefly_emitter` / `obj_firefly`, `obj_tree_emitter` / `obj_tree1`, `obj_lens`, `obj_spotlight` | built (UQD-T49): `AmbientField`, `DuelAmbient`; sand, butterfly, snow, fog and fly per arena, the unused rain, leaf and firefly as options; tree, lens and spotlight dropped (never placed, or the character select's) |
@@ -119,7 +119,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | Sound: aftermath and menu | `sfx_hitground1` to `4`, `sfx_flick`, `sfx_click` | imported (UQD-T32), hit-ground played as a thrown weapon lands (UQD-T41), flick and click by the main menu's buttons (UQD-T45) |
 | Sound: dropped | `sfx_disabled`, `sfx_bomb`, `sfx_powerup_activate` (focus and skills); `music_*` x8 (no script plays them) | dropped |
 | Data | `datafiles/credits.txt` (arena photo credits) | imported as `Data/credits.txt` (UQD-T32), shown on the main menu's credits screen (UQD-T47), with the project's `option_author` as the author's credit |
-| Project | `bushidocoda.ico`, splash images, `help.rtf`, `html` / `Install` web and installer pages | icon and product name: UQD-T50; the rest dropped |
+| Project | `bushidocoda.ico`, splash images, `help.rtf`, `html` / `Install` web and installer pages | icon built (UQD-T50: `bushidocoda.ico`'s 64 x 64 frame, `PlayerIconBuilder`), product name QuickDuel; the rest dropped |
 
 ## 3. The audit result
 

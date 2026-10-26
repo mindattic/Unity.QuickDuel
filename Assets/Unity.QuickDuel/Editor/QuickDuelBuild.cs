@@ -15,6 +15,8 @@ namespace Unity.QuickDuel.EditorTools
         [MenuItem("QuickDuel/Build Windows Player")]
         public static void BuildWindows()
         {
+            // The original's icon on the player (UQD-T50).
+            PlayerIconBuilder.Ensure();
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (scenes.Length == 0)
                 scenes = BuildScenes.Order;

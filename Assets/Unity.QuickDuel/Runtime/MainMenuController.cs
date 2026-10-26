@@ -18,8 +18,8 @@ namespace Unity.QuickDuel
     // or the pad's South or Start press the highlighted one, so the menu can be played without a mouse.
     //
     // Everything steps at the original's 60 a second counted off Clock, from the moment the scene starts. The room is
-    // drawn at the original's pixel scale on a 640 x 480 area centred on the screen, black around it; the loading image
-    // covers the whole screen. The whole tree is built here in code.
+    // drawn at the original's pixel scale on the 640 x 480 frame letterboxed into the window (OriginalFrame, UQD-T50),
+    // black around it; the loading image covers the room. The whole tree is built here in code.
     public sealed class MainMenuController : MonoBehaviour, IKatanaCursorHost
     {
         // The scene New Game and Versus lead to. Written by MainMenuSceneBuilder.
@@ -142,6 +142,8 @@ namespace Unity.QuickDuel
 
         private void Awake()
         {
+            // obj_mainmenu's F1: fullscreen (UQD-T50).
+            GameWindow.On(gameObject);
             Pointer = ReadPointer;
             sounds = gameObject.AddComponent<AudioSource>();
             sounds.playOnAwake = false;
@@ -296,11 +298,11 @@ namespace Unity.QuickDuel
             Root = document.rootVisualElement;
             Root.name = "MainMenu";
             Root.pickingMode = PickingMode.Ignore;
-            Root.style.position = Position.Absolute;
-            Root.style.left = Root.style.top = Root.style.right = Root.style.bottom = 0;
             Root.style.backgroundColor = Color.black;
+            // The room is the frame, letterboxed into the window (UQD-T50).
+            OriginalFrame.Fit(Root);
 
-            // The 640 x 480 room at the original's scale, centred; the scrolling background stays inside it.
+            // The 640 x 480 room at the original's scale, filling the frame; the scrolling background stays inside it.
             room = new VisualElement { name = "Room", pickingMode = PickingMode.Ignore };
             room.style.position = Position.Absolute;
             room.style.width = MainMenu.RoomWidth * PixelScale;
@@ -376,7 +378,7 @@ namespace Unity.QuickDuel
                 creditLines.Add(text);
             }
 
-            // obj_fade_mainmenu (Draw GUI, depth -10000): the loading image over everything, stretched over the screen.
+            // obj_fade_mainmenu (Draw GUI, depth -10000): the loading image over everything, stretched over the room.
             overlay = new VisualElement { name = "LoadingFade", pickingMode = PickingMode.Ignore };
             overlay.style.position = Position.Absolute;
             overlay.style.left = overlay.style.top = overlay.style.right = overlay.style.bottom = 0;

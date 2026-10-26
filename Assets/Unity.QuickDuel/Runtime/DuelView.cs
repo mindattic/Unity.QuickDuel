@@ -8,14 +8,14 @@ namespace Unity.QuickDuel
 {
     // Draws the duel from the controller's phase and result; it never decides anything. The whole UI is
     // built in code (the original fighters over the original arena art) on UI Toolkit (UQD-T31): a UIDocument reads
-    // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size, 1920x1080 reference, built by
-    // DuelPanelBuilder) and Resources/UI/Duel.uss, and every label is the original's outlined text (OutlinedText,
-    // UQD-T36) in one of its five bitmap fonts (Resources/UI/Fonts/fnt_*.asset, OriginalType says which). The panel
-    // renders as a screen-space overlay (UI Toolkit has no "Screen Space - Camera" mode); the main camera
-    // behind it only clears to its background colour, the way it always has. Centre-anchored content (the
-    // fighters, every CreateLabel) lives on a fixed 1920x1080 "stage" kept centred in Root (see Build()),
-    // so it stays centred at any aspect; screen-edge content (the arena backdrop, letterbox, the edge score
-    // labels) is positioned by percentage straight off Root, which does track the real aspect.
+    // Resources/UI/DuelPanelSettings.asset (scale-with-screen-size fitting 1440 x 1080, built by DuelPanelBuilder) and
+    // Resources/UI/Duel.uss, and every label is the original's outlined text (OutlinedText, UQD-T36) in one of its five
+    // bitmap fonts (Resources/UI/Fonts/fnt_*.asset, OriginalType says which). The panel renders as a screen-space overlay
+    // (UI Toolkit has no "Screen Space - Camera" mode); the main camera behind it only clears to black. Root is the
+    // original's 640 x 480 room as a 1440 x 1080 frame letterboxed into the window (OriginalFrame, UQD-T50), so the
+    // room's edges are Root's at any window size; centre-anchored content (the fighters, every CreateLabel) lives on the
+    // "stage", the same 1440 x 1080 centred in Root, and edge content (the arena backdrop, letterbox, the edge score
+    // labels) is positioned by percentage straight off Root.
     //
     // The backdrop is one of the original's 11 arenas (UQD-T33), the one the round's arena roll lands on
     // (ArenaDraw, drawn by the authority each round), scaled to cover the screen. On the cue the whole backdrop's
@@ -37,8 +37,8 @@ namespace Unity.QuickDuel
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelView : MonoBehaviour, IKatanaCursorHost
     {
-        internal const float StageWidth = 1920f;
-        internal const float StageHeight = 1080f;
+        internal const float StageWidth = OriginalFrame.Width;
+        internal const float StageHeight = OriginalFrame.Height;
         private const float LetterboxHeight = 150f;
 
         // The original's 640 x 480 room drawn on the 1080-high stage: every original pixel is 2.25 stage pixels.
@@ -172,7 +172,7 @@ namespace Unity.QuickDuel
         // Other components (DuelSession, DuelTaunt, DuelBlood) hang their own labels off this same tree.
         public VisualElement Root { get; private set; }
 
-        // The fixed 1920 x 1080 stage the fighters and centred labels stand on (DuelBlood draws its drops on it).
+        // The fixed 1440 x 1080 stage (the room) the fighters and centred labels stand on (DuelBlood draws its drops on it).
         public VisualElement Stage => stage;
 
         // The top letterbox bar (obj_letterbox, depth -10000): whatever must draw under it and over the rest goes before it.
@@ -187,6 +187,8 @@ namespace Unity.QuickDuel
         private void Awake()
         {
             controller = GetComponent<DuelController>();
+            // obj_game's F1: fullscreen (UQD-T50).
+            GameWindow.On(gameObject);
             Build();
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
@@ -448,20 +450,17 @@ namespace Unity.QuickDuel
 
             Root = document.rootVisualElement;
             Root.AddToClassList("duel-root");
+            OriginalFrame.Fit(Root);
             // Anything not drawn as OutlinedText (the online menu's controls) inherits the original's basic face.
             var basic = OriginalFonts.Load(OriginalType.Basic);
             if (basic != null) Root.style.unityFontDefinition = FontDefinition.FromSDFFont(basic);
             var styleSheet = Resources.Load<StyleSheet>("UI/Duel");
             if (styleSheet != null) Root.styleSheets.Add(styleSheet);
 
-            // Root's own resolved size is not fixed at the reference resolution (ScaleWithScreenSize keeps
-            // it at the real device aspect, only the final render scale is reference-resolution-based), so
-            // a fixed-size, always-centred "stage" is what gives centre-anchored content (the fighters,
-            // every CreateLabel) a true 1920x1080, any-aspect-safe coordinate space -- the same way the
-            // original's canvas-centre anchors kept them centred regardless of the real canvas rect size.
-            // Things that must reach the real screen edges at any aspect (the backdrop, letterbox, the edge
-            // score labels) stay on Root itself instead, sized/positioned by percentage, not by the stage.
-            // The backdrop goes first so everything else draws over it.
+            // Root is the room's 1440 x 1080 frame (OriginalFrame); the "stage" is the same frame as a fixed-size
+            // coordinate space for centre-anchored content (the fighters, every CreateLabel). Things that reach the
+            // room's edges (the backdrop, letterbox, the edge score labels) stay on Root itself, sized and positioned
+            // by percentage. The backdrop goes first so everything else draws over it.
             backdrop = Box("Backdrop", Root, Paper);
             backdrop.AddToClassList("backdrop");
             backdrop.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
@@ -576,7 +575,7 @@ namespace Unity.QuickDuel
             PlaceOnStage(element, x, y, width, height);
         }
 
-        // Places an element on the 1920x1080 stage, `position` measured from the stage's centre with y up
+        // Places an element on the 1440 x 1080 stage, `position` measured from the stage's centre with y up
         // (as the original's canvas-centred anchoredPosition was), pivoted at its own centre.
         private static void PlaceOnStage(VisualElement element, float x, float y, float width, float height)
         {

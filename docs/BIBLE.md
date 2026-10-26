@@ -177,7 +177,7 @@ the stats, skills and portraits in the same script are not read. `AssetManifest.
   (`left_position_idle = room_width / 4`) facing right, the right one at three quarters
   (`right_position_idle`) mirrored to face left (`image_xscale = -1`), both centred two thirds of the way down
   (`vertical_position = room_height - room_height / 3`), drawn at the original's 640 x 480 scale (2.25x on the
-  1920 x 1080 stage).
+  1440 x 1080 stage, the room's own frame since UQD-T50).
 - **Fade in.** Each fighter starts invisible and fades in at `obj_player`'s `fadespeed`, 0.01 alpha per 60 fps tick
   (1.67 s to full), whenever a new pair takes the field (the scene's first frame and every new match). It is timed
   by the clock, 0.6 alpha a second, not counted per rendered frame ([UQD-LAW-2](#UQD-LAW-2)); a stalled frame
@@ -301,7 +301,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   `Canvas`/`CanvasScaler`, AGENTS.md rule 6's other standards gap ("UI Toolkit or the shared MindAttic UI
   components"). `DuelView` now builds a `UIDocument`/`VisualElement` tree in code (the scene is still
   generated, [UQD-LAW-4](#UQD-LAW-4)) through `Resources/UI/DuelPanelSettings.asset` (scale-with-screen-size,
-  1920x1080 reference — built once by `DuelPanelBuilder`, run by `DuelSceneBuilder` the same way
+  1920x1080 reference, since UQD-T50 the room's 1440 x 1080 frame fitted whole (Expand) — built once by `DuelPanelBuilder`, run by `DuelSceneBuilder` the same way
   `RenderPipelineBuilder` is), `Resources/UI/Duel.uss` for its structural USS classes, and a font asset
   (`Resources/UI/Fonts/Cinzel.ttf`, OFL-licensed, already vetted for MindAttic games in Unity.GridGame; replaced by
   the original's own bitmap fonts in UQD-T36) set
@@ -541,7 +541,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     A click still does, and so does any key and a pad's South or Start, so a keyboard or pad player is never stuck
     watching it. Skipping starts the same fade, at once, from any moment; a second press changes nothing.
   - **Where it leads, matches**: the intro goes on to the main menu (UQD-T45), which opens under the intro's image.
-    F1 (fullscreen) is UQD-T50's.
+    F1 toggles fullscreen there as everywhere (UQD-T50) and does not skip.
 - ✅ The main menu (UQD-T45; `MainMenuTests` in Core and PlayMode): the intro now leads to the original's `mainmenu`
   room, built in `Assets/Scenes/MainMenu.unity`. Core holds the room (`MainMenu`, `MenuFade`), stepped at 60 a second
   off the clock from the scene's start (UQD-LAW-2); `MainMenuController` draws it at the original's pixel scale on a
@@ -574,7 +574,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     buttons (highlighting and flicking as the mouse does), and Enter, Space or a pad's South or Start press the
     highlighted one, so a keyboard or pad player is never stuck on the menu.
   - **Dropped**: Options and Scores were empty stubs (Scores jumped to the dropped `travel` room); Credits is built
-    below (UQD-T47); F1 fullscreen UQD-T50's. The original's menu played no music.
+    below (UQD-T47); F1 fullscreen is built (UQD-T50). The original's menu played no music.
 - ✅ The katana cursor (UQD-T46; `KatanaCursorTests` in PlayMode): `obj_mouse`, placed in `mainmenu` and `gamescreen`,
   is `KatanaCursor` on the main menu and the duel (`IKatanaCursorHost`: `MainMenuController`, `DuelView`).
   - **Matches**: the original's Global Game Settings hid the system cursor (`option_showcursor` False) and `obj_mouse`
@@ -666,6 +666,29 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     flakes do.
   - **Dropped**: `obj_tree_emitter` / `obj_tree1` (never placed; it put its tree at `y = room_width`), `obj_lens` (an
     additive white sheet, never placed) and `obj_spotlight` (the dropped character select's).
+- ✅ The window, the clock and the debug overlay (UQD-T50; `RoundClockTests` and `DebugReadoutTests` in Core,
+  `GameWindowTests`, `DuelClockTests` and `DuelDebugOverlayTests` in PlayMode; a scripted run of the Windows player at
+  1600 x 700 and fullscreen).
+  - **The frame, matches**: the original's window kept its 640 x 480 room's aspect at any size (`option_scale -1`,
+    `option_sizeable`). Every scene now draws on that room as a 1440 x 1080 frame (2.25 panel pixels a pixel,
+    `OriginalFrame`), the panel scaling so the whole frame fits the window (`DuelPanelSettings`: ScaleWithScreenSize,
+    Expand) and black round it, so a wide window bars the sides and a tall one the top and bottom. The duel's stage was
+    a 16:9 1920 x 1080 frame; it is the room's frame now, and the default window is 1280 x 960 (twice the room).
+  - **F1, matches**: `obj_intro`, `obj_mainmenu` and `obj_game` each toggled `window_set_fullscreen` on F1; each scene
+    adds `GameWindow`, which goes to the whole display (borderless) and back to the window it was. F1 no longer
+    skips the intro (it is the window's key, as in the original).
+  - **The clock, matches**: `obj_time` (`RoundClock`, drawn by `DuelClock`): "mm:ss" in `fnt_basic` outlined 1 at
+    the top centre, the minutes ending 3 pixels left of the middle and the seconds starting 3 right of it, dropping from
+    y -100 at 5 a step to y 5 and then counting the match's time; it starts over with each new match and stops when the
+    verdict covers the duel (the original's `room_goto`). **Fixed defects**: it counted frames, so the action phase's
+    1000 steps a second skewed it (the rebuild counts seconds off the clock, [UQD-LAW-2](#UQD-LAW-2)); a turning minute
+    showed "mm:60" for a step; it slid in reading "00:0".
+  - **Debug overlay, deliberate**: `globals.gml` shipped `debug = true`, so the original opened with F12's overlay on.
+    The rebuild's `DuelDebugOverlay` (`DebugReadout`) draws the same lines where `obj_game` and `obj_gameclock` drew
+    them (each side's `reaction_time` in ms, 9999 before a strike; the phase and its count; frames a second in
+    `room_speed`'s place) but starts off, and F12 toggles it only in the editor and development builds.
+  - **Icon, matches**: the player's icon is the original's `bushidocoda.ico` (its 64 x 64 frame, set by
+    `PlayerIconBuilder` before every build); the product name stays QuickDuel.
 
 ## 7. Frontier {#UQD-§7}
 - ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose

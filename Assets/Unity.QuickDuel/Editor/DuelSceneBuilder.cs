@@ -29,7 +29,8 @@ namespace Unity.QuickDuel.EditorTools
             camera.orthographic = true;
             camera.orthographicSize = 5;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.06f, 0.06f, 0.08f);
+            // Black round the 640 x 480 frame (UQD-T50).
+            camera.backgroundColor = Color.black;
             cameraObject.transform.position = new Vector3(0, 0, -10);
             cameraObject.AddComponent<AudioListener>();
 
@@ -54,6 +55,8 @@ namespace Unity.QuickDuel.EditorTools
             duel.AddComponent<DuelCornerArt>().SetSprites(
                 Frames(Manifest(), "spr_cornerart_left2", "the corner art")[0],
                 Frames(Manifest(), "spr_cornerart_right2", "the corner art")[0]);
+            // obj_time (UQD-T50): the match clock dropping in at the top centre.
+            duel.AddComponent<DuelClock>();
             // The arenas' ambient emitters (UQD-T49): the sprites of all eight, the original's unused three included.
             duel.AddComponent<DuelAmbient>().SetLooks(AmbientLooks());
             // obj_mouse (UQD-T46): the katana cursor in place of the system cursor.
@@ -69,6 +72,8 @@ namespace Unity.QuickDuel.EditorTools
                 Clip("sfx_click"),
                 Path.GetFileNameWithoutExtension(MainMenuSceneBuilder.ScenePath),
                 Path.GetFileNameWithoutExtension(ScenePath));
+            // The original's F12 debug overlay (UQD-T50), the developer's toggle.
+            duel.AddComponent<DuelDebugOverlay>();
             duel.AddComponent<DuelAudio>().SetClips(Clip("sfx_beep"), Clip("sfx_drumroll"), Clip("sfx_unsheath"), Clip("sfx_slash"),
                 Clip("sfx_victory"), Clip("sfx_defeat"));
 #if QUICKDUEL_MULTIPLAYER

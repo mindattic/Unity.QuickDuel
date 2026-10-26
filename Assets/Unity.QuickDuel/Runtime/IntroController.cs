@@ -16,8 +16,8 @@ namespace Unity.QuickDuel
     // at once.
     //
     // Everything steps at the original's 60 a second counted off Clock, not rendered frames, from the moment the scene
-    // starts. The room is drawn at the original's pixel scale on a 640 x 480 area centred on the screen, as the arena is;
-    // the map and the loading image cover the whole screen. The whole tree is built here in code.
+    // starts. The room is drawn at the original's pixel scale on the 640 x 480 frame letterboxed into the window
+    // (OriginalFrame, UQD-T50), black around it, as the duel is. The whole tree is built here in code.
     public sealed class IntroController : MonoBehaviour
     {
         // The scene the intro leads to: the original's mainmenu (UQD-T45). Written by IntroSceneBuilder.
@@ -84,12 +84,25 @@ namespace Unity.QuickDuel
 
         private void Awake()
         {
+            // obj_intro's F1: fullscreen (UQD-T50).
+            GameWindow.On(gameObject);
             skip = new InputAction("IntroSkip", InputActionType.Button);
             skip.AddBinding("<Pointer>/press");
             skip.AddBinding("<Keyboard>/anyKey");
             skip.AddBinding("<Gamepad>/buttonSouth");
             skip.AddBinding("<Gamepad>/start");
-            skip.performed += _ => Skip();
+            // F1 is the window's (GameWindow, UQD-T50), as obj_intro's own F1 press was: it does not skip.
+            skip.performed += context =>
+            {
+                if (context.control is UnityEngine.InputSystem.Controls.AnyKeyControl && IsWindowKey()) return;
+                Skip();
+            };
+        }
+
+        private static bool IsWindowKey()
+        {
+            var keyboard = Keyboard.current;
+            return keyboard != null && keyboard.f1Key.isPressed;
         }
 
         private void OnEnable() => skip.Enable();
@@ -150,12 +163,11 @@ namespace Unity.QuickDuel
             Root = document.rootVisualElement;
             Root.name = "Intro";
             Root.pickingMode = PickingMode.Ignore;
-            Root.style.position = Position.Absolute;
-            Root.style.left = Root.style.top = Root.style.right = Root.style.bottom = 0;
             Root.style.backgroundColor = Color.black;
-            Root.style.overflow = Overflow.Visible;
+            // The room is the frame, letterboxed into the window (UQD-T50); what strays past it is cut off at its edges.
+            OriginalFrame.Fit(Root);
 
-            // bg_mapscreen, the room's background, covering the screen as the arenas do.
+            // bg_mapscreen, the room's background, covering the room as the arenas do.
             backdrop = FullScreen("Map");
             backdrop.style.backgroundImage = background != null ? new StyleBackground(background) : new StyleBackground(StyleKeyword.None);
             backdrop.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
@@ -163,8 +175,7 @@ namespace Unity.QuickDuel
             backdrop.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center);
             Root.Add(backdrop);
 
-            // The 640 x 480 room at the original's scale, centred; what is in it may stray past its edges, as the clouds
-            // do on a screen wider than 4:3.
+            // The 640 x 480 room at the original's scale, filling the frame.
             room = new VisualElement { name = "Room", pickingMode = PickingMode.Ignore };
             room.style.position = Position.Absolute;
             room.style.width = IntroScene.RoomWidth * PixelScale;
