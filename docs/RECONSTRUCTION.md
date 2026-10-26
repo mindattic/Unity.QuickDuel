@@ -133,11 +133,27 @@ PlayMode tests.
 
 ### 3.2 What it lacks
 
-**Visuals: nothing left but the final play-through.** Every item the audit once listed as missing (art, arenas,
+**Visuals: complete, play-through done (UQD-T54).** Every item the audit once listed as missing (art, arenas,
 fighters and their motion, blood, splatter, flash, weapons, round fade, intro, main menu, cursor, credits, ambient
-effects, victory and game over screens, fullscreen) is built; see the dispositions in section 2. UQD-T54 walks the
-whole game against the original. Of the original's 27 duel sounds, the duel's six and the aftermath and menu's six are
-used; the rest are dropped on purpose.
+effects, victory and game over screens, fullscreen) is built; see the dispositions in section 2. Of the original's 27
+duel sounds, the duel's six and the aftermath and menu's six are used; the rest are dropped on purpose.
+
+The play-through, with evidence in `docs/parity`:
+
+| Stage | How | Evidence |
+| --- | --- | --- |
+| Launch, intro, menu | The built Windows player (`play.ps1 -Build`, muted) launched, ran the intro's typewriter story, and a Space press reached the menu; no errors in `Logs/play.log` | `live-player-intro.png`, `live-player-menu.png` |
+| Each mode | `PlaythroughTests.EveryModeIsPlayableAndDrawn`: two players, vs AI Easy, Normal and Hard each reach a countdown frame, then a strike and a winner | `playthrough-mode-*.png` |
+| Clean win | `ACleanWinIsDrawn` | `playthrough-clean-win.png` |
+| Premature strike | `APrematureStrikeLosesAndIsDrawn`: early strike loses, the other side wins | `playthrough-premature-strike.png` |
+| No strike | `ARoundNobodyStrikesInIsDrawn` | `playthrough-no-strike.png` |
+| Verdict | `AWonMatchEndsOnTheVictoryScreen`, `ALostMatchEndsOnTheGameOverScreen`: a real two-round match each | `playthrough-verdict-victory.png`, `playthrough-verdict-gameover.png` |
+| Against the original | Intro, menu, game over and victory beside the original's own art | `compare-*.png` |
+
+The original GameMaker build was **not** run (it has no mute and the owner was at the computer), so the comparison is
+against the original's assets and rooms (its sprites, backgrounds and room layouts: positions, sizes, text), not live
+captures of the original. The scripted frames are drawn through the UI panel at 1440 x 1080 (the 640 x 480 room at 3x).
+Every row of section 2 is marked built or dropped; the repo is declared complete.
 
 **Standards.** Measured against AGENTS.md and the shared Unity standards:
 

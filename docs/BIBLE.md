@@ -757,8 +757,11 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ The port gaps found by UQD-T19 are closed: a strike during the countdown is ignored (UQD-T22), Escape quits the
   player (UQD-T23), the victory / defeat sting plays (UQD-T24), a mouse or touch strike works for the left duelist
   (UQD-T25).
-- ⬜ A final play-through of the rebuild against the original (UQD-T54), scene by scene, the last step of the
-  [RECONSTRUCTION](RECONSTRUCTION.md) build order.
+- ✅ The final play-through (UQD-T54): the muted Windows player launched, ran the intro and reached the menu, and a
+  scripted PlayMode run walked every mode, a clean win, a premature strike, a round nobody strikes in and both
+  verdicts, each drawn and committed under `docs/parity` beside the original's own art. **The repo is complete**
+  (AGENTS.md rule 8): every [RECONSTRUCTION](RECONSTRUCTION.md) row is built or dropped on
+  purpose. What remains below is optional future work, not part of the proof of concept.
 - ⬜ Player profiles through `com.mindattic.unity.shared`: the package is in the manifest but only its session mute is
   used; the tuning registry stays the game's own (UQD-T28).
 - ⬜ A tuning source for Android and WebGL (`TuningStore` reads the file from disk, so it is desktop-only).

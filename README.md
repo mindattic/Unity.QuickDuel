@@ -10,6 +10,9 @@ That's the whole game:
 4. Both players hit their key. The faster reaction wins.
 5. Strike before the cue and you lose.
 
+**Status: complete.** Every row of `docs/RECONSTRUCTION.md` is built or dropped on purpose, and the final play-through
+(UQD-T54, evidence in `docs/parity`) is done: this is a finished proof of concept of Bushido Coda's reaction duel.
+
 ## Layout
 
 | Path | What |
