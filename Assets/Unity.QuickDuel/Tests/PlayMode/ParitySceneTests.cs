@@ -21,12 +21,19 @@ namespace Unity.QuickDuel.Tests
         private const int Height = 1080;
 
         private RenderTexture target;
+        private PanelSettings clone;
 
         [TearDown]
         public void Release()
         {
             LoadingHandoff.Clear();
             DuelModeHandoff.Clear();
+            if (clone != null)
+            {
+                clone.targetTexture = null;
+                Object.Destroy(clone);
+                clone = null;
+            }
             if (target != null)
             {
                 target.Release();
@@ -38,13 +45,18 @@ namespace Unity.QuickDuel.Tests
         private void DrawInto(Component scene)
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
-                Assert.Ignore("No graphics device to draw with.");
+            {
+                // A skipped run would pass with nothing drawn, so a missing device fails unless opted out.
+                if (System.Environment.GetEnvironmentVariable("QUICKDUEL_ALLOW_NO_GRAPHICS") == "1")
+                    Assert.Ignore("No graphics device to draw with (QUICKDUEL_ALLOW_NO_GRAPHICS=1).");
+                Assert.Fail("No graphics device to draw with: run the PlayMode tests without -nographics (or set QUICKDUEL_ALLOW_NO_GRAPHICS=1).");
+            }
             var document = scene.GetComponentInChildren<UIDocument>();
             Assert.That(document, Is.Not.Null, "the scene draws no UI document");
             target = new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32);
-            var panel = Object.Instantiate(document.panelSettings);
-            panel.targetTexture = target;
-            document.panelSettings = panel;
+            clone = Object.Instantiate(document.panelSettings);
+            clone.targetTexture = target;
+            document.panelSettings = clone;
         }
 
         private Texture2D Capture(string name)
@@ -97,7 +109,7 @@ namespace Unity.QuickDuel.Tests
             Object.Destroy(pixels);
         }
 
-        private IEnumerator LoadMenu(System.Action<MainMenuController, System.Func<double>> ready)
+        private IEnumerator LoadMenu()
         {
             LoadingHandoff.Clear();
             DuelModeHandoff.Clear();
@@ -108,7 +120,7 @@ namespace Unity.QuickDuel.Tests
         [UnityTest]
         public IEnumerator TheMainMenuIsDrawn()
         {
-            yield return LoadMenu(null);
+            yield return LoadMenu();
             var menu = Object.FindAnyObjectByType<MainMenuController>();
             Assert.That(menu, Is.Not.Null);
             var now = menu.StartedAt;
@@ -129,7 +141,7 @@ namespace Unity.QuickDuel.Tests
         [UnityTest]
         public IEnumerator TheCreditsAreDrawn()
         {
-            yield return LoadMenu(null);
+            yield return LoadMenu();
             var menu = Object.FindAnyObjectByType<MainMenuController>();
             Assert.That(menu, Is.Not.Null);
             var now = menu.StartedAt;
@@ -183,6 +195,7 @@ namespace Unity.QuickDuel.Tests
             yield return SceneManager.LoadSceneAsync("Duel", LoadSceneMode.Single);
             yield return null;
             var controller = Object.FindAnyObjectByType<DuelController>();
+            Assert.That(controller, Is.Not.Null, "Duel scene has no DuelController.");
             var verdict = controller.GetComponent<DuelVerdict>();
             Assert.That(verdict, Is.Not.Null);
             verdict.Leave = _ => { };

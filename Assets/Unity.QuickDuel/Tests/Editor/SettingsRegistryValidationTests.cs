@@ -58,7 +58,8 @@ namespace Unity.QuickDuel.EditorTests
         [Test]
         public void AWrongFormatIsRefused()
         {
-            var bad = ShippedText.Replace(TuningRegistry.Format, "something.else");
+            var bad = Regex.Replace(ShippedText, "\"format\":\\s*\"[^\"]*\"", "\"format\": \"something.else\"");
+            Assume.That(bad, Is.Not.EqualTo(ShippedText), "the shipped file's format line changed shape");
             Assert.That(Errors(bad).Any(e => e.Contains("format")), Is.True);
         }
 

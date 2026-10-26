@@ -7,9 +7,11 @@ using UnityEngine;
 
 namespace Unity.QuickDuel.EditorTests
 {
-    // The scene builders (UQD-T51): the committed scenes are what the builders write, so each one is opened
-    // (additively, then closed) and checked for the controller and assets its builder wires, and the build order
-    // puts the intro first, then the menu, then the duel.
+    // The built scenes (UQD-T51): each committed scene is opened (additively, then closed) and checked for the
+    // controller and assets its builder wires, and the build order puts the intro first, then the menu, then the
+    // duel. These check the builders' committed output, not a fresh run: the builders write fixed paths under
+    // Assets/Scenes and register them in the build settings, so running them from a test would rewrite the
+    // committed scenes (follow-up: let a builder target another path so a test can run it into a temporary scene).
     public class SceneBuilderTests
     {
         private EditorBuildSettingsScene[] savedBuildScenes;
