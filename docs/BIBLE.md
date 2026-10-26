@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: bible
 status: living
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Unity.QuickDuel — Project Bible
@@ -45,8 +45,14 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 - **NOT a game where the AI cheats.** The AI draws a reaction time from its difficulty's range when the
   countdown starts and strikes at exactly `CueAt + reaction`; it never sees the player's input and never
   strikes early.
-- **NOT online in the shipped scene (yet).** Online PvP is built and tested at the protocol and transport
-  level (§4.4, `OnlineDuel`), but the Duel scene has no Host / Join menu; that is [frontier](#UQD-§7).
+- **NOT a menu game.** The game opens on the original's intro, goes to a main menu that holds only New Game
+  (vs computer), Versus (two players), Quit, Credits and the computer's difficulty, and then to the duel. There
+  are no options, scores, character select or map screens; the original's `Options` and `Scores` buttons were
+  empty stubs and are dropped ([§4.6](#UQD-§4.6)).
+- **NOT a game of many arenas as gameplay.** The 11 arenas are a backdrop, one drawn at random per round, with an
+  ambient effect on a few; an arena never changes a round's timing, judging or scoring ([§4.7](#UQD-§4.7)).
+- **Online is built, not the front door.** Online PvP runs in the Duel scene through a Host / Join menu
+  (§4.4, `OnlineDuelMenu`); it never starts by itself, and the main menu offers local play only.
 
 ## 4. Architecture canon {#UQD-§4}
 
@@ -56,20 +62,34 @@ Assets/Unity.QuickDuel/
                                                       MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
   Core/Content/  the original asset manifest          AssetManifest (sprites, sounds, fonts, typefaces, arenas, fighters, credits),
+                                                      and the engine-free numbers of each visual: RoundClock, RoundFade,
+                                                      CountdownBanner, ReactionCounter, BloodSpray, SplatterField, WhiteFlash,
+                                                      WeaponToss, CornerArt, AmbientField, IntroScene, MainMenu, MenuFade,
+                                                      LoadingFade, CreditsRoll, VerdictScreen, VerdictBanner, DebugReadout,
+                                                      OriginalType, FighterMotion,
                                                       ArenaDraw (each round's arena roll and the arena it lands on),
                                                       FighterDraw (each match's fighter roll and the pair it lands on),
                                                       FighterLineup (where the fighters stand, their fade and tint)
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Art/, Audio/, Fonts/  the original's files           copied by OriginalAssetGenerator, never edited by hand
   Data/assets.json, Data/credits.txt                  the generated asset manifest and the original credits text
-  Runtime/   MonoBehaviours on the one "Duel" object  DuelController, DuelInput, DuelSession, DuelView, DuelTaunt, DuelAudio,
-                                                      TuningStore, ArenaBackdrop (an arena as the scene carries it),
-                                                      FighterLook (a fighter as the scene carries it)
+  Runtime/   MonoBehaviours, one set per scene        Duel scene: DuelController, DuelInput, DuelSession, DuelView, DuelTaunt,
+                                                      DuelAudio, DuelClock, DuelFade, DuelBlood, DuelWeapons, DuelAmbient,
+                                                      DuelCornerArt, DuelVerdict, DuelDebugOverlay, ArenaBackdrop, FighterLook;
+                                                      Intro and MainMenu scenes: IntroController, MainMenuController;
+                                                      every scene: GameWindow (F1), OriginalFrame (640 x 480 letterbox),
+                                                      KatanaCursor, SessionAudio (the CLI mute), TuningStore
   Online/    the wire, over Unity.Multiplayer         OnlineDuel (a NetEntity; compiles only with the package present),
                                                       OnlineDuelLobby, OnlineDuelMenu, OnlineDuel.prefab, QuickDuelNetPrefabs
-  Editor/    generators                               DuelSceneBuilder (writes Assets/Scenes/Duel.unity), OnlineSceneBuilder,
-                                                      QuickDuelBuild, OriginalAssetGenerator + OriginalAssetImportRules
-  Tests/PlayMode/                                     scene, input, session, view, taunt and audio tests
+  Editor/    generators                               DuelSceneBuilder, IntroSceneBuilder, MainMenuSceneBuilder (write
+                                                      Assets/Scenes/*.unity), OnlineSceneBuilder, RenderPipelineBuilder,
+                                                      DuelPanelBuilder, PlayerIconBuilder, QuickDuelBuild (BuildScenes, the
+                                                      Windows build), the art pipeline: OriginalAssetGenerator +
+                                                      OriginalAssetCatalog + OriginalAssetImportRules + OriginalFontBuilder
+  Rendering/ URP assets                               QuickDuelURP + its renderer, behind RenderPipelineBuilder
+  Tests/Editor/                                       EditMode: scene builders, art generators, settings registry validation
+  Tests/PlayMode/                                     scene, input, session, view, taunt, audio and per-feature tests, and
+                                                      ParitySceneTests (each scene drawn through its panel, a real picture)
   Tests/Online/                                       host + client over the Unity.Multiplayer test kit
 Tests/Core.Tests                                      NUnit tests of Core, run with `dotnet test Core.slnx`
 ```
@@ -205,6 +225,31 @@ the stats, skills and portraits in the same script are not read. `AssetManifest.
 - **Deliberate deviation**: the original held a round's loser on the first defeat frame while it had HP left and
   played the whole strip only for the killing blow; the rebuild has no HP ([§3](#UQD-§3)), so every round's loser
   plays the whole defeat strip, in place of the toppling box it had before.
+
+### 4.6 Intro and menu flow {#UQD-§4.6}
+The game runs three scenes in the order `BuildScenes` keeps them: `Intro.unity`, `MainMenu.unity`, `Duel.unity`, each
+written by its builder ([UQD-LAW-4](#UQD-LAW-4)) and each framed as the original's 640 x 480 room letterboxed into the
+window (`OriginalFrame`), with F1 toggling fullscreen (`GameWindow`) and the katana cursor (`KatanaCursor`).
+
+1. **Intro** (`IntroController`, `IntroScene`): `bg_mapscreen` under drifting clouds, the original's story typed out,
+   then a loading image fades in and hands on. A click, key or pad button skips to that fade; F1 does not skip.
+2. **Main menu** (`MainMenuController`, `MainMenu`): the title over the scrolling splatter. New Game starts a duel vs
+   the computer, Versus a two-player duel, Quit exits, Credits rolls the author and arena photo credits (a click,
+   Enter or Escape closes it), and the slot where the original had Options holds the computer's difficulty (Easy,
+   Normal, Hard). Mouse, arrows or d-pad, and Enter all drive it. The choice reaches the duel through
+   `DuelModeHandoff`, and the scene change runs under the loading fade (`LoadingHandoff`).
+3. **Duel**: the rounds of [§4.1](#UQD-§4.1). Tab / Select still cycles the mode between rounds. A finished match
+   cuts to the verdict screen (`DuelVerdict`): Retry starts a new match in the same mode, Continue returns to the menu.
+
+The `Options`, `Scores`, character select and map rooms of the original are dropped ([§3](#UQD-§3)).
+
+### 4.7 Arenas {#UQD-§4.7}
+`Data/assets.json`'s `arenas` section, written by `OriginalAssetGenerator` from `load_arenas.gml`, names the 11 arenas
+with a description, a backdrop sprite and the ambient effect `setup_arena_properties.gml` placed there. The authority
+draws an arena roll per round (`MatchSession.ArenaRoll`, `OnlineDuelHost.ArenaRoll` online so both peers agree) and
+`ArenaDraw.Pick` maps it onto the list; `ArenaBackdrop` is the arena as the scene carries it. The cue inverts the
+backdrop only (a real colour invert). The arena's ambient effect (`AmbientField`, `DuelAmbient`) is cosmetic and waits
+while the duel waits on the first strike. Details are in [§6](#UQD-§6).
 
 ## 5. The Laws {#UQD-§5}
 
@@ -690,7 +735,32 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **Icon, matches**: the player's icon is the original's `bushidocoda.ico` (its 64 x 64 frame, set by
     `PlayerIconBuilder` before every build); the product name stays QuickDuel.
 
+- ✅ Parity scene tests and the EditMode suite (UQD-T51): `Tests/Editor` (asmdef `Unity.QuickDuel.Editor.Tests`,
+  EditMode) opens each built scene and checks it, checks the build order and registration (`SceneBuilderTests`), runs the
+  art and data generators on stand-in files and the catalog against the shipped manifest and files on disk
+  (`OriginalAssetGeneratorTests`), and validates the settings registry against the shipped `tuning.json`
+  (`SettingsRegistryValidationTests`). PlayMode `ParitySceneTests` draws the intro, menu, credits, duel and verdict
+  through their panels at 1440 x 1080 and asserts a real picture (not blank or one colour); with `QUICKDUEL_SHOTS` set it
+  saves `parity-<scene>.png`, committed under `docs/screenshots` as the evidence. A missing graphics device fails the
+  drawn-scene tests unless `QUICKDUEL_ALLOW_NO_GRAPHICS=1`.
+- ✅ Unity CI (UQD-T52): `.github/workflows/ci.yml` keeps the fast `dotnet test Core.slnx` job and adds a GameCI job that
+  runs the EditMode and PlayMode suites and builds the Windows player through `QuickDuelBuild.BuildWindows` (the entry
+  point `deploy.ps1` uses). It is gated on the `UNITY_LICENSE` (or `UNITY_SERIAL`, `UNITY_EMAIL`, `UNITY_PASSWORD`)
+  secrets and skips cleanly, not failing, when they are absent.
+- ✅ A silent CLI launch (UQD-T61, `SessionAudioTests`): `play.ps1` launches muted (`MINDATTIC_CLI_MUTED=1`, `-muted`;
+  `-Sound` opts out); `SessionAudio` silences the listener when the shared profile reports sound muted, and the saved
+  `settings.json` is never written.
+- ✅ The mode line (UQD-T62): the duel's `vs AI (Normal) - Tab / Select: mode` line sits below the round clock, which owns
+  the top centre, so the two never overprint at any window size; a PlayMode test pins it.
+
 ## 7. Frontier {#UQD-§7}
-- ⬜ Port gaps found by UQD-T19: a strike during the 3-2-1 countdown should be ignored, not lose
-  (UQD-T22); Escape quits the player (UQD-T23); the victory / defeat sting (UQD-T24); a mouse /
-  touch strike for the left duelist (UQD-T25).
+- ✅ The port gaps found by UQD-T19 are closed: a strike during the countdown is ignored (UQD-T22), Escape quits the
+  player (UQD-T23), the victory / defeat sting plays (UQD-T24), a mouse or touch strike works for the left duelist
+  (UQD-T25).
+- ⬜ A final play-through of the rebuild against the original (UQD-T54), scene by scene, the last step of the
+  [RECONSTRUCTION](RECONSTRUCTION.md) build order.
+- ⬜ Player profiles through `com.mindattic.unity.shared`: the package is in the manifest but only its session mute is
+  used; the tuning registry stays the game's own (UQD-T28).
+- ⬜ A tuning source for Android and WebGL (`TuningStore` reads the file from disk, so it is desktop-only).
+- ⬜ Online play from the main menu: Host / Join lives in the Duel scene only ([§3](#UQD-§3)).
+- ⬜ The Unity CI job has not yet run on a hosted runner: it waits for the Unity license secrets (UQD-T52).

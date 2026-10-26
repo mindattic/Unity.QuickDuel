@@ -4,7 +4,7 @@ project: Unity.QuickDuel
 code: UQD
 layer: reconstruction
 status: living
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Unity.QuickDuel - Reconstruction (REA of the original)
@@ -59,7 +59,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | --- | --- | --- |
 | `intro` | `obj_intro`, four cloud layers x3, `obj_typewriter_intro`, `obj_fade_intro` | built (UQD-T44): `Intro.unity`, the game's first scene (`IntroScene`, `IntroController`); it leads to the main menu (UQD-T45) |
 | `mainmenu` | `obj_title`, buttons New Game, Versus, Options, Quit, Credits, Scores, `obj_mainmenu`, `obj_mouse`, `obj_fade_mainmenu` | built (UQD-T45): `MainMenu.unity` (`MainMenu`, `MenuFade`, `MainMenuController`), New Game, Versus, Quit and the computer's difficulty in Options' slot; cursor built (UQD-T46: `KatanaCursor`), Credits built (UQD-T47: `CreditsRoll`; its screen never existed: fixed) (Options, Scores were empty stubs: dropped) |
-| `gamescreen` | `obj_jukebox`, `obj_game`, corner arts, `obj_mouse`, `obj_fade_gamescreen`, `obj_letterbox` | partly built; remainder UQD-T33 to T43 |
+| `gamescreen` | `obj_jukebox`, `obj_game`, corner arts, `obj_mouse`, `obj_fade_gamescreen`, `obj_letterbox` | built (UQD-T33 to T43, T49, T50): `Duel.unity` with its arena, fighters, corner arts, fade, letterbox and clock |
 | `victory`, `gameover` | `obj_victory`, `obj_virtue` x7, retry and continue buttons | built (UQD-T48): `VerdictScreen`, `DuelVerdict` in the Duel scene, cut to as the original's room_goto; "Game Over" (never drawn: `obj_gameover` was not placed) fixed, "Victory" added, `obj_victory`'s empty labels filled; Retry a new match, Continue the menu; HP and virtues dropped |
 | `characterselect`, `room2` | `obj_characterselect`, five `obj_btn_<fighter>`, `obj_doll`, `obj_descbox`, typewriter | dropped: choosing a fighter (fighters become cosmetic, UQD-T34) |
 | `location`, `travel` | `obj_location`, `obj_map`, `obj_walker`, `obj_travel`, `obj_talkbox`, `obj_dialogwriter`, portraits | dropped: overworld |
@@ -128,28 +128,29 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 The engine-free duel (phases, random standoff, early strike, settle window, timeout, `DuelJudge`, `Match`,
 `AiOpponent`, online host and client), two-player input by event timestamp, the Input System, the generated
 Duel scene, countdown, letterbox, cue invert, taunts, the original six duel sounds, a best-of-3 scoreboard,
-Escape quit, mouse and touch strike, a Windows build, online protocol and transport, 30+ Core tests and
+Escape quit, mouse and touch strike, a Windows build, online protocol and transport, Core, EditMode and
 PlayMode tests.
 
 ### 3.2 What it lacks
 
-**Everything visual.** The scene draws coloured boxes and the built-in legacy font: no art asset is imported,
-there are no arenas, no fighters (no run, attack or defeat), no blood, splatter, flash or dropped weapons,
-no round fade, no intro, no main menu, no cursor, no credits, no ambient effects, no victory or game over
-screen, no fullscreen toggle. Of the original's 27 duel sounds only six are present.
+**Visuals: nothing left but the final play-through.** Every item the audit once listed as missing (art, arenas,
+fighters and their motion, blood, splatter, flash, weapons, round fade, intro, main menu, cursor, credits, ambient
+effects, victory and game over screens, fullscreen) is built; see the dispositions in section 2. UQD-T54 walks the
+whole game against the original. Of the original's 27 duel sounds, the duel's six and the aftermath and menu's six are
+used; the rest are dropped on purpose.
 
 **Standards.** Measured against AGENTS.md and the shared Unity standards:
 
 | Area | Finding |
 | --- | --- |
-| Assembly definitions | Good: Core (`noEngineReferences`), Runtime, Editor, Online (version-define gated), PlayMode and Online tests, one-way references. Gap: no EditMode test asmdef (UQD-T51) |
-| Engine-free Core | Rules are in Core with 30+ NUnit tests, but `DuelSession` (mode, difficulty, match reset, AI wiring) lives in the MonoBehaviour layer, and `Duel.Strike` takes no command or player id (UQD-T30) |
+| Assembly definitions | Good: Core (`noEngineReferences`), Runtime, Editor, Online (version-define gated), the EditMode, PlayMode and Online test asmdefs, one-way references |
+| Engine-free Core | Done (UQD-T30): `MatchSession` owns mode, difficulty, match reset and AI wiring, and `Strike` takes a player id |
 | Input System | Good: `InputAction`s with event timestamps, gamepad per side |
-| URP | Missing: no render pipeline package (UQD-T29) |
-| Unity.Shared profiles and settings | Partly done (UQD-T28): `com.mindattic.unity.shared` is in the manifest and every tuning number is in `tuning.json` (named profiles, validated on load); the registry is the game's own Core code, and wiring player profiles through Unity.Shared comes with the settings screens |
-| UI | Legacy uGUI `Text` with `LegacyRuntime.ttf`; the standard is UI Toolkit or the shared components (UQD-T31) |
-| Tests | Core is covered; Editor generators and the new scenes are not (UQD-T51); CI runs only `dotnet test Core.slnx` (UQD-T52) |
-| README and BIBLE | README lists only Core, Tests and docs and none of the Runtime, Online or Editor layers; BIBLE section 3 and 7 need the cosmetic fighters and parity scenes (UQD-T53) |
+| URP | Done (UQD-T29): `QuickDuelURP` behind `RenderPipelineBuilder` |
+| Unity.Shared profiles and settings | Partly done (UQD-T28): `com.mindattic.unity.shared` is in the manifest, every tuning number is in `tuning.json` (named profiles, validated on load) and the shared session mute is wired (UQD-T61); player profiles through the package wait for the settings screens |
+| UI | Done (UQD-T31): UI Toolkit trees built in code |
+| Tests | Done: Core NUnit, EditMode (`Tests/Editor`, UQD-T51), PlayMode with `ParitySceneTests` and the committed `docs/screenshots`; CI runs Core and, behind the Unity license secrets, EditMode, PlayMode and the Windows build (UQD-T52) |
+| README and BIBLE | Done (UQD-T53): README lists Runtime, Online, Editor, the scenes, the settings registry and the art pipeline; BIBLE sections 3, 4, 6 and 7 cover the cosmetic fighters, arenas, intro and menu flow |
 | Scene built in code | Good: `DuelSceneBuilder` generates the scene and `DuelView` builds the UI |
 
 ## 4. Build order
