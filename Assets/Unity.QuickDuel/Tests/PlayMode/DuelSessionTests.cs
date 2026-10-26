@@ -23,6 +23,18 @@ namespace Unity.QuickDuel.Tests
             controller.Settings = DuelSceneTests.FastSettings();
         }
 
+        // UQD-T62: the mode line sits under the round clock's home position, never on it.
+        [UnityTest]
+        public IEnumerator TheModeLineIsClearOfTheRoundClock()
+        {
+            yield return null;
+            var view = controller.GetComponent<DuelView>();
+            var clock = controller.GetComponent<DuelClock>();
+            var scale = 1080f / 480f;
+            var clockBottom = view.Stage.worldBound.yMin + (RoundClock.HomeY * scale) + clock.Minutes.resolvedStyle.height;
+            Assert.That(session.ModeBounds.yMin, Is.GreaterThanOrEqualTo(clockBottom - 0.5f), "the mode line starts below the clock");
+        }
+
         [UnityTest]
         public IEnumerator TheAiStrikesAsTheRightPlayerWithinItsDifficultyRange()
         {

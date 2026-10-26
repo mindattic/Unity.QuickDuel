@@ -36,6 +36,7 @@ namespace Unity.QuickDuel
         public double? AiStrikeAt => Session.AiStrikeAt;
 
         public string ModeText => modeText.text;
+        public Rect ModeBounds => modeText.worldBound;
         public string ScoreText(Side side) => (side == Side.Left ? leftScore : rightScore).text;
         public string VerdictText => verdict.style.display != DisplayStyle.None ? verdict.text : "";
 
@@ -64,11 +65,16 @@ namespace Unity.QuickDuel
             controller.OnlineChanged += Redraw;
         }
 
+        // Stage-centre-relative y (up) of the mode line: under the round clock, which owns the very top centre.
+        public const float ModeY = 450f;
+
         private void Start()
         {
             view = GetComponent<DuelView>();
             // The HUD in the original's basic face; the match verdict as a banner (UQD-T36).
-            modeText = view.CreateLabel("Mode", OriginalType.Hud, new Vector2(0, 490f));
+            // Below the round clock (UQD-T50, top centre, room y 5 down) rather than on it (UQD-T62): 450 puts the
+            // line's centre 40 room pixels down the stage, clear of the clock's line at any window size.
+            modeText = view.CreateLabel("Mode", OriginalType.Hud, new Vector2(0, ModeY));
             leftScore = view.CreateEdgeLabel("LeftScore", OriginalType.Hud, 0f, 490f);
             rightScore = view.CreateEdgeLabel("RightScore", OriginalType.Hud, 1f, 490f);
             verdict = view.CreateLabel("Verdict", OriginalType.Banner, new Vector2(0, -385f), new Color(0.62f, 0.12f, 0.10f));
