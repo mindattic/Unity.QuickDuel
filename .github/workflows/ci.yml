@@ -6,12 +6,102 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # The fast job: the pure-C# Core suite only, no Unity. It never waits for the Unity job below.
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet test Core.slnx
+      - run: dotnet test Core.slnx --nologo
+
+  # GameCI needs Unity license secrets, and a job's `if` can't read secrets, so this tiny job reports whether
+  # they are set. Without them the Unity job below is skipped (not failed). Secrets by name, never printed:
+  #   UNITY_LICENSE (the .ulf file contents), or UNITY_SERIAL; plus UNITY_EMAIL and UNITY_PASSWORD.
+  unity-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_SERIAL" ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Unity job skipped: no UNITY_LICENSE (or UNITY_SERIAL + UNITY_EMAIL + UNITY_PASSWORD) secret is set."
+          fi
+
+  unity:
+    needs: unity-gate
+    if: needs.unity-gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+      # PlayMode draws with a real graphics device. GameCI runs the editor under a virtual display (software GL);
+      # if a runner has none, the parity scene tests ignore themselves instead of failing (UQD-T51).
+      QUICKDUEL_ALLOW_NO_GRAPHICS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Packages/manifest.json', 'Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-
+
+      - uses: game-ci/unity-test-runner@v4
+        id: editmode
+        with:
+          testMode: EditMode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: EditMode results
+          artifactsPath: editmode-results
+      - uses: game-ci/unity-test-runner@v4
+        id: playmode
+        with:
+          testMode: PlayMode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: PlayMode results
+          artifactsPath: playmode-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: |
+            editmode-results
+            playmode-results
+          if-no-files-found: ignore
+
+      # deploy.ps1 drives a local Windows Unity.exe through this same build method, and Windows editors can't run
+      # on a hosted runner; GameCI builds the Windows player in its Linux image with the identical entry point.
+      - uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: StandaloneWindows64
+          buildMethod: Unity.QuickDuel.EditorTools.QuickDuelBuild.BuildWindows
+          allowDirtyBuild: true
+      - name: Check the player was produced
+        run: test -f Build/QuickDuel/QuickDuel.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuickDuel-Windows
+          path: Build/QuickDuel
+          retention-days: 7
