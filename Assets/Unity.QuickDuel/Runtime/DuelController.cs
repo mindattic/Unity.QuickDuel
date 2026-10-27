@@ -16,7 +16,7 @@ namespace Unity.QuickDuel
         // Replaced by tests to shorten a round; applies from the next BeginRound.
         public DuelSettings Settings
         {
-            get => settings ?? (settings = TuningStore.Profile.Duel.ToSettings());
+            get => settings ?? (settings = TuningStore.Profile.Duel.ToLocalSettings());
             set => settings = value;
         }
 

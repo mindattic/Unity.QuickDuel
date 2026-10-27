@@ -48,6 +48,8 @@ namespace Unity.QuickDuel.Core
         public double CountdownSeconds { get; set; }
         public double MinStandoffSeconds { get; set; }
         public double MaxStandoffSeconds { get; set; }
+        // How long after the cue a round with no strike gives up (NoStrike); PositiveInfinity for never, as a local round
+        // waits for the first strike like the original's action phase (DuelTuning.ToLocalSettings, UQD-T68).
         public double StrikeTimeoutSeconds { get; set; }
 
         // How long to wait after the first strike for a later-delivered input event that happened earlier.

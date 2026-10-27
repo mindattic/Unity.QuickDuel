@@ -50,6 +50,10 @@ namespace Unity.QuickDuel.Core.Tests
             Assert.That(p.Duel.MinStandoffSeconds, Is.EqualTo(3.0));
             Assert.That(p.Duel.MaxStandoffSeconds, Is.EqualTo(6.5));
             Assert.That(p.Duel.StrikeTimeoutSeconds, Is.EqualTo(3.0));
+            Assert.That(p.Duel.ToSettings().StrikeTimeoutSeconds, Is.EqualTo(3.0), "online rounds give up");
+            Assert.That(p.Duel.ToLocalSettings().StrikeTimeoutSeconds, Is.EqualTo(double.PositiveInfinity),
+                "a local round waits for the first strike, as gameclock_action did (UQD-T68)");
+            Assert.That(p.Duel.ToLocalSettings().CountdownSeconds, Is.EqualTo(p.Duel.CountdownSeconds));
             Assert.That(p.Duel.SettleSeconds, Is.EqualTo(0.05));
             Assert.That((p.Ai.Easy.Min, p.Ai.Easy.Max), Is.EqualTo((0.45, 0.70)));
             Assert.That((p.Ai.Normal.Min, p.Ai.Normal.Max), Is.EqualTo((0.30, 0.45)));

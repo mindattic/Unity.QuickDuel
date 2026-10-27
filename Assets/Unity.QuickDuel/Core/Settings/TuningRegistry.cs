@@ -165,6 +165,17 @@ namespace Unity.QuickDuel.Core
         // How long to wait after the first strike for a later-delivered input event that happened earlier.
         public double SettleSeconds { get; private set; }
 
+        // A local round's settings (MatchSession, DuelController): the same clock with no strike timeout, as
+        // gameclock_action counted until someone struck and never gave up (UQD-T68). The timeout is online's alone,
+        // where a peer can vanish.
+        public DuelSettings ToLocalSettings()
+        {
+            var settings = ToSettings();
+            settings.StrikeTimeoutSeconds = double.PositiveInfinity;
+            return settings;
+        }
+
+        // An online round's settings (OnlineDuelHost, OnlineDuelClient): the strike timeout applies.
         public DuelSettings ToSettings() => new DuelSettings
         {
             CountdownSeconds = CountdownSeconds,

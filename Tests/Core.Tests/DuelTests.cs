@@ -16,6 +16,22 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void A_local_round_waits_for_the_first_strike_with_the_count_running()
+        {
+            // gameclock_action has no timeout: the action counts until someone strikes (UQD-T68).
+            var duel = new Duel(TestTuning.Profile.Duel.ToLocalSettings(), new Random(7));
+            duel.Begin(0);
+            var cue = duel.CueAt;
+            duel.Tick(cue + 60);
+            Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Strike), "a minute on, still waiting");
+            Assert.That(duel.ReactionCount(cue + 60), Is.EqualTo(ReactionCounter.Count(60)), "the count runs on uncapped");
+            duel.Strike(Side.Right, cue + 61);
+            duel.Tick(cue + 62);
+            Assert.That(duel.Phase, Is.EqualTo(DuelPhase.Resolved));
+            Assert.That(duel.Result.Winner, Is.EqualTo(Side.Right));
+        }
+
+        [Test]
         public void Cue_falls_after_countdown_inside_the_standoff_window()
         {
             for (var seed = 0; seed < 200; seed++)

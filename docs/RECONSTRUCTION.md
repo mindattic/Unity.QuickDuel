@@ -36,6 +36,7 @@ updated: 2026-10-26
 | Premature strike | `action_attack` during `drumroll`: the striker loses outright (`reaction_time = opponent ART + 1 to 50`), "Premature Strike!" shown | Early strike loses; an Android taunt line drawn centred where "Premature Strike!" was, white Old English (UQD-T6, UQD-T39) |
 | Strike during `countdown` | Ignored (no handler outside `drumroll` and `action`) | Fixed to match (UQD-T22) |
 | Winner | Lower `reaction_time + reaction_penalty`; equal is a draw (nothing happens) | `DuelJudge` (lower wins, tie scores nobody) |
+| No strike | `action` counts until someone strikes; no timeout | Matches locally (UQD-T68: `DuelTuning.ToLocalSettings`, no timeout); online rounds give up after `strikeTimeoutSeconds` (3 s), the rebuild's own |
 | Match end | An HP bar per side, damage from the reaction gap; 0 HP goes to `gameover` or `victory` | Best of 3 (deliberate), then the victory or game over screen under the full loading image (UQD-T48) |
 
 ### 1.2 Input (`obj_game`)

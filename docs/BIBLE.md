@@ -103,7 +103,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Ready` (the startup) | `StartupSeconds` (3) from the scene's start, or from the round transition's image being gone; a click (or a pad's South) skips it | nothing new: the fighters fade in idle under the fading loading image (`DuelStartup`, `RoundStartup`; online, until the host's Space / Start) |
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
-| `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
+| `Strike` | until the first strike settles; a local round waits as long as it takes, as `gameclock_action` did (UQD-T68), an online one gives up after `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
 | `Resolved` | until the next round | slash, the loser falls; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the loser's weapon thrown spinning to land with a hit-ground sound; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
@@ -117,7 +117,7 @@ means before it; null means no strike). In order:
    Local play passes a floor of 0, since its strikes are real input events; the floor exists for online
    reports.
 2. **EarlyStrike** — a negative reaction loses; if both struck early, the earlier one loses.
-3. **NoStrike** — nobody struck before the timeout. Nobody scores.
+3. **NoStrike** — online only: nobody struck before the timeout. Nobody scores. A local round has no timeout (UQD-T68).
 4. **Tie** — identical reactions. Nobody scores.
 5. **FasterStrike** — the lower reaction wins; a lone striker wins.
 
