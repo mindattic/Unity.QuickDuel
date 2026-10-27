@@ -377,7 +377,9 @@ namespace Unity.QuickDuel.Tests
             yield return new WaitForSecondsRealtime(1f);
             Assert.That(view.Motion(Side.Left).XFraction, Is.EqualTo(0.75).Within(0.01), "the winner stops on the loser's mark");
             Assert.That(view.FighterShows(Side.Left), Is.SameAs(view.FighterIn(Side.Left).Attack[3]), "the strip holds its last frame");
-            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[3]));
+            // The match goes on after this first round, so the loser is held on its first defeat frame (UQD-T64).
+            Assert.That(view.IsKillingBlow, Is.False);
+            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[0]), "held: the match goes on");
             var stage = view.Root.Q("Stage").worldBound;
             Assert.That(view.FighterElement(Side.Left).worldBound.center.x - stage.xMin, Is.EqualTo(stage.width * 0.75f).Within(3f));
             Assert.That(view.FighterElement(Side.Right).worldBound.center.x - stage.xMin, Is.EqualTo(stage.width * 0.5f).Within(3f));
@@ -385,7 +387,7 @@ namespace Unity.QuickDuel.Tests
 
             yield return DuelSceneTests.WaitUntil(() => view.FighterShows(Side.Left) == view.FighterIn(Side.Left).Idle, 4f);
             Assert.That(view.Motion(Side.Left).PoseSeconds, Is.GreaterThanOrEqualTo(FighterMotion.WinnerIdleAfterSeconds));
-            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[3]), "the loser stays down");
+            Assert.That(view.FighterShows(Side.Right), Is.SameAs(view.FighterIn(Side.Right).Defeat[0]), "the loser stays down, held on its first frame (UQD-T64)");
 
             Assert.That(controller.BeginRound(), Is.True);
             yield return null;

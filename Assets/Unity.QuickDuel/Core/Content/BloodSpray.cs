@@ -16,6 +16,8 @@ namespace Unity.QuickDuel.Core
     //               if (y > room_height + sprite_height) instance_destroy()
     //   the emitter is destroyed when the loading fade that follows the 3 s aftermath has covered the screen
     //   (obj_fade_gamescreen, 0.005 alpha a step); drops already in the air fall on.
+    //   the killing blow ends it sooner: obj_player's Animation End for a defeated fighter with no HP left destroys every
+    //   blood emitter (with(obj_blood_emitter) instance_destroy()) once its defeat strip has played, 40 steps on (UQD-T64).
     //
     // Steps are the aftermath's 60 a second (room_speed = normalFPS); the caller counts them off the clock. Positions are
     // the original's room pixels, x right and y down, 640 x 480.
@@ -52,6 +54,7 @@ namespace Unity.QuickDuel.Core
         private readonly Random random;
         private readonly List<BloodDrop> drops = new List<BloodDrop>();
         private bool stopped;
+        private int? lastSpurtTick;
 
         public BloodSpray(Random random = null)
         {
@@ -65,7 +68,7 @@ namespace Unity.QuickDuel.Core
         public IReadOnlyList<BloodDrop> Drops => drops;
 
         // Whether the emitter still spurts.
-        public bool Emitting => !stopped && Tick < EmitTicks;
+        public bool Emitting => !stopped && Tick < EmitTicks && (!lastSpurtTick.HasValue || Tick <= lastSpurtTick.Value);
 
         // Every drop it has spurted.
         public int Spurted { get; private set; }
@@ -75,6 +78,10 @@ namespace Unity.QuickDuel.Core
 
         // The emitter is destroyed (the next round has begun); drops in the air fall on.
         public void Stop() => stopped = true;
+
+        // The emitter is destroyed at the end of step `tick`, after that step's spurt: the killing blow's defeat strip
+        // reaching its Animation End (FighterMotion.StripTicks).
+        public void StopAfter(int tick) => lastSpurtTick = tick;
 
         // Runs the spray on to `tick` steps after it began; earlier ticks do nothing.
         public void AdvanceTo(int tick)

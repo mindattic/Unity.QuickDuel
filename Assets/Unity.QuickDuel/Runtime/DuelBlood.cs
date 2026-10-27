@@ -136,6 +136,9 @@ namespace Unity.QuickDuel
                 return;
             Spray?.Stop();
             Spray = new BloodSpray(random);
+            // The killing blow's defeat strip ends the spray at its Animation End (UQD-T64).
+            if (verdict.Winner.HasValue && view.IsKillingBlow)
+                Spray.StopAfter(FighterMotion.StripTicks);
             spraySince = TickNow;
             Advance();
             field.Spill();

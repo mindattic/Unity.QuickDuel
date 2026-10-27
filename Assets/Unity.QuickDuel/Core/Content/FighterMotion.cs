@@ -32,7 +32,9 @@ namespace Unity.QuickDuel.Core
     //   set_state_attacking x = room_width / 2, attack strip; obj_player then steps
     //                       x += 1 + 0.1 * (right_position_idle - x) while short of it (facing right)
     //   set_state_defeat    x = room_width / 2, defeat strip
-    //   obj_player          image_speed = 0.1 at room_speed normalFPS 60; Animation End holds the strips on frame 3
+    //   obj_player          image_speed = 0.1 at room_speed normalFPS 60; Animation End holds the strips on frame 3;
+    //                       a defeated fighter with HP left is held on frame 0 every step (if(HP > 0) image_index = 0),
+    //                       so only the killing blow plays the whole defeat strip (UQD-T64)
     //   obj_gameclock       alarm[0] = 3 * room_speed after the strike: the winner's sprite goes back to idle
     //
     // Everything is timed by the clock, never by the rendered frame (UQD-LAW-2): the creep runs at the original's
@@ -60,6 +62,9 @@ namespace Unity.QuickDuel.Core
         public const double AnimationSpeed = 0.1;
         public const int StripFrames = 4;
 
+        // 60 fps steps a strip takes to reach its Animation End: 4 frames at a tenth of a frame a step.
+        public const int StripTicks = 40;
+
         // obj_gameclock's alarm[0]: three seconds after the strike the winner returns to its idle sprite.
         public const double WinnerIdleAfterSeconds = 3;
 
@@ -71,6 +76,10 @@ namespace Unity.QuickDuel.Core
 
         public Side Side { get; }
         public FighterPose Pose { get; private set; }
+
+        // Defeated by the killing blow: the round that decides the match, standing in for the original's HP reaching 0
+        // (best of 3 replaces the HP bars). Only then does the defeat strip play through; otherwise it holds frame 0.
+        public bool KillingBlow { get; private set; }
 
         // Where the fighter's centre stands, in the original room's pixels (0 to 640).
         public double X { get; private set; }
@@ -93,8 +102,13 @@ namespace Unity.QuickDuel.Core
         // set_state_attacking: to the middle, then dashing on through to where the loser stood.
         public void Attack() => Enter(FighterPose.Attacking, RoomWidth / 2);
 
-        // set_state_defeat: to the middle, playing the defeat strip.
-        public void Defeat() => Enter(FighterPose.Defeated, RoomWidth / 2);
+        // set_state_defeat: to the middle in the defeat strip, played through only for the killing blow (the round that
+        // decides the match) and otherwise held on its first frame, as obj_player held a loser with HP left.
+        public void Defeat(bool killingBlow)
+        {
+            Enter(FighterPose.Defeated, RoomWidth / 2);
+            KillingBlow = killingBlow;
+        }
 
         // While the cue is up (gameclock_action) a running fighter creeps toward the middle, 0.01 pixel a step.
         public void Creep(double seconds)
@@ -129,7 +143,18 @@ namespace Unity.QuickDuel.Core
         }
 
         // The strip frame on screen (0 for the single-frame idle and run sprites).
-        public int Frame => Sprite == FighterSprite.Attack || Sprite == FighterSprite.Defeat ? StripFrame(PoseSeconds) : 0;
+        public int Frame
+        {
+            get
+            {
+                switch (Sprite)
+                {
+                    case FighterSprite.Attack: return StripFrame(PoseSeconds);
+                    case FighterSprite.Defeat: return KillingBlow ? StripFrame(PoseSeconds) : 0;
+                    default: return 0;
+                }
+            }
+        }
 
         // A strip's frame `seconds` after it began: a new frame every 10 steps, held on the last.
         public static int StripFrame(double seconds) => Math.Min(StripFrames - 1, (int)(Ticks(seconds) * AnimationSpeed));
@@ -155,6 +180,7 @@ namespace Unity.QuickDuel.Core
             Pose = pose;
             X = x;
             PoseSeconds = 0;
+            KillingBlow = false;
         }
     }
 }

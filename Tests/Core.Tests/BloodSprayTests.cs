@@ -33,6 +33,20 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
+        public void The_killing_blow_destroys_the_emitter_when_the_defeat_strip_ends()
+        {
+            // obj_player's Animation End: with(obj_blood_emitter) instance_destroy() for a loser with no HP left (UQD-T64).
+            var spray = new BloodSpray(new Random(3));
+            spray.StopAfter(FighterMotion.StripTicks);
+            spray.AdvanceTo(FighterMotion.StripTicks);
+            Assert.That(spray.Spurted, Is.EqualTo(FighterMotion.StripTicks / 2), "every 2 steps up to and including step 40");
+            Assert.That(spray.Emitting, Is.True, "the spurt on the strip's last step still comes");
+            spray.AdvanceTo(FighterMotion.StripTicks + 10);
+            Assert.That(spray.Spurted, Is.EqualTo(FighterMotion.StripTicks / 2));
+            Assert.That(spray.Emitting, Is.False);
+        }
+
+        [Test]
         public void Stopping_ends_the_spurts_but_the_drops_fall_on_and_off_the_screen()
         {
             var spray = new BloodSpray(new Random(2));

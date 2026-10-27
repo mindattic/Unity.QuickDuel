@@ -90,7 +90,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 | `gameclock_clash`, `action_clash` | dropped |
 | `action_attack`, `determine_winner` | built as `Duel.Strike`, `DuelJudge` (the early-strike rule matches; the clash branch dropped) |
 | `add_reaction`, `calculate_art`, `random_luck` | dropped (adaptive AI replaced by `AiOpponent` ranges) |
-| `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | built as `FighterMotion` (idle UQD-T34; running, attacking and defeat UQD-T35); `set_state_action` is dead code (never called) and is not rebuilt |
+| `set_state_idle`, `_running`, `_action`, `_attacking`, `_defeat` | built as `FighterMotion` (idle UQD-T34; running, attacking and defeat UQD-T35; the defeat strip held on its first frame but for the killing blow, UQD-T64); `set_state_action` is dead code (never called) and is not rebuilt |
 | `spawn_weapons` | built (UQD-T41, `WeaponToss`) |
 | `load_arenas`, `choose_random_arena`, `setup_arena_properties` | `load_arenas` is `Data/assets.json`'s arenas, `choose_random_arena` is `ArenaDraw` (once per match as the original's once per game, all 11, UQD-T33, UQD-T63); `setup_arena_properties` is the manifest's per-arena `ambient`, played by `DuelAmbient` (UQD-T49) |
 | `load_characters`, `choose_opponent`, `set_character_description` | `load_characters` is `Data/assets.json`'s fighters (name and sprites only), `choose_opponent` is `FighterDraw` (both seats, drawn per match, since character select is dropped) (UQD-T34); stats, skills, portraits and descriptions dropped |

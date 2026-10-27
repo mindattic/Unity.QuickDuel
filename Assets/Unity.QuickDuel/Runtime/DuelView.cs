@@ -233,17 +233,22 @@ namespace Unity.QuickDuel
             rightReaction.text = "";
         }
 
+        // Whether the round just judged decided the match: the stand-in for the original's HP reaching 0 (UQD-T64). The
+        // match has recorded the round by the time it is announced, locally and online.
+        public bool IsKillingBlow => controller.Match != null && controller.Match.IsOver;
+
         private void OnResolved(DuelResult result)
         {
             leftReaction.text = FormatReaction(result.LeftReaction);
             rightReaction.text = FormatReaction(result.RightReaction);
             // determine_winner: the winner attacks, drawn in front (depth -1), and the loser is defeated; a draw moves no one.
+            // The loser's defeat strip plays through only on the killing blow, the round that decides the match.
             if (result.Winner.HasValue)
             {
                 var winner = result.Winner.Value == Side.Left ? left : right;
                 var loser = winner == left ? right : left;
                 winner.Motion.Attack();
-                loser.Motion.Defeat();
+                loser.Motion.Defeat(IsKillingBlow);
                 winner.Root.BringToFront();
                 winner.Draw();
                 loser.Draw();

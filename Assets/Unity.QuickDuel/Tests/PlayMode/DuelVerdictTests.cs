@@ -84,6 +84,28 @@ namespace Unity.QuickDuel.Tests
             yield return null;
         }
 
+        // obj_player (UQD-T64): a loser with HP left is held on the first defeat frame; only the killing blow, here the
+        // round that decides the match, plays the whole strip, and its Animation End destroys the blood emitter.
+        [UnityTest]
+        public IEnumerator OnlyTheKillingBlowPlaysTheWholeDefeatStripAndEndsTheBlood()
+        {
+            var view = controller.GetComponent<DuelView>();
+            var blood = controller.GetComponent<DuelBlood>();
+            Assert.That(session.SetMode(DuelMode.VsAiNormal), Is.True);
+            yield return LeftWinsARound();
+            Assert.That(view.IsKillingBlow, Is.False);
+            yield return new WaitForSecondsRealtime(1f);
+            Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Defeated));
+            Assert.That(view.Motion(Side.Right).Frame, Is.Zero, "held: the match goes on");
+            Assert.That(blood.Spray.Emitting, Is.True, "the blood runs on until the loading fade");
+
+            yield return LeftWinsARound();
+            Assert.That(view.IsKillingBlow, Is.True);
+            yield return new WaitForSecondsRealtime(1f);
+            Assert.That(view.Motion(Side.Right).Frame, Is.EqualTo(FighterMotion.StripFrames - 1), "the killing blow plays through");
+            Assert.That(blood.Spray.Emitting, Is.False, "the strip's end destroyed the emitter");
+        }
+
         [UnityTest]
         public IEnumerator AWonMatchCutsToVictoryUnderTheFullImageAndContinueGoesToTheMenu()
         {

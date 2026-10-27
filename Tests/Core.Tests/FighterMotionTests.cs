@@ -92,17 +92,33 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
-        public void The_loser_stands_at_the_middle_playing_the_defeat_strip()
+        public void The_killing_blows_loser_stands_at_the_middle_playing_the_whole_defeat_strip()
         {
             var loser = new FighterMotion(Side.Right);
             loser.Run();
-            loser.Defeat();
+            loser.Defeat(killingBlow: true);
             Assert.That(loser.X, Is.EqualTo(320));
             Assert.That(loser.Sprite, Is.EqualTo(FighterSprite.Defeat));
+            loser.Advance(20 / 60.0);
+            Assert.That(loser.Frame, Is.EqualTo(2));
             loser.Advance(10);
             Assert.That(loser.X, Is.EqualTo(320));
             Assert.That(loser.Sprite, Is.EqualTo(FighterSprite.Defeat), "the loser never gets up");
             Assert.That(loser.Frame, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void A_loser_with_the_match_still_open_is_held_on_the_first_defeat_frame()
+        {
+            // obj_player: if(HP > 0) image_index = 0 every step while defeated (UQD-T64).
+            var loser = new FighterMotion(Side.Left);
+            loser.Defeat(killingBlow: false);
+            Assert.That(loser.X, Is.EqualTo(320));
+            Assert.That(loser.Sprite, Is.EqualTo(FighterSprite.Defeat));
+            loser.Advance(10);
+            Assert.That(loser.Frame, Is.Zero);
+            loser.Idle();
+            Assert.That(loser.KillingBlow, Is.False);
         }
 
         [Test]

@@ -222,9 +222,13 @@ the stats, skills and portraits in the same script are not read. `AssetManifest.
 - **Fixed defect**: `obj_player`'s dash for a winner facing left tests `x < right_position_idle` instead of
   `x > left_position_idle`, so the right-hand winner never stops and drifts on to 10 pixels past the left mark; the
   rebuild mirrors the left-hand winner's dash and stops it on the mark.
-- **Deliberate deviation**: the original held a round's loser on the first defeat frame while it had HP left and
-  played the whole strip only for the killing blow; the rebuild has no HP ([§3](#UQD-§3)), so every round's loser
-  plays the whole defeat strip, in place of the toppling box it had before.
+- **The killing blow, matches** (UQD-T64): the original held a round's loser on the first defeat frame while it had
+  HP left (`if(HP > 0) image_index = 0` every step) and played the whole strip only for the killing blow, whose
+  Animation End destroyed the blood emitter. Best of 3 stands in for HP ([§3](#UQD-§3)), so the round that decides the
+  match is the killing blow: its loser plays the whole defeat strip and the blood stops when the strip ends (40 steps,
+  `FighterMotion.StripTicks`, `BloodSpray.StopAfter`); every other round's loser is held on the strip's first frame and
+  the blood runs on until the loading fade. (UQD-T35 had played the whole strip every round; restored to the original
+  under the faithful-port rule.)
 
 ### 4.6 Intro and menu flow {#UQD-§4.6}
 The game runs three scenes in the order `BuildScenes` keeps them: `Intro.unity`, `MainMenu.unity`, `Duel.unity`, each
