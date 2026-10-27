@@ -104,7 +104,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
-| `Resolved` | until the next round | slash, the loser falls, reaction times in ms; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the loser's weapon thrown spinning to land with a hit-ground sound; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
+| `Resolved` | until the next round | slash, the loser falls; blood spurting from the centre, 6 to 12 splatters and ten white flashes after any strike; the loser's weapon thrown spinning to land with a hit-ground sound; the winner's name and Wins! on the loser's side with the winner's number sliding away from the loser, or a centred premature-strike taunt; a headline only for a tie, nobody striking or a forfeit |
 
 The cue time `CueAt` is fixed when the round begins. After the first strike the round waits
 `SettleSeconds` (50 ms) for a later-delivered input event that happened earlier, then resolves.
@@ -455,8 +455,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **The first strike, matches**: in the original the first strike ends the action (`mode = "aftermath"`), so the
     number stops there; the rebuild's Strike phase waits `SettleSeconds` (or the second strike) before its verdict, and
     the count is frozen from the first strike all the same.
-  - **The cue moved up, deviation**: the red "!" (the rebuild's own, see the cue above) sat where the count is drawn,
-    so it now sits on Get Ready's line, 44 original pixels above, leaving the count where the original drew it.
+  - **The cue, matches** (UQD-T73): the original's cue is the backdrop's invert and the unsheath alone; the red "!" the
+    rebuild had drawn over it is gone.
 - ✅ Winner banner and sliding reaction (UQD-T39; `VerdictBannerTests`, `DuelViewTests`, `DuelTauntTests`): in the
   aftermath `obj_gameclock` draws, above the loser's idle mark (`right_position_idle` when the left won,
   `left_position_idle` otherwise), the winner's `character_name` in `fnt_oldenglish_small` at `room_height/2 - 80` over
@@ -468,8 +468,9 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   its fade (`DuelController.ReactionCountSlide`; online the host's verdict sets the direction). A premature strike draws
   its line centred on that same `room_height/2 - 60`, white, `fnt_oldenglish` outlined 1 (`DuelTaunt`). The headline
   ("Left wins") is no longer drawn over either; it stays only for the rebuild's own outcomes the original never drew (a
-  tie, nobody striking, a forfeit) and for "..." while an online verdict is on its way. The per-side reaction times under
-  the fighters stay, the rebuild's own.
+  tie, nobody striking, a forfeit) and for "..." while an online verdict is on its way. The per-side reaction times the
+  rebuild had drawn under the fighters are gone (UQD-T73): both sides' `reaction_time` showed only on F12's debug
+  overlay (`DuelDebugOverlay`), and the scoreboard keeps each side's best.
   - **Taunt wording, deviation**: the GameMaker build's line is always "Premature Strike!"; the rebuild keeps the
     Android build's ten taunts (`tuning.json` `taunts`, which include "Premature Strike"), drawn in its place.
   - **The slide's start, matches**: the original's aftermath, its fade and its slide all begin at the first strike; the

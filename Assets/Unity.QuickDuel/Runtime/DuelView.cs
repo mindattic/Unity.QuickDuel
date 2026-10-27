@@ -57,8 +57,6 @@ namespace Unity.QuickDuel
         // The winner's name, 20 original pixels above "Wins!".
         private static readonly float WinnerNameY = BannerY + VerdictBanner.NameAboveBanner * PixelScale;
 
-        // Below the fighters' feet (their 128-pixel sprites are centred on FighterY).
-        private const float ReactionY = -370f;
 
         // Shown behind the arena art, and in its place in a scene that carries no arenas.
         private static readonly Color Paper = new Color(0.93f, 0.88f, 0.78f);
@@ -82,13 +80,10 @@ namespace Unity.QuickDuel
         private OutlinedText getReady;
         private OutlinedText countdown;
         private OutlinedText counter;
-        private OutlinedText cue;
         private OutlinedText headline;
         private OutlinedText winnerName;
         private OutlinedText wins;
         private OutlinedText prompt;
-        private OutlinedText leftReaction;
-        private OutlinedText rightReaction;
         private float letterbox;
         private bool inverted;
         private DuelFade fade;
@@ -139,7 +134,6 @@ namespace Unity.QuickDuel
 
         // The alpha the countdown's number is drawn at: 1 as each of 3, 2, 1 appears, fading 0.02 a 60 fps step.
         public float CountdownAlpha => IsVisible(countdown) ? countdown.style.opacity.value : 0f;
-        public string CueText => IsVisible(cue) ? cue.text : "";
 
         // gameclock_action's counting-up number in the centre while the cue is up (UQD-T38): milliseconds since the cue,
         // frozen at the first strike; empty when none is drawn.
@@ -160,7 +154,6 @@ namespace Unity.QuickDuel
         public Side? WinsSide { get; private set; }
         public string HeadlineText => IsVisible(headline) ? headline.text : "";
         public string PromptText => IsVisible(prompt) ? prompt.text : "";
-        public string ReactionText(Side side) => (side == Side.Left ? leftReaction : rightReaction).text;
 
         // What that fighter is doing, and where it stands as a fraction of the stage width.
         public FighterMotion Motion(Side side) => (side == Side.Left ? left : right).Motion;
@@ -228,8 +221,6 @@ namespace Unity.QuickDuel
             right.Motion.Idle();
             left.Draw();
             right.Draw();
-            leftReaction.text = "";
-            rightReaction.text = "";
         }
 
         // Whether the round just judged decided the match: the stand-in for the original's HP reaching 0 (UQD-T64). The
@@ -238,8 +229,6 @@ namespace Unity.QuickDuel
 
         private void OnResolved(DuelResult result)
         {
-            leftReaction.text = FormatReaction(result.LeftReaction);
-            rightReaction.text = FormatReaction(result.RightReaction);
             // determine_winner: the winner attacks, drawn in front (depth -1), and the loser is defeated; a draw moves no one.
             // The loser's defeat strip plays through only on the killing blow, the round that decides the match.
             if (result.Winner.HasValue)
@@ -299,7 +288,6 @@ namespace Unity.QuickDuel
             letterboxBottom.style.height = LetterboxHeight * letterbox;
 
             SetInverted(phase == DuelPhase.Strike);
-            SetVisible(cue, phase == DuelPhase.Strike);
 
             // gameclock_action (UQD-T38): ceil(count) at 1 ms a tick from the cue, read off the clock; the first strike
             // freezes it, and it fades from there at 0.003 a 60 fps step.
@@ -476,9 +464,8 @@ namespace Unity.QuickDuel
             left = new Fighter(this, Side.Left);
             right = new Fighter(this, Side.Right);
 
-            // The aftermath's reaction count, in obj_gameclock's fnt_oldenglish.
-            leftReaction = CreateLabel("LeftReaction", OriginalType.Countdown, new Vector2(StageX(Side.Left), ReactionY));
-            rightReaction = CreateLabel("RightReaction", OriginalType.Countdown, new Vector2(StageX(Side.Right), ReactionY));
+            // The gamescreen drew no per-side reaction lines: obj_gameclock drew only the winner's sliding number, and both
+            // sides' reaction_time showed on F12's debug overlay alone (DuelDebugOverlay) (UQD-T73).
 
             letterboxTop = Box("LetterboxTop", Root, Color.black);
             letterboxTop.AddToClassList("letterbox");
@@ -500,10 +487,7 @@ namespace Unity.QuickDuel
             // obj_gameclock draws the action's count where the countdown's number was (room_height/2 - 16), in the same
             // Old English outlined 1.
             counter = CreateLabel("Counter", OriginalType.Countdown, new Vector2(0, CountdownY));
-            // Not the original's (its cue is the invert alone): kept at twice the banner's scale so it reads at once,
-            // on Get Ready's line so the count beneath it stays where the original drew it.
-            cue = CreateLabel("Cue", OriginalType.Banner, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale), CueRed, 2f);
-            cue.text = "!";
+            // The cue is the backdrop's invert and the unsheath alone, as the original's was: no mark is drawn (UQD-T73).
             headline = CreateLabel("Headline", OriginalType.Banner, new Vector2(0, 370f));
             // The aftermath's winner banner (UQD-T39), moved to the loser's side when shown, drawn at default_alpha.
             winnerName = CreateLabel("WinnerName", OriginalType.Name, new Vector2(0, WinnerNameY));
@@ -524,9 +508,6 @@ namespace Unity.QuickDuel
             parent.Add(element);
             return element;
         }
-
-        // The cue's colour (not the original's; see Build).
-        public static readonly Color CueRed = new Color(0.85f, 0.10f, 0.10f);
 
         // Outlined text (UQD-T36) in `style`'s original font and outline, centred on `position` (the stage-centre-relative
         // position, y up); 1600 wide so long text never clips. White unless `fill` says otherwise, as draw_text_outline;

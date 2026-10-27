@@ -102,7 +102,6 @@ namespace Unity.QuickDuel.Tests
             {
                 Assert.That(view.Motion(side).Pose, Is.EqualTo(FighterPose.Idle), "set_state_idle");
                 Assert.That(view.FighterShows(side), Is.SameAs(view.FighterIn(side).Idle));
-                Assert.That(view.ReactionText(side), Is.Empty, "reaction times cleared");
             }
             Assert.That(view.WinsText, Is.Empty);
             Assert.That(view.WinnerNameText, Is.Empty);

@@ -92,8 +92,8 @@ namespace Unity.QuickDuel.Online.Tests
                 () => $"both rounds never reached the cue (host {host.Phase}, client {client.Phase})");
             yield return null;   // the views redraw
             Assert.That(client.LocalSide, Is.EqualTo(Side.Right));
-            Assert.That(hostView.CueText, Is.EqualTo("!"));
-            Assert.That(clientView.CueText, Is.EqualTo("!"));
+            Assert.That(hostView.Inverted, Is.True, "the cue is the backdrop's invert");
+            Assert.That(clientView.Inverted, Is.True);
 
             // Each strikes on its own clock from its own cue; which key does not matter, the seat is the machine's.
             host.Strike(Side.Left, host.CueAt + 0.30);
@@ -109,7 +109,6 @@ namespace Unity.QuickDuel.Online.Tests
                 Assert.That(controller.Result.RightReaction, Is.EqualTo(0.20).Within(1e-6));
                 Assert.That(view.WinsText, Is.EqualTo("Wins!"));
                 Assert.That(view.WinsSide, Is.EqualTo(Side.Left), "the host's verdict puts the banner on the loser's side");
-                Assert.That(view.ReactionText(Side.Right), Is.EqualTo("200 ms"));
                 Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Defeated));
                 Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));
                 Assert.That(session.Match.WinsOf(Side.Right), Is.EqualTo(1));

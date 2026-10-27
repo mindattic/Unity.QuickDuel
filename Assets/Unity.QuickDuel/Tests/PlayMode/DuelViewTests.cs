@@ -55,7 +55,7 @@ namespace Unity.QuickDuel.Tests
             yield return null;
             Assert.That(view.Inverted, Is.True);
             Assert.That(IsInvertFilter(view.Backdrop), Is.True, "the cue inverts the whole backdrop");
-            Assert.That(view.CueText, Is.EqualTo("!"));
+            Assert.That(view.Root.Q("Cue"), Is.Null, "the cue is the invert alone (UQD-T73)");
             foreach (var side in new[] { Side.Left, Side.Right })
             {
                 Assert.That(view.Motion(side).Pose, Is.EqualTo(FighterPose.Running), "the cue sets both running");
@@ -83,8 +83,8 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.WinsSide, Is.EqualTo(Side.Left));
             Assert.That(view.WinnerNameText, Is.EqualTo(view.FighterIn(Side.Right).Name));
             Assert.That(view.HeadlineText, Is.Empty, "the original's banner says who won");
-            Assert.That(view.ReactionText(Side.Left), Is.EqualTo("312 ms"));
-            Assert.That(view.ReactionText(Side.Right), Is.EqualTo("187 ms"));
+            Assert.That(view.Root.Q("LeftReaction"), Is.Null, "no per-side reaction lines (UQD-T73)");
+            Assert.That(view.CounterText, Is.EqualTo(ReactionCounter.Count(0.187).ToString()), "the winner's frozen count is the original's only number");
             Assert.That(view.Motion(Side.Right).Pose, Is.EqualTo(FighterPose.Attacking));
             Assert.That(view.Motion(Side.Left).Pose, Is.EqualTo(FighterPose.Defeated));
             Assert.That(view.FighterIn(Side.Right).Attack, Has.Member(view.FighterShows(Side.Right)), "the winner plays its attack strip");
@@ -174,10 +174,6 @@ namespace Unity.QuickDuel.Tests
             var expected = (controller.Now - cue) * 1000;
             Assert.That(shown, Is.InRange(150, (int)expected + 1), "milliseconds since the cue, read off the clock");
             Assert.That(view.CounterAlpha, Is.EqualTo(1f), "drawn at default_alpha while it counts");
-            var counter = view.Root.Q<OutlinedText>("Counter");
-            var cueLabel = view.Root.Q<OutlinedText>("Cue");
-            yield return null;
-            Assert.That(cueLabel.worldBound.center.y, Is.LessThan(counter.worldBound.center.y), "the cue sits above the count");
             yield return new WaitForSecondsRealtime(0.1f);
             Assert.That(int.Parse(view.CounterText), Is.GreaterThan(shown), "it keeps counting");
             Screenshots.Capture("04b-strike-counter");
