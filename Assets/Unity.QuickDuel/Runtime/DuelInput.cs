@@ -6,14 +6,17 @@ namespace Unity.QuickDuel
 {
     // Two players on one machine: A / gamepad 1 south strike for the left duelist, L / gamepad 2 south
     // for the right. A mouse click or touchscreen press is also a left-side strike, matching the
-    // original single-player duel's click-to-strike (a holdover from its Android touch build). Space
-    // or Start begins the next round. Each strike carries its input event's own timestamp
-    // (CallbackContext.time, on the Time.realtimeSinceStartup timeline), so the frame that happens to
-    // process it doesn't change the reaction time.
+    // original single-player duel's click-to-strike (a holdover from its Android touch build). During the
+    // startup the click instead begins the round at once, as obj_game's global left press did (DuelStartup,
+    // UQD-T66), and so does a pad's South, the pad's stand-in for it. Online, the host's Space or Start
+    // begins the next round. Each strike carries its input event's own timestamp (CallbackContext.time, on
+    // the Time.realtimeSinceStartup timeline), so the frame that happens to process it doesn't change the
+    // reaction time.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelInput : MonoBehaviour
     {
         private DuelController controller;
+        private DuelStartup startup;
         private DuelFade fade;
         private DuelVerdict verdict;
         private InputAction leftKey;
@@ -28,6 +31,7 @@ namespace Unity.QuickDuel
         private void Awake()
         {
             controller = GetComponent<DuelController>();
+            startup = GetComponent<DuelStartup>();
 
             leftKey = new InputAction("LeftStrike", InputActionType.Button, "<Keyboard>/a");
             rightKey = new InputAction("RightStrike", InputActionType.Button, "<Keyboard>/l");
@@ -47,10 +51,17 @@ namespace Unity.QuickDuel
             leftKey.performed += ctx => { if (!UiFocus.IsTyping) controller.Strike(Side.Left, ctx.time); };
             rightKey.performed += ctx => { if (RightIsHuman && !UiFocus.IsTyping) controller.Strike(Side.Right, ctx.time); };
             padStrike.performed += OnPadStrike;
-            pointerStrike.performed += ctx => { if (!UiFocus.PointerOverUi) controller.Strike(Side.Left, ctx.time); };
-            // A Start press is "next round", unless Select is held with it — that chord is DuelQuit's.
+            pointerStrike.performed += ctx =>
+            {
+                if (UiFocus.PointerOverUi || Skipped()) return;
+                controller.Strike(Side.Left, ctx.time);
+            };
+            // Online only: the host's Start or Space begins the next round, unless Select is held with Start — that
+            // chord is DuelQuit's. A local round begins by itself (DuelStartup).
             nextRound.performed += ctx =>
             {
+                if (!controller.IsOnline)
+                    return;
                 if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
                     return;
                 if (ctx.control.device is Keyboard && UiFocus.IsTyping)
@@ -94,9 +105,14 @@ namespace Unity.QuickDuel
             nextRound.Dispose();
         }
 
+        // The startup's skip (obj_game's global left press in "startup"): true when it began the round.
+        private bool Skipped() => startup != null && startup.TrySkip();
+
         private void OnPadStrike(InputAction.CallbackContext ctx)
         {
             if (!ctx.ReadValueAsButton())
+                return;
+            if (SideOfGamepad(ctx.control.device).HasValue && Skipped())
                 return;
             var side = SideOfGamepad(ctx.control.device);
             if (side.HasValue && (side.Value == Side.Left || RightIsHuman))

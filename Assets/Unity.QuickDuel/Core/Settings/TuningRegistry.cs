@@ -152,9 +152,11 @@ namespace Unity.QuickDuel.Core
         };
     }
 
-    // The round's clock: the 3-2-1 countdown, the random drumroll, and how long a strike may take.
+    // The round's clock: the startup before it, the 3-2-1 countdown, the random drumroll, and how long a strike may take.
     public sealed class DuelTuning
     {
+        // obj_gameclock's startup_time: how long the startup runs before the countdown begins by itself (RoundStartup).
+        public double StartupSeconds { get; private set; }
         public double CountdownSeconds { get; private set; }
         public double MinStandoffSeconds { get; private set; }
         public double MaxStandoffSeconds { get; private set; }
@@ -176,6 +178,7 @@ namespace Unity.QuickDuel.Core
         {
             var tuning = new DuelTuning
             {
+                StartupSeconds = r.Number("startupSeconds", 0, 60),
                 CountdownSeconds = r.Number("countdownSeconds", 0, 60),
                 MinStandoffSeconds = r.Number("minStandoffSeconds", 0, 60),
                 MaxStandoffSeconds = r.Number("maxStandoffSeconds", 0, 60),

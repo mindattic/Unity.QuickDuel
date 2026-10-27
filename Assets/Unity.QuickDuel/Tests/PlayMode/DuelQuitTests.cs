@@ -74,7 +74,7 @@ namespace Unity.QuickDuel.Tests
         }
 
         [UnityTest]
-        public IEnumerator GamepadStartAloneStillBeginsARound()
+        public IEnumerator GamepadStartAloneNeitherLeavesNorBeginsALocalRound()
         {
             yield return Load();
             var pad = InputSystem.AddDevice<Gamepad>();
@@ -82,7 +82,7 @@ namespace Unity.QuickDuel.Tests
             yield return null;
 
             Assert.That(left, Is.Empty);
-            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Ready), "a local round's startup runs by itself (UQD-T66)");
         }
 
         [UnityTest]

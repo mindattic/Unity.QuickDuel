@@ -46,11 +46,15 @@ namespace Unity.QuickDuel.Core
         public const int Images = 14;
 
         private bool firstPass = true;
+        private readonly double fadeSpeed;
 
-        // The fade a room opens with: `image` (0 to 13 for spr_loading1 to 14) full, fading out.
-        public LoadingFade(int image)
+        // The fade a room opens with: `image` (0 to 13 for spr_loading1 to 14) full, fading out at `speed` a step
+        // (obj_fade_intro's 0.01 unless given; obj_fade_gamescreen fades its room in at RoundFade.FadeSpeed, 0.005).
+        public LoadingFade(int image, double speed = FadeSpeed)
         {
             if (image < 0 || image >= Images) throw new ArgumentOutOfRangeException(nameof(image), "There are 14 loading images.");
+            if (!(speed > 0) || speed > 1) throw new ArgumentOutOfRangeException(nameof(speed), "A fade moves more than nothing and at most all a step.");
+            fadeSpeed = speed;
             Image = image;
             Alpha = 1;
             Mode = LoadingFadeMode.FadeOut;
@@ -91,7 +95,7 @@ namespace Unity.QuickDuel.Core
                         Alpha = 0;
                         Image = random.Next(Images);
                     }
-                    if (Alpha < 1) Alpha += FadeSpeed;
+                    if (Alpha < 1) Alpha += fadeSpeed;
                     else Finished = true;
                     break;
                 default:
@@ -100,7 +104,7 @@ namespace Unity.QuickDuel.Core
                         firstPass = false;
                         Alpha = 1;
                     }
-                    if (Alpha > 0) Alpha -= FadeSpeed;
+                    if (Alpha > 0) Alpha -= fadeSpeed;
                     else Mode = LoadingFadeMode.Off;
                     break;
             }

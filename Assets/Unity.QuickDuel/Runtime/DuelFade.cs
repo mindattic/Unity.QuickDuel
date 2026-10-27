@@ -15,9 +15,10 @@ namespace Unity.QuickDuel
     // is drawn at depth -10000, over everything else on the panel, stretched over the whole screen as the original's
     // 640 x 480 room. A round begun before the fade is done (online, the host's Space) simply takes the image away.
     //
-    // Arriving from the intro (UQD-T44), the scene opens under the loading image the intro faded in (LoadingHandoff, the
-    // original's fade_asset) and fades it away at 0.01 a step, as obj_fade_mainmenu opened the main menu the intro led
-    // to; the Ready screen stands in for that menu until it is built (UQD-T45).
+    // Arriving from the main menu (or the verdict's Retry), the scene opens under the loading image that faded in there
+    // (LoadingHandoff, the original's fade_asset) and fades it away at obj_fade_gamescreen's 0.005 a step, as
+    // gameclock_startup's first pass turned that fade to "fadeout" from full (UQD-T66; it had faded at the menu's 0.01).
+    // The first round's startup counts under it from the scene's start (juststarted, DuelStartup).
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelFade : MonoBehaviour
     {
@@ -92,7 +93,7 @@ namespace Unity.QuickDuel
 
             if (LoadingHandoff.TryTake(out var image) && image >= 0 && image < LoadingFade.Images)
             {
-                arrival = new LoadingFade(image);
+                arrival = new LoadingFade(image, RoundFade.FadeSpeed);
                 arrivedAt = controller.Now;
                 arrivalSteps = 0;
                 ShowImage(image);

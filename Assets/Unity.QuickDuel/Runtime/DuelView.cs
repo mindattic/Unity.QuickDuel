@@ -79,7 +79,6 @@ namespace Unity.QuickDuel
         private VisualElement letterboxBottom;
         private Fighter left;
         private Fighter right;
-        private OutlinedText title;
         private OutlinedText getReady;
         private OutlinedText countdown;
         private OutlinedText counter;
@@ -325,12 +324,10 @@ namespace Unity.QuickDuel
             var headlined = aftermath && !VerdictBanner.ShowsWinner(verdict) && !VerdictBanner.ShowsPremature(verdict);
             SetVisible(headline, headlined);
             if (headlined) headline.text = verdict != null ? Headline(verdict, RightName) : AwaitingVerdictText;
-            SetVisible(title, phase == DuelPhase.Ready);
-            // The next round is offered once the loading fade has reset the battle (UQD-T42), not over the aftermath.
-            SetVisible(prompt, phase == DuelPhase.Ready || (resolved && !(fade != null && fade.Pending)));
-            prompt.text = controller.IsOnline ? OnlinePrompt(phase) : phase == DuelPhase.Ready
-                ? "Left: A / gamepad 1     Right: L / gamepad 2\nPress Space or Start to duel\nEsc / Select+Start: quit"
-                : "Press Space or Start for the next round\nEsc / Select+Start: quit";
+            // Online only (it has no original): the next round is offered once the loading fade has reset the battle
+            // (UQD-T42), not over the aftermath. A local round's startup runs by itself and says nothing (UQD-T66).
+            SetVisible(prompt, controller.IsOnline && (phase == DuelPhase.Ready || (resolved && !(fade != null && fade.Pending))));
+            if (controller.IsOnline) prompt.text = OnlinePrompt(phase);
 
             // gameclock_action's first pass: the cue sends both idle fighters to their run marks, and they creep while it
             // is up.
@@ -492,10 +489,9 @@ namespace Unity.QuickDuel
             letterboxBottom.style.bottom = 0;
             letterboxBottom.style.height = 0;
 
-            // The original's type (UQD-T36): banners and the countdown in Old English, the title outlined 2 like
-            // "Game Over", the prompt in the basic face the original's buttons and HUD used.
-            title = CreateLabel("Title", OriginalType.Title, new Vector2(0, 260f));
-            title.text = "QuickDuel";
+            // The original's type (UQD-T36): banners and the countdown in Old English, the online prompt in the basic
+            // face the original's buttons and HUD used. The gamescreen drew no title and no prompt: a local round's
+            // startup runs by itself (UQD-T66).
             countdown = CreateLabel("Countdown", OriginalType.Countdown, new Vector2(0, CountdownY));
             // obj_gameclock draws Get Ready 44 original pixels above the number (room_height/2 - 60 against - 16).
             getReady = CreateLabel("GetReady", OriginalType.Countdown, new Vector2(0, CountdownY + CountdownBanner.BannerAboveNumber * PixelScale));

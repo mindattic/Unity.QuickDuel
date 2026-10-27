@@ -29,7 +29,8 @@ namespace Unity.QuickDuel.Tests
         public IEnumerator ARoundPlaysThroughEveryPresentationBeat()
         {
             yield return null;
-            Assert.That(view.PromptText, Does.Contain("Space"));
+            Assert.That(view.PromptText, Is.Empty, "the gamescreen's startup says nothing (UQD-T66)");
+            Assert.That(view.Root.Q("Title"), Is.Null, "and draws no title");
             Screenshots.Capture("01-ready");
 
             controller.Settings = new DuelSettings

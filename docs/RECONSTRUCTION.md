@@ -27,7 +27,7 @@ updated: 2026-10-26
 
 | Phase (`mode`) | Original behaviour | Rebuild |
 | --- | --- | --- |
-| `startup` | 3 s (`startup_time = 3 * room_speed`) while the loading fade clears and both fighters fade in idle; the first key press skips to `countdown` | Ready phase, waits for Space / Start (deliberate), taken from the loading fade's reset on (UQD-T42) |
+| `startup` | 3 s (`startup_time = 3 * room_speed`) while the loading fade clears and both fighters fade in idle; the first key press skips to `countdown` | Matches (UQD-T66): `DuelStartup` begins the countdown 3 s (`startupSeconds`) after the image is gone, or the scene's start for the first round; a click (or pad South) during it, from the reset on, begins it at once |
 | `countdown` | 4 s (`countdown_time`): "Get Ready" for the first quarter, then 3, 2, 1 at 25%, 50%, 75%, a beep on each, each number fading at 0.02 alpha per tick | Matches: 4 s countdown, Get Ready above the number throughout, then 3-2-1 with a beep, each fading at 0.02 alpha a 60 fps step (UQD-T57, UQD-T37) |
 | `drumroll` | `irandom_range(3 * room_speed, 6.5 * room_speed)` ticks, drumroll sound, `obj_letterbox` closes in 1 px per tick to 12% of the height | Same 3 to 6.5 s, drumroll, letterbox |
 | `action` | Drumroll stops, unsheath sound, `arena.inverted = true` (blend-mode invert of the whole backdrop), fighters switch to run sprites, a counting-up number shows, the computer opponent strikes at `ART + irandom(-LCK, LCK)` ticks | Cue, a real colour invert of the arena backdrop (UQD-T33), unsheath, the counting-up `ceil(count)` in ms read off the event clock, frozen at the first strike and fading 0.003 a 60 fps step (UQD-T38), adaptive computer replaced by Easy / Normal / Hard ranges |
@@ -42,7 +42,7 @@ updated: 2026-10-26
 
 | Input | Original | Rebuild |
 | --- | --- | --- |
-| Space or left mouse | Strike for the left fighter in single player; skips `startup` | Space / Start next round; mouse and touch strike for the left duelist (UQD-T25) |
+| Space or left mouse | Strike for the left fighter in single player; skips `startup` | Mouse and touch strike for the left duelist (UQD-T25), and skip the startup (UQD-T66) |
 | Left / Right Ctrl | The two strikes in Versus | A / L, and one gamepad each (deliberate) |
 | F1 | Toggle fullscreen | Built (UQD-T50: `GameWindow` in every scene) |
 | F12 | Toggle the debug overlay (frame counter, both reaction numbers, fps) | Built as a developer toggle, off at start, editor and development builds only (UQD-T50: `DuelDebugOverlay`) |
@@ -214,6 +214,5 @@ best worked after UQD-T30.
 - Fighters are cosmetic, with no stats; the computer opponent has fixed Easy / Normal / Hard ranges, not an
   adaptive ART.
 - A match is best of 3, not HP.
-- The round waits at Ready for Space / Start rather than starting itself after 3 s.
 - Versus uses A / L and gamepads, not Left / Right Ctrl.
 - The original plays no music (its jukebox script is commented out), so none is added.

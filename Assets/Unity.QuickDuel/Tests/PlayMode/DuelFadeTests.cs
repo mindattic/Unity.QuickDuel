@@ -107,8 +107,9 @@ namespace Unity.QuickDuel.Tests
             Assert.That(view.WinsText, Is.Empty);
             Assert.That(view.WinnerNameText, Is.Empty);
             Assert.That(view.CounterText, Is.Empty);
-            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved), "the next round still waits for Space or Start");
-            Assert.That(view.PromptText, Does.Contain("next round"));
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved), "the next round waits for the startup");
+            Assert.That(controller.GetComponent<DuelStartup>().IsRunning, Is.True, "gameclock.mode = \"startup\" under the full image");
+            Assert.That(view.PromptText, Is.Empty);
 
             yield return At(RoundFade.ResetTick + 100);
             Assert.That(fade.Stage, Is.EqualTo(RoundFadeStage.FadingOut));

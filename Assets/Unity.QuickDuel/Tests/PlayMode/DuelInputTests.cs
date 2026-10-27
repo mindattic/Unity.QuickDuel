@@ -25,12 +25,14 @@ namespace Unity.QuickDuel.Tests
             controller.Settings = DuelSceneTests.FastSettings();
         }
 
+        // obj_game's global left press in the startup begins the round at once (UQD-T66).
         [UnityTest]
-        public IEnumerator SpaceBeginsARoundAndKeysStrikeByEventTime()
+        public IEnumerator AClickInTheStartupBeginsARoundAndKeysStrikeByEventTime()
         {
             yield return Load();
-            Press(keyboard.spaceKey);
-            Release(keyboard.spaceKey);
+            var mouse = InputSystem.AddDevice<Mouse>();
+            Press(mouse.leftButton);
+            Release(mouse.leftButton);
             yield return null;
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
 
@@ -47,11 +49,13 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.Result.RightReaction, Is.EqualTo(0.200).Within(1e-6));
         }
 
-        // UQD-T42: Space over the aftermath does nothing; once the loading fade has reset the battle it begins the next round.
+        // UQD-T42, UQD-T66: a click over the aftermath begins nothing; once the loading fade has reset the battle the
+        // startup runs, and a click skips it.
         [UnityTest]
-        public IEnumerator SpaceWaitsForTheLoadingFadeToResetTheBattle()
+        public IEnumerator AClickWaitsForTheLoadingFadeToResetTheBattle()
         {
             yield return Load();
+            var mouse = InputSystem.AddDevice<Mouse>();
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             var cue = controller.CueAt;
@@ -59,8 +63,8 @@ namespace Unity.QuickDuel.Tests
             controller.Strike(Side.Right, cue + 0.2);
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved));
 
-            Press(keyboard.spaceKey);
-            Release(keyboard.spaceKey);
+            Press(mouse.leftButton);
+            Release(mouse.leftButton);
             yield return null;
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Resolved), "not over the aftermath");
 
@@ -68,8 +72,8 @@ namespace Unity.QuickDuel.Tests
             controller.Clock = () => reset;
             yield return null;
             Assert.That(controller.GetComponent<DuelFade>().HasReset, Is.True);
-            Press(keyboard.spaceKey);
-            Release(keyboard.spaceKey);
+            Press(mouse.leftButton);
+            Release(mouse.leftButton);
             yield return null;
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
         }
@@ -80,9 +84,11 @@ namespace Unity.QuickDuel.Tests
             yield return Load();
             var pad1 = InputSystem.AddDevice<Gamepad>();
             var pad2 = InputSystem.AddDevice<Gamepad>();
-            Press(pad1.startButton);
-            Release(pad1.startButton);
+            // A pad's South skips the startup, as the click does (UQD-T66).
+            Press(pad1.buttonSouth);
+            Release(pad1.buttonSouth);
             yield return null;
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             var cue = controller.CueAt;
@@ -99,10 +105,7 @@ namespace Unity.QuickDuel.Tests
         {
             yield return Load();
             var mouse = InputSystem.AddDevice<Mouse>();
-            Press(keyboard.spaceKey);
-            Release(keyboard.spaceKey);
-            yield return null;
-            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
+            Assert.That(controller.BeginRound(), Is.True);
 
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             var cue = controller.CueAt;

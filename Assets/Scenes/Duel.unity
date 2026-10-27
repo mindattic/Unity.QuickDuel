@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &128820646
+--- !u!1 &752423793
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,160 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 128820649}
-  - component: {fileID: 128820648}
-  - component: {fileID: 128820647}
+  - component: {fileID: 752423797}
+  - component: {fileID: 752423796}
+  - component: {fileID: 752423795}
+  - component: {fileID: 752423794}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &752423794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752423793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db5a901dbab43234895a013e6bafc116, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Multiplayer::Unity.Multiplayer.NetBootstrap
+  topology: 0
+  address: 
+  port: 7777
+  transport: 0
+  tickRate: 30
+  maxPlayers: 2
+  serverName: 
+  gameVersion: 
+  reconnectGraceSeconds: 60
+  joinCodes: 1
+  rendezvousUrl: 
+  publicAddress: 
+  publicPort: 0
+  relayEnvironment: production
+  relayRegion: 
+  signInAtStartup: 0
+  conditions: 0
+  simulatedLatencyMs: 100
+  simulatedJitterMs: 10
+  simulatedPacketLossPercent: 2
+  displayName: 
+  playerColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  rememberPlayer: 1
+  prefabLists:
+  - {fileID: 11400000, guid: da5e4a2fc56216a428a8db34c06a28f2, type: 2}
+  autoStart: 0
+  serveWhenHeadless: 0
+  readCommandLine: 1
+  applyHeadlessSettings: 1
+  runServerPackage: 1
+--- !u!114 &752423795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752423793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Transports.UTP.UnityTransport
+  m_ProtocolType: 0
+  m_UseWebSockets: 0
+  m_UseEncryption: 0
+  m_MaxPacketQueueSize: 128
+  m_MaxPayloadSize: 6144
+  m_HeartbeatTimeoutMS: 500
+  m_ConnectTimeoutMS: 1000
+  m_MaxConnectAttempts: 60
+  m_DisconnectTimeoutMS: 30000
+  ConnectionData:
+    Address: 127.0.0.1
+    Port: 7777
+    WebSocketPath: /
+    ServerListenAddress: 
+    ClientBindPort: 0
+  DebugSimulator:
+    PacketDelayMS: 0
+    PacketJitterMS: 0
+    PacketDropRate: 0
+--- !u!114 &752423796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752423793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkManager
+  NetworkManagerExpanded: 0
+  NetworkConfig:
+    ProtocolVersion: 0
+    NetworkTransport: {fileID: 752423795}
+    PlayerPrefab: {fileID: 0}
+    Prefabs:
+      NetworkPrefabsLists:
+      - {fileID: 11400000, guid: 89b35ad04eded2240bfc2931006af9e5, type: 2}
+    TickRate: 30
+    ClientConnectionBufferTimeout: 10
+    ConnectionApproval: 0
+    ConnectionData: 
+    EnableTimeResync: 0
+    TimeResyncInterval: 30
+    EnsureNetworkVariableLengthSafety: 0
+    EnableSceneManagement: 1
+    ForceSamePrefabs: 1
+    RecycleNetworkIds: 1
+    NetworkIdRecycleDelay: 120
+    RpcHashSize: 0
+    LoadSceneTimeOut: 120
+    SpawnTimeout: 10
+    EnableNetworkLogs: 1
+    NetworkTopology: 0
+    UseCMBService: 0
+    AutoSpawnPlayerPrefabClientSide: 1
+    NetworkProfilingMetrics: 1
+    OldPrefabList: []
+  RunInBackground: 1
+  LogLevel: 1
+--- !u!4 &752423797
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752423793}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1068136962
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1068136965}
+  - component: {fileID: 1068136964}
+  - component: {fileID: 1068136963}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,21 +288,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &128820647
+--- !u!81 &1068136963
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 128820646}
+  m_GameObject: {fileID: 1068136962}
   m_Enabled: 1
---- !u!20 &128820648
+--- !u!20 &1068136964
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 128820646}
+  m_GameObject: {fileID: 1068136962}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -196,13 +347,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &128820649
+--- !u!4 &1068136965
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 128820646}
+  m_GameObject: {fileID: 1068136962}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
@@ -211,7 +362,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &556645731
+--- !u!1 &1608735324
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -219,175 +370,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 556645735}
-  - component: {fileID: 556645734}
-  - component: {fileID: 556645733}
-  - component: {fileID: 556645732}
-  m_Layer: 0
-  m_Name: NetworkManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &556645732
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556645731}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db5a901dbab43234895a013e6bafc116, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Multiplayer::Unity.Multiplayer.NetBootstrap
-  topology: 0
-  address: 
-  port: 7777
-  transport: 0
-  tickRate: 30
-  maxPlayers: 2
-  serverName: 
-  gameVersion: 
-  reconnectGraceSeconds: 60
-  joinCodes: 1
-  rendezvousUrl: 
-  publicAddress: 
-  publicPort: 0
-  relayEnvironment: production
-  relayRegion: 
-  signInAtStartup: 0
-  conditions: 0
-  simulatedLatencyMs: 100
-  simulatedJitterMs: 10
-  simulatedPacketLossPercent: 2
-  displayName: 
-  playerColor:
-    serializedVersion: 2
-    rgba: 4294967295
-  rememberPlayer: 1
-  prefabLists:
-  - {fileID: 11400000, guid: da5e4a2fc56216a428a8db34c06a28f2, type: 2}
-  autoStart: 0
-  serveWhenHeadless: 0
-  readCommandLine: 1
-  applyHeadlessSettings: 1
-  runServerPackage: 1
---- !u!114 &556645733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556645731}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Transports.UTP.UnityTransport
-  m_ProtocolType: 0
-  m_UseWebSockets: 0
-  m_UseEncryption: 0
-  m_MaxPacketQueueSize: 128
-  m_MaxPayloadSize: 6144
-  m_HeartbeatTimeoutMS: 500
-  m_ConnectTimeoutMS: 1000
-  m_MaxConnectAttempts: 60
-  m_DisconnectTimeoutMS: 30000
-  ConnectionData:
-    Address: 127.0.0.1
-    Port: 7777
-    WebSocketPath: /
-    ServerListenAddress: 
-    ClientBindPort: 0
-  DebugSimulator:
-    PacketDelayMS: 0
-    PacketJitterMS: 0
-    PacketDropRate: 0
---- !u!114 &556645734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556645731}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkManager
-  NetworkManagerExpanded: 0
-  NetworkConfig:
-    ProtocolVersion: 0
-    NetworkTransport: {fileID: 556645733}
-    PlayerPrefab: {fileID: 0}
-    Prefabs:
-      NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 89b35ad04eded2240bfc2931006af9e5, type: 2}
-    TickRate: 30
-    ClientConnectionBufferTimeout: 10
-    ConnectionApproval: 0
-    ConnectionData: 
-    EnableTimeResync: 0
-    TimeResyncInterval: 30
-    EnsureNetworkVariableLengthSafety: 0
-    EnableSceneManagement: 1
-    ForceSamePrefabs: 1
-    RecycleNetworkIds: 1
-    NetworkIdRecycleDelay: 120
-    RpcHashSize: 0
-    LoadSceneTimeOut: 120
-    SpawnTimeout: 10
-    EnableNetworkLogs: 1
-    NetworkTopology: 0
-    UseCMBService: 0
-    AutoSpawnPlayerPrefabClientSide: 1
-    NetworkProfilingMetrics: 1
-    OldPrefabList: []
-  RunInBackground: 1
-  LogLevel: 1
---- !u!4 &556645735
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556645731}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1159355849
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1159355867}
-  - component: {fileID: 1159355866}
-  - component: {fileID: 1159355865}
-  - component: {fileID: 1159355864}
-  - component: {fileID: 1159355863}
-  - component: {fileID: 1159355862}
-  - component: {fileID: 1159355861}
-  - component: {fileID: 1159355860}
-  - component: {fileID: 1159355859}
-  - component: {fileID: 1159355858}
-  - component: {fileID: 1159355857}
-  - component: {fileID: 1159355856}
-  - component: {fileID: 1159355855}
-  - component: {fileID: 1159355854}
-  - component: {fileID: 1159355853}
-  - component: {fileID: 1159355852}
-  - component: {fileID: 1159355851}
-  - component: {fileID: 1159355850}
+  - component: {fileID: 1608735343}
+  - component: {fileID: 1608735342}
+  - component: {fileID: 1608735341}
+  - component: {fileID: 1608735340}
+  - component: {fileID: 1608735339}
+  - component: {fileID: 1608735338}
+  - component: {fileID: 1608735337}
+  - component: {fileID: 1608735336}
+  - component: {fileID: 1608735335}
+  - component: {fileID: 1608735334}
+  - component: {fileID: 1608735333}
+  - component: {fileID: 1608735332}
+  - component: {fileID: 1608735331}
+  - component: {fileID: 1608735330}
+  - component: {fileID: 1608735329}
+  - component: {fileID: 1608735328}
+  - component: {fileID: 1608735327}
+  - component: {fileID: 1608735326}
+  - component: {fileID: 1608735325}
   m_Layer: 0
   m_Name: Duel
   m_TagString: Untagged
@@ -395,27 +396,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1159355850
+--- !u!114 &1608735325
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f5f0349deb0efac449a677acf8a55804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Online::Unity.QuickDuel.Online.OnlineDuelMenu
-  bootstrap: {fileID: 556645732}
+  bootstrap: {fileID: 752423794}
   duelPrefab: {fileID: 1509400829402567012, guid: 921ec5f4af09ae24b9028c0ecfc50f4e, type: 3}
---- !u!114 &1159355851
+--- !u!114 &1608735326
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94e132ac7b61d624daa4cc533b78158e, type: 3}
@@ -427,25 +428,25 @@ MonoBehaviour:
   slash: {fileID: 8300000, guid: 1ae6e585b1a719249bb5d09d0cffb909, type: 3}
   victory: {fileID: 8300000, guid: fac9becb8cbf46ef93df464ad5a2b52b, type: 3}
   defeat: {fileID: 8300000, guid: c91a3d22c4fd4377826109f71a2347d5, type: 3}
---- !u!114 &1159355852
+--- !u!114 &1608735327
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 75eec6bc89d63ca429e1f8d106026aae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelDebugOverlay
---- !u!114 &1159355853
+--- !u!114 &1608735328
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 978fcf6725ae5e947b90ebc650fb3130, type: 3}
@@ -458,38 +459,38 @@ MonoBehaviour:
   click: {fileID: 8300000, guid: 98794c45f5d82b640ad9c542f016495a, type: 3}
   menuScene: MainMenu
   duelScene: Duel
---- !u!114 &1159355854
+--- !u!114 &1608735329
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8dc41b04246775746820a508c7bca2b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelSession
---- !u!114 &1159355855
+--- !u!114 &1608735330
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0ab7bea3c705ce64abe01a4a9c8a4c64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.KatanaCursor
   sprite: {fileID: 21300000, guid: dd4d754885783b141ae56ffdf29ebb07, type: 3}
---- !u!114 &1159355856
+--- !u!114 &1608735331
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1598c9512da45f84384d110fe992bb1a, type: 3}
@@ -566,25 +567,25 @@ MonoBehaviour:
     - {fileID: 21300000, guid: c10719b977bdab14dbc4590bbedb9acf, type: 3}
     size: {x: 1, y: 1}
     origin: {x: 0, y: 0}
---- !u!114 &1159355857
+--- !u!114 &1608735332
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2795ea8e6fc0f147995cdcf559536ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelClock
---- !u!114 &1159355858
+--- !u!114 &1608735333
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9015adc5749b9f5429bd42893f6b1501, type: 3}
@@ -592,13 +593,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelCornerArt
   leftArt: {fileID: 21300000, guid: 620ba891559a4f04a97398d0a1c704a6, type: 3}
   rightArt: {fileID: 21300000, guid: 882d2e5a17e23c949aa1dc7c8a296dc4, type: 3}
---- !u!114 &1159355859
+--- !u!114 &1608735334
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af41ae3e9eabaaf498003825e46004ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelStartup
+--- !u!114 &1608735335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbd4e5d95f4a64f48a116cf09b367b4b, type: 3}
@@ -619,13 +632,13 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 95fcfa23383b4dc4b980c6a6b36cbb5e, type: 3}
   - {fileID: 21300000, guid: 0d6515f4c92e21b46be5832719378848, type: 3}
   - {fileID: 21300000, guid: a23d1655b8f9afe4bae08ef4673153c4, type: 3}
---- !u!114 &1159355860
+--- !u!114 &1608735336
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73194d3742867014489c146a04691f15, type: 3}
@@ -638,13 +651,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 70913002d134b154cb82c5218688015d, type: 3}
   - {fileID: 8300000, guid: 1a80d90852421ca4584b1edb703b344d, type: 3}
   - {fileID: 8300000, guid: 7871960d85487ee449141fac1cf5ae1f, type: 3}
---- !u!114 &1159355861
+--- !u!114 &1608735337
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4120eb2799a68f94f96a8da16669abe3, type: 3}
@@ -715,25 +728,25 @@ MonoBehaviour:
       width: 70
       height: 75
   flash: {fileID: 21300000, guid: a0960f040872d5240a725e0cf157de33, type: 3}
---- !u!114 &1159355862
+--- !u!114 &1608735338
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b93f2042426adf4d985d17922f6fe54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelTaunt
---- !u!114 &1159355863
+--- !u!114 &1608735339
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a649e1c5ac9652449b881defc613274e, type: 3}
@@ -886,50 +899,50 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 779721dabc773a44d8f49ef4224b46c9, type: 3}
     weapon: {fileID: 21300000, guid: 621905c35a2ec0c4bbf689b1714583d0, type: 3}
     groundWeapon: {fileID: 21300000, guid: 2b9755b8c7d16fb4c981732c6635f564, type: 3}
---- !u!114 &1159355864
+--- !u!114 &1608735340
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07a8cdc72a646094ba85043c2e1cd999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelQuit
---- !u!114 &1159355865
+--- !u!114 &1608735341
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1413a94f247b3924b972aad8ddaa8482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelInput
---- !u!114 &1159355866
+--- !u!114 &1608735342
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6390f47276889048840429824c37610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.QuickDuel.Runtime::Unity.QuickDuel.DuelController
   beginOnStart: 0
---- !u!4 &1159355867
+--- !u!4 &1608735343
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159355849}
+  m_GameObject: {fileID: 1608735324}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -942,6 +955,6 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 128820649}
-  - {fileID: 1159355867}
-  - {fileID: 556645735}
+  - {fileID: 1068136965}
+  - {fileID: 1608735343}
+  - {fileID: 752423797}

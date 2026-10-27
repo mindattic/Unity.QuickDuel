@@ -45,7 +45,6 @@ namespace Unity.QuickDuel.Tests
 
             AssertStyle(view.Root.Q<OutlinedText>("Countdown"), OriginalType.Countdown);
             AssertStyle(view.Root.Q<OutlinedText>("Headline"), OriginalType.Banner);
-            AssertStyle(view.Root.Q<OutlinedText>("Title"), OriginalType.Title);
             AssertStyle(view.Root.Q<OutlinedText>("Prompt"), OriginalType.Hud);
             AssertStyle(view.Root.Q<OutlinedText>("LeftReaction"), OriginalType.Countdown);
             AssertStyle(view.Root.Q<OutlinedText>("LeftScore"), OriginalType.Hud);

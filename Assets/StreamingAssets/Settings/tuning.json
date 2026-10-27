@@ -6,7 +6,8 @@
   "profiles": {
     "standard": {
       "duel": {
-        "_source": "obj_gameclock countdown_time = 4 * room_speed (Get Ready for a quarter, then 3, 2, 1 at 25%, 50%, 75%) and drumroll_time = irandom_range(3 * room_speed, 6.5 * room_speed); the timeout and settle window are the rebuild's own, for timestamped input.",
+        "_source": "obj_gameclock startup_time = 3 * room_speed (counted once the round transition's loading image is gone, at once for the first round), countdown_time = 4 * room_speed (Get Ready for a quarter, then 3, 2, 1 at 25%, 50%, 75%) and drumroll_time = irandom_range(3 * room_speed, 6.5 * room_speed); the timeout and settle window are the rebuild's own, for timestamped input.",
+        "startupSeconds": 3.0,
         "countdownSeconds": 4.0,
         "minStandoffSeconds": 3.0,
         "maxStandoffSeconds": 6.5,

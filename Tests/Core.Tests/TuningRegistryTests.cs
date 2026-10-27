@@ -17,7 +17,7 @@ namespace Unity.QuickDuel.Core.Tests
   ""default"": ""standard"",
   ""profiles"": {
     ""standard"": {
-      ""duel"": { ""countdownSeconds"": 3.0, ""minStandoffSeconds"": 3.0, ""maxStandoffSeconds"": 6.5, ""strikeTimeoutSeconds"": 3.0, ""settleSeconds"": 0.05 },
+      ""duel"": { ""startupSeconds"": 3.0, ""countdownSeconds"": 3.0, ""minStandoffSeconds"": 3.0, ""maxStandoffSeconds"": 6.5, ""strikeTimeoutSeconds"": 3.0, ""settleSeconds"": 0.05 },
       ""ai"": { ""easy"": { ""min"": 0.45, ""max"": 0.70 }, ""normal"": { ""min"": 0.30, ""max"": 0.45 }, ""hard"": { ""min"": 0.20, ""max"": 0.30 } },
       ""match"": { ""winsNeeded"": 2 },
       ""judge"": { ""humanFloorSeconds"": 0.1 },
@@ -25,7 +25,7 @@ namespace Unity.QuickDuel.Core.Tests
       ""taunts"": [ ""Too Soon"", ""Fail"" ]
     },
     ""blitz"": {
-      ""duel"": { ""countdownSeconds"": 1.0, ""minStandoffSeconds"": 1.0, ""maxStandoffSeconds"": 2.0, ""strikeTimeoutSeconds"": 1.0, ""settleSeconds"": 0.05 },
+      ""duel"": { ""startupSeconds"": 1.0, ""countdownSeconds"": 1.0, ""minStandoffSeconds"": 1.0, ""maxStandoffSeconds"": 2.0, ""strikeTimeoutSeconds"": 1.0, ""settleSeconds"": 0.05 },
       ""ai"": { ""easy"": { ""min"": 0.45, ""max"": 0.70 }, ""normal"": { ""min"": 0.30, ""max"": 0.45 }, ""hard"": { ""min"": 0.20, ""max"": 0.30 } },
       ""match"": { ""winsNeeded"": 1 },
       ""judge"": { ""humanFloorSeconds"": 0.1 },
@@ -45,6 +45,7 @@ namespace Unity.QuickDuel.Core.Tests
         {
             var p = TestTuning.Profile;
             Assert.That(p.Name, Is.EqualTo("standard"));
+            Assert.That(p.Duel.StartupSeconds, Is.EqualTo(3.0));
             Assert.That(p.Duel.CountdownSeconds, Is.EqualTo(4.0));
             Assert.That(p.Duel.MinStandoffSeconds, Is.EqualTo(3.0));
             Assert.That(p.Duel.MaxStandoffSeconds, Is.EqualTo(6.5));

@@ -99,7 +99,7 @@ Tests/Core.Tests                                      NUnit tests of Core, run w
 
 | Phase | Lasts | On screen and in the ear |
 | --- | --- | --- |
-| `Ready` | until Space / Start | title and controls |
+| `Ready` (the startup) | `StartupSeconds` (3) from the scene's start, or from the round transition's image being gone; a click (or a pad's South) skips it | nothing new: the fighters fade in idle under the fading loading image (`DuelStartup`, `RoundStartup`; online, until the host's Space / Start) |
 | `Countdown` | `CountdownSeconds` (4) | Get Ready above the number throughout, nothing numbered for the first quarter, then 3-2-1 at 25%, 50% and 75%, each at full alpha with a beep and fading 0.02 a 60 fps step |
 | `Standoff` | `MinStandoffSeconds`–`MaxStandoffSeconds` (3–6.5), random | letterbox closes in, drumroll |
 | `Strike` | until both strike, or `StrikeTimeoutSeconds` (3) | the arena backdrop's colours invert, the cue, the blade unsheathed, a millisecond count from the cue in the centre that the first strike freezes and then fades |
@@ -542,10 +542,15 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **The splatters, matches**: the ticket's wording says the blood and splatter are cleared, but the original's fade
     destroys only the emitter and the weapons (and `obj_criticalhit`, which the rebuild does not have); the splatters
     are not its to destroy and fade on at their own 0.0003 a step. The rebuild keeps the original.
-  - **The startup, deliberate**: the original's startup counts its own 3 s once the image is gone and then starts the
-    countdown by itself (a key press skipping it); the rebuild keeps its Ready phase, which waits for Space or Start,
-    and takes that press from the reset on, while the image is still fading out, as the original's skipping press was.
-    Space or Start before the reset does nothing, and the "next round" prompt is only shown from the reset on.
+  - **The startup, matches** (UQD-T66): `gameclock_startup` counts `startup_time` (3 s, `DuelTuning.StartupSeconds`)
+    once the image is gone (at once for the scene's first round, `juststarted`) and then starts the countdown by itself;
+    `obj_game`'s global left press while it runs (from the reset under the full image on) starts it at once. The
+    rebuild's `DuelStartup` does the same with `RoundStartup`'s rule, a pad's South standing in for the click; a
+    finished match never starts another (the verdict's button decides). The scene opens under the image it was entered
+    with, fading at `obj_fade_gamescreen`'s 0.005 a step (it had used the menu's 0.01). (UQD-T42 had kept a Ready phase
+    that waited for Space or Start, with a "QuickDuel" title and a controls prompt the gamescreen never drew; restored
+    to the original under the faithful-port rule. Online, which has no original, the host's Space / Start still begins
+    each round.)
   - **A round begun early**: online the host may begin the next round before a client's fade is done; the client's
     image then simply goes, and the new round resets the battle as it always did.
 - ✅ The corner arts (UQD-T43; `CornerArtTests`, `DuelCornerArtTests`): `gamescreen.room` places `obj_cornerart_left`

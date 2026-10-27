@@ -34,9 +34,8 @@ namespace Unity.QuickDuel.Core
     // So, counted in 60 a second steps from the cut: the aftermath plays alone for 180 steps, the image fades in 0.005 a
     // step for 200 more and is fully up on step 380, where the battle is reset under it (the splatters are not
     // obj_fade_gamescreen's to destroy: they fade on at their own 0.0003 a step), and it fades out 0.005 a step over the
-    // startup, gone on step 580. The original's startup counted its 3 s only once the image was gone; the rebuild's Ready
-    // waits for Space or Start instead (BIBLE), which, like the original's first key press in the startup, is taken
-    // from the reset on while the image is still fading out.
+    // startup, gone on step 580. The startup counts its 3 s only once the image is gone, and a click skips it from the
+    // reset on while the image is still fading out (RoundStartup, UQD-T66).
     public static class RoundFade
     {
         public const int TicksPerSecond = 60;
@@ -85,7 +84,7 @@ namespace Unity.QuickDuel.Core
             return 1 - (tick - ResetTick) * FadeSpeed;
         }
 
-        // Whether the battle has been reset under the image by step `tick` (and Space or Start may begin the next round).
+        // Whether the battle has been reset under the image by step `tick` (and the next round's startup runs).
         public static bool HasReset(long tick) => tick >= ResetTick;
 
         // The loading image a transition draws, 0 to 13 for spr_loading1 to 14: irandom_range(1, 14), each equally likely.
