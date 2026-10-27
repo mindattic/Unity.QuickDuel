@@ -74,7 +74,8 @@ Assets/Unity.QuickDuel/
   StreamingAssets/Settings/tuning.json                every tuning number, as data
   Art/, Audio/, Fonts/  the original's files           copied by OriginalAssetGenerator, never edited by hand
   Data/assets.json, Data/credits.txt                  the generated asset manifest and the original credits text
-  Runtime/   MonoBehaviours, one set per scene        Duel scene: DuelController, DuelInput, DuelSession, DuelView, DuelTaunt,
+  Runtime/   MonoBehaviours, one set per scene        Duel scene: DuelController (through IDuelAuthority: LocalDuelAuthority
+                                                      or OnlineDuelAuthority), DuelStartup, DuelInput, DuelSession, DuelView, DuelTaunt,
                                                       DuelAudio, DuelClock, DuelFade, DuelBlood, DuelWeapons, DuelAmbient,
                                                       DuelCornerArt, DuelVerdict, DuelDebugOverlay, ArenaBackdrop, FighterLook;
                                                       Intro and MainMenu scenes: IntroController, MainMenuController;
@@ -128,7 +129,10 @@ the AI's wiring (scheduling and striking on its own behalf). Nothing changes any
 commands -- `BeginRound`, `Strike`, `SetMode` -- each named by the seat issuing it (`playerId`: 0 the left
 seat, 1 the right, the seam a future `NetEntity` will plug a real player id through, AGENTS.md rule 9); every
 change it makes is announced only as an event (`RoundStarted`, `PhaseChanged`, `Resolved`, `ModeChanged`).
-`DuelController` threads Unity's clock and tuning through to those commands and republishes its events;
+`DuelController` threads Unity's clock and tuning through to those commands and republishes its events, and it does
+so through one seam whichever authority holds the duel (`IDuelAuthority`, UQD-T70): `LocalDuelAuthority` wraps
+`MatchSession`, `OnlineDuelAuthority` wraps the online duel, and the controller reads and commands either the same way,
+so local and online play take one path through the scene (rebuild standard rule 9);
 `DuelSession` is a thin view that draws the score and verdict labels (and online the host / joined line) from the
 session's state. The mode comes from the main menu (New Game or Versus, the original's `is_singleplayer`); the duel
 has no key for it and draws no mode line (UQD-T67). `SetMode` is refused mid-round, and changing the mode always

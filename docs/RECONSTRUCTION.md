@@ -161,7 +161,7 @@ Every row of section 2 is marked built or dropped; the repo is declared complete
 | Area | Finding |
 | --- | --- |
 | Assembly definitions | Good: Core (`noEngineReferences`), Runtime, Editor, Online (version-define gated), the EditMode, PlayMode and Online test asmdefs, one-way references |
-| Engine-free Core | Done (UQD-T30): `MatchSession` owns mode, difficulty, match reset and AI wiring, and `Strike` takes a player id |
+| Engine-free Core | Done (UQD-T30): `MatchSession` owns mode, difficulty, match reset and AI wiring, and `Strike` takes a player id; local and online play reach the scene through one `IDuelAuthority` seam (UQD-T70) |
 | Input System | Good: `InputAction`s with event timestamps, gamepad per side |
 | URP | Done (UQD-T29): `QuickDuelURP` behind `RenderPipelineBuilder` |
 | Unity.Shared profiles and settings | Partly done (UQD-T28): `com.mindattic.unity.shared` is in the manifest, every tuning number is in `tuning.json` (named profiles, validated on load) and the shared session mute is wired (UQD-T61); player profiles through the package wait for the settings screens |
