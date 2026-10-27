@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.QuickDuel.Core;
 using UnityEngine.InputSystem;
@@ -8,14 +9,14 @@ using Object = UnityEngine.Object;
 
 namespace Unity.QuickDuel.Tests
 {
-    // Escape (or gamepad Select+Start) should quit the standalone player, but only between rounds —
-    // the original's obj_mainmenu Escape and Quit button both called game_end() (UQD-T23).
+    // Escape (or gamepad Select+Start) leaves the duel for the main menu at any moment, as obj_game's Escape left for the
+    // dropped character select (UQD-T65); the verdict screen, which had no Escape, ignores it (DuelVerdictTests).
     public class DuelQuitTests : InputTestFixture
     {
         private DuelController controller;
         private DuelQuit quit;
         private Keyboard keyboard;
-        private bool quitCalled;
+        private readonly List<string> left = new List<string>();
 
         private IEnumerator Load()
         {
@@ -25,36 +26,23 @@ namespace Unity.QuickDuel.Tests
             quit = controller.GetComponent<DuelQuit>();
             Assert.That(quit, Is.Not.Null, "Duel scene has no DuelQuit.");
             controller.Settings = DuelSceneTests.FastSettings();
-            quitCalled = false;
-            quit.OnQuit = () => quitCalled = true;
+            left.Clear();
+            quit.Leave = left.Add;
         }
 
         [UnityTest]
-        public IEnumerator EscapeQuitsBeforeARoundStarts()
+        public IEnumerator EscapeLeavesForTheMenuBeforeARoundStarts()
         {
             yield return Load();
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Ready));
             Press(keyboard.escapeKey);
             yield return null;
 
-            Assert.That(quitCalled, Is.True);
+            Assert.That(left, Is.EqualTo(new[] { "MainMenu" }));
         }
 
         [UnityTest]
-        public IEnumerator EscapeQuitsAfterARoundResolves()
-        {
-            yield return Load();
-            controller.BeginRound();
-            yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved, 3f);
-
-            Press(keyboard.escapeKey);
-            yield return null;
-
-            Assert.That(quitCalled, Is.True);
-        }
-
-        [UnityTest]
-        public IEnumerator EscapeDoesNothingMidRound()
+        public IEnumerator EscapeLeavesForTheMenuMidRound()
         {
             yield return Load();
             controller.BeginRound();
@@ -63,12 +51,11 @@ namespace Unity.QuickDuel.Tests
             Press(keyboard.escapeKey);
             yield return null;
 
-            Assert.That(quitCalled, Is.False);
-            Assert.That(controller.Phase, Is.Not.EqualTo(DuelPhase.Resolved));
+            Assert.That(left, Is.EqualTo(new[] { "MainMenu" }), "obj_game's Escape left mid-round too");
         }
 
         [UnityTest]
-        public IEnumerator GamepadSelectAndStartQuitsWithoutAlsoBeginningARoundOrCyclingTheMode()
+        public IEnumerator GamepadSelectAndStartLeavesWithoutAlsoBeginningARoundOrCyclingTheMode()
         {
             yield return Load();
             var session = controller.GetComponent<DuelSession>();
@@ -81,9 +68,9 @@ namespace Unity.QuickDuel.Tests
             Release(pad.startButton);
             yield return null;
 
-            Assert.That(quitCalled, Is.True);
-            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Ready), "Select+Start quits; it shouldn't also begin a round.");
-            Assert.That(session.Mode, Is.EqualTo(DuelMode.LocalPvp), "Select+Start quits; it shouldn't also cycle the mode.");
+            Assert.That(left, Is.EqualTo(new[] { "MainMenu" }));
+            Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Ready), "Select+Start leaves; it shouldn't also begin a round.");
+            Assert.That(session.Mode, Is.EqualTo(DuelMode.LocalPvp), "Select+Start leaves; it shouldn't also cycle the mode.");
         }
 
         [UnityTest]
@@ -94,7 +81,7 @@ namespace Unity.QuickDuel.Tests
             Press(pad.startButton);
             yield return null;
 
-            Assert.That(quitCalled, Is.False);
+            Assert.That(left, Is.Empty);
             Assert.That(controller.Phase, Is.EqualTo(DuelPhase.Countdown));
         }
 
@@ -109,7 +96,7 @@ namespace Unity.QuickDuel.Tests
             Release(pad.selectButton);
             yield return null;
 
-            Assert.That(quitCalled, Is.False);
+            Assert.That(left, Is.Empty);
             Assert.That(session.Mode, Is.EqualTo(DuelMode.VsAiEasy), "A plain Select tap should still cycle the mode.");
         }
     }

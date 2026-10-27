@@ -47,7 +47,7 @@ updated: 2026-10-26
 | F1 | Toggle fullscreen | Built (UQD-T50: `GameWindow` in every scene) |
 | F12 | Toggle the debug overlay (frame counter, both reaction numbers, fps) | Built as a developer toggle, off at start, editor and development builds only (UQD-T50: `DuelDebugOverlay`) |
 | R | Go to the `location` map | Dropped |
-| Escape | Back to character select (menu: `game_end`) | Quits the player (UQD-T23) |
+| Escape | Back to character select at any moment (menu: `game_end`; victory and gameover rooms: none) | Leaves the duel for the main menu, the dropped character select's place, at any moment; nothing under the verdict; the menu quits (UQD-T23, UQD-T65) |
 
 ## 2. Inventory and disposition
 
@@ -128,7 +128,7 @@ Disposition key: **built** (in the rebuild), **missing** (a ticket builds it), *
 The engine-free duel (phases, random standoff, early strike, settle window, timeout, `DuelJudge`, `Match`,
 `AiOpponent`, online host and client), two-player input by event timestamp, the Input System, the generated
 Duel scene, countdown, letterbox, cue invert, taunts, the original six duel sounds, a best-of-3 scoreboard,
-Escape quit, mouse and touch strike, a Windows build, online protocol and transport, Core, EditMode and
+Escape back to the menu, mouse and touch strike, a Windows build, online protocol and transport, Core, EditMode and
 PlayMode tests.
 
 ### 3.2 What it lacks

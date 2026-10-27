@@ -140,6 +140,13 @@ namespace Unity.QuickDuel.Tests
             // Tab no longer changes the mode under the verdict: its button decides what follows.
             Assert.That(session.CycleMode(), Is.False);
 
+            // Nor does Escape leave: the original's victory and gameover rooms had no Escape (UQD-T65).
+            var quit = controller.GetComponent<DuelQuit>();
+            var escaped = new List<string>();
+            quit.Leave = escaped.Add;
+            Assert.That(quit.TryLeave(), Is.False);
+            Assert.That(escaped, Is.Empty);
+
             verdict.Pointer = () => new Vector2(600, 450);
             yield return null;
             Assert.That(verdict.Screen.Hovered, Is.True);

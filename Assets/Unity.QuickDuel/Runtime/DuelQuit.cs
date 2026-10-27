@@ -1,42 +1,51 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Unity.QuickDuel
 {
-    // The original's obj_mainmenu bound Escape (and its Quit button) to game_end(); the Windows build
-    // had nothing standing in for either. Escape, or gamepad Select held while Start is pressed, now
-    // calls Application.Quit, gated the same way DuelSession gates Tab/Select: only between rounds
-    // (Duel == null or Resolved), so a round in flight can't be cut short.
+    // Escape in the duel, as obj_game had it (UQD-T65): room_goto(characterselect) at any moment, mid-round too. The
+    // character select is dropped, and it stood between the main menu and the duel, so the duel leaves for the main menu
+    // (whose own Escape still ends the game, obj_mainmenu's game_end). Gamepad Select held while Start is pressed does
+    // the same, as the pad's Escape.
+    //
+    // Not under the verdict screen: the original's victory and gameover rooms had no Escape, so it does nothing there.
+    // Not online either: online play has no original, and its Leave button is the way out of a session.
     [RequireComponent(typeof(DuelController))]
     public sealed class DuelQuit : MonoBehaviour
     {
+        // The scene Escape leaves for.
+        public const string MenuScene = "MainMenu";
+
         private DuelController controller;
+        private DuelVerdict verdict;
         private InputAction escape;
         private InputAction padStart;
         private bool chordFired;
 
-        // Replaced by tests so quitting doesn't tear down the test process.
-        public Action OnQuit { get; set; } = Application.Quit;
+        // Loads a scene by name; replaced by tests so leaving doesn't tear down the test scene.
+        public Action<string> Leave { get; set; } = name => SceneManager.LoadScene(name);
 
         private void Awake()
         {
             controller = GetComponent<DuelController>();
+            verdict = GetComponent<DuelVerdict>();
 
-            escape = new InputAction("QuitEscape", InputActionType.Button, "<Keyboard>/escape");
-            // Start alone is DuelInput's "next round"; read Select's live state directly (rather than a
-            // modifier composite) so holding it with Start quits instead, on either connected pad.
-            padStart = new InputAction("QuitPadStart", InputActionType.Button, "<Gamepad>/start");
+            escape = new InputAction("LeaveEscape", InputActionType.Button, "<Keyboard>/escape");
+            // Start alone is DuelInput's; read Select's live state directly (rather than a modifier composite) so
+            // holding it with Start leaves instead, on either connected pad.
+            padStart = new InputAction("LeavePadStart", InputActionType.Button, "<Gamepad>/start");
 
-            escape.performed += _ => TryQuit();
+            escape.performed += _ => TryLeave();
             padStart.performed += ctx =>
             {
                 if (ctx.control.device is Gamepad pad && pad.selectButton.isPressed)
                 {
-                    // Mark the chord before TryQuit: DuelSession reads this on Select's release to
-                    // skip cycling the mode, whether or not CanBeginRound let the quit itself through.
+                    // Mark the chord before TryLeave: DuelSession reads this on Select's release to skip its own
+                    // Select handling, whether or not the leave itself went through.
                     chordFired = true;
-                    TryQuit();
+                    TryLeave();
                 }
             };
         }
@@ -59,17 +68,18 @@ namespace Unity.QuickDuel
             padStart.Dispose();
         }
 
-        // Between rounds only; false (and the player stays up) while a duel is in progress.
-        public bool TryQuit()
+        // Leaves for the main menu at any moment of a local duel; false (and the duel stays) under the verdict screen
+        // or online.
+        public bool TryLeave()
         {
-            if (!controller.CanBeginRound)
+            if (controller.IsOnline || (verdict != null && verdict.Shown))
                 return false;
-            OnQuit();
+            Leave?.Invoke(MenuScene);
             return true;
         }
 
-        // DuelSession calls this when Select is released, to tell a Select+Start quit chord apart
-        // from a plain tap (which should still cycle the mode). Consumes the flag either way.
+        // DuelSession calls this when Select is released, to tell a Select+Start chord apart from a plain tap.
+        // Consumes the flag either way.
         public bool ConsumeChord()
         {
             var fired = chordFired;

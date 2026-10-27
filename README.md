@@ -92,7 +92,7 @@ drive it.
 In a duel: left player A or gamepad 1 south button (or mouse and touch), right player L or gamepad 2 south button.
 Space or Start begins the next round. Tab or Select (between rounds) cycles local PvP and vs AI (Easy, Normal, Hard;
 the AI plays the right side). A match is best of 3, then Retry or Continue. Everywhere: F1 toggles fullscreen (the 640 x
-480 frame letterboxes into any window), Escape, or gamepad Select held while pressing Start (between rounds), quits
-the player. F12 shows the debug overlay in the editor and development builds.
+480 frame letterboxes into any window). In the duel, Escape, or gamepad Select held while pressing Start, leaves for the
+main menu at any moment (not under the victory or game over screen); on the main menu Escape quits the player. F12 shows the debug overlay in the editor and development builds.
 
 Rounds are judged by input event timestamps, not by frame, so the frame rate can't decide a duel.

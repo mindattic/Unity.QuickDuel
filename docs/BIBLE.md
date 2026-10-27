@@ -665,7 +665,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   the 640 x 480 room, the heading in `fnt_oldenglish` outlined 2 centred on (320, 64), and the button on
   `spr_btn_right4` at (576, 448), its `_over` sprite under the pointer (no flick: the original's verdict buttons had
   none), "Continue" or "Retry" in `fnt_basic` outlined 1 on (x + 6, y - 6), clicking with `sfx_click`. Space / Start no
-  longer begins a round, nor Tab the mode, under it; Escape still quits. Not online: an online match has no verdict room
+  longer begins a round, nor Tab the mode, under it, and Escape does nothing there, as the original's victory and
+  gameover rooms had no Escape (UQD-T65). Not online: an online match has no verdict room
   and its host replaces a finished match on the next round, as before.
   - **Best of 3, deliberate**: the original went there when an HP bar ran out ([§6](#UQD-§6), "Wins needed, 2"); the
     rebuild goes there when a side has its two wins. Game Over when the computer took the match, Victory when the player
@@ -759,8 +760,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   the top centre, so the two never overprint at any window size; a PlayMode test pins it.
 
 ## 7. Frontier {#UQD-§7}
-- ✅ The port gaps found by UQD-T19 are closed: a strike during the countdown is ignored (UQD-T22), Escape quits the
-  player (UQD-T23), the victory / defeat sting plays (UQD-T24), a mouse or touch strike works for the left duelist
+- ✅ The port gaps found by UQD-T19 are closed: a strike during the countdown is ignored (UQD-T22), Escape leaves the duel
+  (UQD-T23; for the main menu at any moment since UQD-T65, as `obj_game`'s Escape left for character select), the victory / defeat sting plays (UQD-T24), a mouse or touch strike works for the left duelist
   (UQD-T25).
 - ✅ The final play-through (UQD-T54): the muted Windows player launched, ran the intro and reached the menu, and a
   scripted PlayMode run walked every mode, a clean win, a premature strike, a round nobody strikes in and both
