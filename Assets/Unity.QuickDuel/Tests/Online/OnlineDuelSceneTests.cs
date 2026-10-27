@@ -137,7 +137,7 @@ namespace Unity.QuickDuel.Online.Tests
 
             // Back to local play: the local game runs on as before.
             Assert.That(client.Phase, Is.EqualTo(DuelPhase.Ready));
-            Assert.That(clientRig.GetComponent<DuelSession>().ModeText, Does.StartWith("Local PvP"));
+            Assert.That(clientRig.GetComponent<DuelSession>().ModeText, Is.Empty, "local play draws no mode line");
             Assert.That(client.BeginRound(), Is.True);
         }
     }

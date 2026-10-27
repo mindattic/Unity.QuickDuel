@@ -2,6 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using Unity.QuickDuel.Core;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
@@ -23,16 +24,14 @@ namespace Unity.QuickDuel.Tests
             controller.Settings = DuelSceneTests.FastSettings();
         }
 
-        // UQD-T62: the mode line sits under the round clock's home position, never on it.
+        // UQD-T67: the gamescreen drew no mode line.
         [UnityTest]
-        public IEnumerator TheModeLineIsClearOfTheRoundClock()
+        public IEnumerator LocalPlayDrawsNoModeLine()
         {
             yield return null;
-            var view = controller.GetComponent<DuelView>();
-            var clock = controller.GetComponent<DuelClock>();
-            var scale = 1080f / 480f;
-            var clockBottom = view.Stage.worldBound.yMin + (RoundClock.HomeY * scale) + clock.Minutes.resolvedStyle.height;
-            Assert.That(session.ModeBounds.yMin, Is.GreaterThanOrEqualTo(clockBottom - 0.5f), "the mode line starts below the clock");
+            Assert.That(session.ModeText, Is.Empty);
+            Assert.That(controller.GetComponent<DuelView>().Root.Q("Mode").resolvedStyle.display,
+                Is.EqualTo(DisplayStyle.None));
         }
 
         [UnityTest]
@@ -40,7 +39,6 @@ namespace Unity.QuickDuel.Tests
         {
             session.SetMode(DuelMode.VsAiHard);
             Assert.That(controller.GetComponent<DuelInput>().RightIsHuman, Is.False);
-            Assert.That(session.ModeText, Does.Contain("Hard"));
 
             controller.BeginRound();
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved);

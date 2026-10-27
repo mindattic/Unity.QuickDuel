@@ -65,7 +65,7 @@ namespace Unity.QuickDuel.Online.Tests
             Assert.That(menu.Leave(), Is.True);
             yield return NetAwait.Until(() => !controller.IsOnline && !bootstrap.Session.IsActive, "the scene never went back to local play");
             yield return null;
-            Assert.That(Object.FindAnyObjectByType<DuelSession>().ModeText, Does.StartWith("Local PvP"));
+            Assert.That(Object.FindAnyObjectByType<DuelSession>().ModeText, Is.Empty, "local play draws no mode line");
         }
 
         [UnityTest]

@@ -1,23 +1,21 @@
 using Unity.QuickDuel.Core;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace Unity.QuickDuel
 {
-    // The on-screen session labels: who plays the right side (a second human or the AI), the match score
-    // and the verdict banner. The mode, the match and the AI's own wiring belong to Core's MatchSession
-    // (DuelController.Session, UQD-T30) -- this only reads its state, plays its events, and turns Tab /
-    // gamepad Select into its SetMode command on the local machine's behalf. Mode cycling between rounds
-    // still starts a fresh match; that reset happens in MatchSession, not here.
+    // The on-screen session labels: the match score (standing in for the original's HP bars) and the verdict
+    // banner, and online the line that says who hosts and who joined. The mode, the match and the AI's own
+    // wiring belong to Core's MatchSession (DuelController.Session, UQD-T30) -- this only reads its state and
+    // plays its events. The mode comes from the main menu's New Game or Versus, as the original's
+    // is_singleplayer did; the duel has no key for it and draws no mode line (UQD-T67). SetMode and CycleMode
+    // remain as the local machine's commands for code and tests; a mode change starts a fresh match.
     [RequireComponent(typeof(DuelController), typeof(DuelView))]
     public sealed class DuelSession : MonoBehaviour
     {
         private DuelController controller;
         private DuelInput input;
-        private DuelQuit quit;
         private DuelView view;
-        private InputAction cycleMode;
         private OutlinedText modeText;
         private OutlinedText leftScore;
         private OutlinedText rightScore;
@@ -35,8 +33,8 @@ namespace Unity.QuickDuel
         public bool AiPlaysRight => !controller.IsOnline && Session.AiPlaysRight;
         public double? AiStrikeAt => Session.AiStrikeAt;
 
-        public string ModeText => modeText.text;
-        public Rect ModeBounds => modeText.worldBound;
+        // The online line ("Online PvP (hosting)" and so on); empty in local play, which draws none.
+        public string ModeText => controller.IsOnline ? modeText.text : "";
         public string ScoreText(Side side) => (side == Side.Left ? leftScore : rightScore).text;
         public string VerdictText => verdict.style.display != DisplayStyle.None ? verdict.text : "";
 
@@ -44,28 +42,13 @@ namespace Unity.QuickDuel
         {
             controller = GetComponent<DuelController>();
             input = GetComponent<DuelInput>();
-            quit = GetComponent<DuelQuit>();
-
-            cycleMode = new InputAction("CycleMode", InputActionType.Button);
-            cycleMode.AddBinding("<Keyboard>/tab");
-            cycleMode.AddBinding("<Gamepad>/select");
-            // Fires on release, not press, so a Select held into the Select+Start quit chord (DuelQuit)
-            // can be told apart from a plain tap and skip cycling the mode on its way out.
-            cycleMode.canceled += _ =>
-            {
-                if (quit != null && quit.ConsumeChord())
-                    return;
-                if (UiFocus.IsTyping)
-                    return;
-                CycleMode();
-            };
 
             controller.RoundStarted += OnRoundStarted;
             controller.Resolved += OnResolved;
             controller.OnlineChanged += Redraw;
         }
 
-        // Stage-centre-relative y (up) of the mode line: under the round clock, which owns the very top centre.
+        // Stage-centre-relative y (up) of the online line: under the round clock, which owns the very top centre.
         public const float ModeY = 450f;
 
         private void Start()
@@ -83,10 +66,6 @@ namespace Unity.QuickDuel
             Session.ModeChanged += OnModeChanged;
             Redraw();
         }
-
-        private void OnEnable() => cycleMode.Enable();
-        private void OnDisable() => cycleMode.Disable();
-        private void OnDestroy() => cycleMode.Dispose();
 
         // Between rounds only: PvP -> AI Easy -> Normal -> Hard -> PvP. Issued on the local machine's behalf.
         // Refused online: the mode is the local game's, and an online duel is always player against player.
@@ -116,9 +95,9 @@ namespace Unity.QuickDuel
             if (input != null) input.RightIsHuman = !AiPlaysRight;
             if (view != null) view.RightName = AiPlaysRight ? "AI" : "Right";
             if (modeText == null) return;
-            modeText.text = controller.IsOnline ? OnlineModeText()
-                : (Session.AiPlaysRight ? $"vs AI ({MatchSession.DifficultyOf(Session.Mode)})" : "Local PvP")
-                  + "  -  Tab / Select: mode";
+            // The gamescreen drew no mode line; online (which has no original) says who hosts and who joined.
+            modeText.text = controller.IsOnline ? OnlineModeText() : "";
+            modeText.style.display = controller.IsOnline ? DisplayStyle.Flex : DisplayStyle.None;
             verdict.style.display = DisplayStyle.None;
             RefreshScore();
         }

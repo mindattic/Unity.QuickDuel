@@ -182,8 +182,7 @@ namespace Unity.QuickDuel.Tests
 
             var session = Object.FindAnyObjectByType<DuelSession>();
             Assert.That(session.Mode, Is.EqualTo(DuelMode.VsAiHard), "New Game plays the computer at the chosen difficulty");
-            Assert.That(session.ModeText, Does.StartWith("vs AI (Hard)"));
-            Assert.That(session.ModeText, Does.Contain("Tab / Select"), "the mode cycle stays as the shortcut");
+            Assert.That(session.ModeText, Is.Empty, "the gamescreen drew no mode line (UQD-T67)");
             Assert.That(DuelModeHandoff.Pending, Is.Null, "taken once");
             Assert.That(DuelModeHandoff.Difficulty, Is.EqualTo(AiDifficulty.Hard), "kept for the menu's next visit");
             var fade = session.GetComponent<DuelFade>();

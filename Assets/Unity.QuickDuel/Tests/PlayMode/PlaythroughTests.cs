@@ -119,7 +119,7 @@ namespace Unity.QuickDuel.Tests
             Assert.That(controller.BeginRound(), Is.True);
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Countdown);
             yield return Frames();
-            Assert.That(session.ModeText, Is.Not.Empty);
+            Assert.That(session.ScoreText(Side.Right), Does.StartWith(mode == DuelMode.LocalPvp ? "Right" : "AI"));
             Shoot("mode-" + mode);
             yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Strike);
             Assert.That(session.AiPlaysRight, Is.EqualTo(mode != DuelMode.LocalPvp));

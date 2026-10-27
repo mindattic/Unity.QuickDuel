@@ -129,9 +129,10 @@ commands -- `BeginRound`, `Strike`, `SetMode` -- each named by the seat issuing 
 seat, 1 the right, the seam a future `NetEntity` will plug a real player id through, AGENTS.md rule 9); every
 change it makes is announced only as an event (`RoundStarted`, `PhaseChanged`, `Resolved`, `ModeChanged`).
 `DuelController` threads Unity's clock and tuning through to those commands and republishes its events;
-`DuelSession` is a thin view that turns Tab / gamepad Select into `SetMode` and draws the mode, score and
-verdict labels from the session's state. The mode is cycled only between rounds; changing it always starts
-a fresh match. A match is first to 2 wins (best of 3); ties and no-strike rounds award nobody. The
+`DuelSession` is a thin view that draws the score and verdict labels (and online the host / joined line) from the
+session's state. The mode comes from the main menu (New Game or Versus, the original's `is_singleplayer`); the duel
+has no key for it and draws no mode line (UQD-T67). `SetMode` is refused mid-round, and changing the mode always
+starts a fresh match. A match is first to 2 wins (best of 3); ties and no-strike rounds award nobody. The
 scoreboard shows wins and each side's best reaction. A finished local match ends on the original's victory or game
 over screen (UQD-T48, [§6](#UQD-§6)), whose Retry starts a new match in the same mode and Continue returns to the menu.
 
@@ -177,7 +178,7 @@ In the Duel scene (UQD-T21):
   headline, the score) waits for the host's verdict: the local round saw only this side's strike, so its own
   result is never shown. Between this side's report and the verdict the headline reads `...`. Only the host's
   Space / Start begins a round, and only with both seats taken; every strike key strikes for this machine's seat;
-  Tab / Select does nothing online. The scoreboard marks the player's own seat `(you)` and the victory / defeat
+  the mode does not apply online. The scoreboard marks the player's own seat `(you)` and the victory / defeat
   sting is heard from it.
 - **Scene generation**: `OnlineSceneBuilder` (run by `DuelSceneBuilder`) makes `OnlineDuel.prefab` (NetworkObject,
   NetKey, OnlineDuel, with its `GlobalObjectIdHash` filled in batch mode) and its `NetPrefabList`, networks the scene
@@ -243,7 +244,7 @@ window (`OriginalFrame`), with F1 toggling fullscreen (`GameWindow`) and the kat
    Enter or Escape closes it), and the slot where the original had Options holds the computer's difficulty (Easy,
    Normal, Hard). Mouse, arrows or d-pad, and Enter all drive it. The choice reaches the duel through
    `DuelModeHandoff`, and the scene change runs under the loading fade (`LoadingHandoff`).
-3. **Duel**: the rounds of [§4.1](#UQD-§4.1). Tab / Select still cycles the mode between rounds. A finished match
+3. **Duel**: the rounds of [§4.1](#UQD-§4.1), in the mode the menu chose. A finished match
    cuts to the verdict screen (`DuelVerdict`): Retry starts a new match in the same mode, Continue returns to the menu.
 
 The `Options`, `Scores`, character select and map rooms of the original are dropped ([§3](#UQD-§3)).
@@ -620,8 +621,9 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     round, the opening image fading back in from where it had got to; one pressed afterwards fades the chosen image in
     from nothing; either way the duel follows the step after it is full, opening under that image (`DuelFade`).
   - **The mode, deliberate**: `is_singleplayer` goes on to the Duel scene (`DuelModeHandoff`): New Game plays the
-    computer, Versus two players. Tab / Select still cycles the mode between rounds in the duel, as the shortcut; a Duel
-    scene loaded without the menu plays two players.
+    computer, Versus two players. The duel has no key for the mode, as the original's gamescreen had none (UQD-T67; Tab /
+    Select had cycled it, with a mode line the gamescreen never drew); a Duel scene loaded without the menu plays two
+    players.
   - **Difficulty, deliberate**: the original's computer adapted (its ART); the rebuild's has fixed Easy / Normal / Hard
     ([RECONSTRUCTION §5](RECONSTRUCTION.md)), so the menu chooses it. It takes the slot of the original's Options button (`spr_btn_right3` at
     (576, 448)), an empty stub: its label is the difficulty, a click plays the click and steps Easy, Normal, Hard, and
@@ -671,7 +673,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   the 640 x 480 room, the heading in `fnt_oldenglish` outlined 2 centred on (320, 64), and the button on
   `spr_btn_right4` at (576, 448), its `_over` sprite under the pointer (no flick: the original's verdict buttons had
   none), "Continue" or "Retry" in `fnt_basic` outlined 1 on (x + 6, y - 6), clicking with `sfx_click`. Space / Start no
-  longer begins a round, nor Tab the mode, under it, and Escape does nothing there, as the original's victory and
+  longer begins a round under it, and Escape does nothing there, as the original's victory and
   gameover rooms had no Escape (UQD-T65). Not online: an online match has no verdict room
   and its host replaces a finished match on the next round, as before.
   - **Best of 3, deliberate**: the original went there when an HP bar ran out ([§6](#UQD-§6), "Wins needed, 2"); the
@@ -762,8 +764,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ A silent CLI launch (UQD-T61, `SessionAudioTests`): `play.ps1` launches muted (`MINDATTIC_CLI_MUTED=1`, `-muted`;
   `-Sound` opts out); `SessionAudio` silences the listener when the shared profile reports sound muted, and the saved
   `settings.json` is never written.
-- ✅ The mode line (UQD-T62): the duel's `vs AI (Normal) - Tab / Select: mode` line sits below the round clock, which owns
-  the top centre, so the two never overprint at any window size; a PlayMode test pins it.
+- ✅ The mode line (UQD-T62): the online host / joined line sits below the round clock, which owns the top centre, so
+  the two never overprint at any window size. Local play draws no mode line (UQD-T67).
 
 ## 7. Frontier {#UQD-§7}
 - ✅ The port gaps found by UQD-T19 are closed: a strike during the countdown is ignored (UQD-T22), Escape leaves the duel
