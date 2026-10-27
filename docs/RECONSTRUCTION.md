@@ -164,7 +164,7 @@ Every row of section 2 is marked built or dropped; the repo is declared complete
 | Engine-free Core | Done (UQD-T30): `MatchSession` owns mode, difficulty, match reset and AI wiring, and `Strike` takes a player id; local and online play reach the scene through one `IDuelAuthority` seam (UQD-T70) |
 | Input System | Good: `InputAction`s with event timestamps, gamepad per side |
 | URP | Done (UQD-T29): `QuickDuelURP` behind `RenderPipelineBuilder` |
-| Unity.Shared profiles and settings | Partly done (UQD-T28): `com.mindattic.unity.shared` is in the manifest, every tuning number is in `tuning.json` (named profiles, validated on load) and the shared session mute is wired (UQD-T61); player profiles through the package wait for the settings screens |
+| Unity.Shared profiles and settings | Done (UQD-T28, UQD-T61, UQD-T74): `com.mindattic.unity.shared` is in the manifest, every tuning number is in `tuning.json` (named profiles, validated on load), and the player's shared profile sets the game's volume (its sound-effect volume and mute, the session mute among them); the original had no settings screen (its Options button was an empty stub), so none is added |
 | UI | Done (UQD-T31): UI Toolkit trees built in code |
 | Tests | Done: Core NUnit, EditMode (`Tests/Editor`, UQD-T51), PlayMode with `ParitySceneTests` and the committed `docs/screenshots`; CI runs Core and, behind the Unity license secrets, EditMode, PlayMode and the Windows build (UQD-T52) |
 | README and BIBLE | Done (UQD-T53): README lists Runtime, Online, Editor, the scenes, the settings registry and the art pipeline; BIBLE sections 3, 4, 6 and 7 cover the cosmetic fighters, arenas, intro and menu flow |

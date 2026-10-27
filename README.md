@@ -80,7 +80,8 @@ $env:MINDATTIC_CLI_MUTED = '1'; .\Build\QuickDuel\QuickDuel.exe
 The mute is the shared `com.mindattic.unity.shared` session mute: read before the first scene loads, it
 makes the player profile's settings report sound muted for that run only, and `SessionAudio` silences the
 listener. The player's saved `settings.json` is never written, so the next normal launch has sound. A
-profile whose own settings mute sound effects is honoured the same way. The `-batchmode` runs in
+profile whose own settings mute sound effects is honoured the same way; otherwise the game plays at the profile's
+sound-effect volume, the one a player keeps across every MindAttic game. The `-batchmode` runs in
 `deploy.ps1` and the tests play nothing audible and don't need it.
 
 ## Controls

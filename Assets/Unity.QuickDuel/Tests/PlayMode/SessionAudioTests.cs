@@ -53,12 +53,19 @@ namespace Unity.QuickDuel.Tests
         }
 
         [Test]
-        public void AnUnmutedProfileLeavesTheListenerAlone()
+        public void AnUnmutedProfilePlaysAtItsSoundEffectVolume()
         {
-            Profiles.Current.Settings.Common.MuteSfx = false;
-
+            var common = Profiles.Current.Settings.Common;
+            common.MuteSfx = false;
+            common.SfxVolume = 1f;
             Assert.That(SessionAudio.Apply(), Is.False);
             Assert.That(AudioListener.volume, Is.EqualTo(1f));
+
+            // UQD-T74: the player's volume, the same in every MindAttic game.
+            common.SfxVolume = 0.4f;
+            Assert.That(SessionAudio.Apply(), Is.False);
+            Assert.That(AudioListener.volume, Is.EqualTo(0.4f).Within(1e-6f));
+            Assert.That(SessionAudio.Volume, Is.EqualTo(0.4f).Within(1e-6f));
         }
     }
 }
