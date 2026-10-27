@@ -90,8 +90,9 @@ The game opens on the intro (click, key or pad button skips it), then the main m
 drive it.
 
 In a duel: each round's countdown begins by itself 3 s after the loading image clears, as the original's startup did;
-a click (or a gamepad's south button) begins it at once. Left player A or gamepad 1 south button (or mouse and touch),
-right player L or gamepad 2 south button. Tab or Select (between rounds) cycles local PvP and vs AI (Easy, Normal, Hard;
+a click (or a gamepad's south button) begins it at once. The original's keys strike: against the computer Space or the
+left mouse button (or touch); in Versus Left Ctrl for the left fighter and Right Ctrl for the right. Gamepad 1's south
+button strikes for the left fighter and gamepad 2's for the right. Tab or Select (between rounds) cycles local PvP and vs AI (Easy, Normal, Hard;
 the AI plays the right side). A match is best of 3, then Retry or Continue. Everywhere: F1 toggles fullscreen (the 640 x
 480 frame letterboxes into any window). In the duel, Escape, or gamepad Select held while pressing Start, leaves for the
 main menu at any moment (not under the victory or game over screen); on the main menu Escape quits the player. F12 shows the debug overlay in the editor and development builds.

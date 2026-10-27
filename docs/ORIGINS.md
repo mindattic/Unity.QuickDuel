@@ -75,4 +75,5 @@ match), and Tab ignored mid-round. Gaps filed as fixes: a strike during the 3-2-
 where the original ignored it (UQD-T22); no in-game quit (UQD-T23); no victory / defeat sting
 (UQD-T24); no mouse / touch strike against the computer (UQD-T25). Kept as deliberate changes: the
 original's one-second "Get Ready" before 3-2-1 and its automatic next round, the adaptive computer
-opponent (replaced by Easy / Normal / Hard), and Left / Right Ctrl for Versus (now A / L).
+opponent (replaced by Easy / Normal / Hard), and Left / Right Ctrl for Versus (A / L for a while, restored by UQD-T69; the automatic next round was restored
+by UQD-T66).

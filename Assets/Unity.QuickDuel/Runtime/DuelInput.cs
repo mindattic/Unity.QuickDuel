@@ -4,12 +4,13 @@ using UnityEngine.InputSystem;
 
 namespace Unity.QuickDuel
 {
-    // Two players on one machine: A / gamepad 1 south strike for the left duelist, L / gamepad 2 south
-    // for the right. A mouse click or touchscreen press is also a left-side strike, matching the
-    // original single-player duel's click-to-strike (a holdover from its Android touch build). During the
-    // startup the click instead begins the round at once, as obj_game's global left press did (DuelStartup,
-    // UQD-T66), and so does a pad's South, the pad's stand-in for it. Online, the host's Space or Start
-    // begins the next round. Each strike carries its input event's own timestamp (CallbackContext.time, on
+    // The original's strike keys (obj_game, UQD-T69). Against the computer, Space or the left mouse button strikes for
+    // the player (the left fighter). In Versus, Left Ctrl strikes for the left fighter and Right Ctrl for the right, and
+    // the mouse strikes for nobody. During the startup a click begins the round at once instead, in either mode, as
+    // obj_game's global left press did (DuelStartup, UQD-T66). A touchscreen press is the mouse's. Not the original's:
+    // gamepad 1's South strikes for the left fighter and gamepad 2's for the right (and skips the startup, as the click
+    // does). Online (no original either) every strike key strikes for this machine's seat, and the host's Space or
+    // Start begins the next round. Each strike carries its input event's own timestamp (CallbackContext.time, on
     // the Time.realtimeSinceStartup timeline), so the frame that happens to process it doesn't change the
     // reaction time.
     [RequireComponent(typeof(DuelController))]
@@ -19,22 +20,30 @@ namespace Unity.QuickDuel
         private DuelStartup startup;
         private DuelFade fade;
         private DuelVerdict verdict;
-        private InputAction leftKey;
-        private InputAction rightKey;
+        private InputAction spaceKey;
+        private InputAction leftCtrl;
+        private InputAction rightCtrl;
         private InputAction padStrike;
         private InputAction pointerStrike;
         private InputAction nextRound;
 
-        // False while the computer plays the right side; L and gamepad 2 then do nothing.
+        // False while the computer plays the right side (is_singleplayer); set by DuelSession from the mode.
         public bool RightIsHuman { get; set; } = true;
+
+        // is_singleplayer: a local duel against the computer.
+        private bool VsComputer => !controller.IsOnline && !RightIsHuman;
+
+        // A local two-player duel.
+        private bool Versus => !controller.IsOnline && RightIsHuman;
 
         private void Awake()
         {
             controller = GetComponent<DuelController>();
             startup = GetComponent<DuelStartup>();
 
-            leftKey = new InputAction("LeftStrike", InputActionType.Button, "<Keyboard>/a");
-            rightKey = new InputAction("RightStrike", InputActionType.Button, "<Keyboard>/l");
+            spaceKey = new InputAction("SpaceStrike", InputActionType.Button, "<Keyboard>/space");
+            leftCtrl = new InputAction("LeftCtrlStrike", InputActionType.Button, "<Keyboard>/leftCtrl");
+            rightCtrl = new InputAction("RightCtrlStrike", InputActionType.Button, "<Keyboard>/rightCtrl");
 
             // Pass-through so two pads pressing together each report, rather than one action
             // disambiguating them away.
@@ -48,12 +57,16 @@ namespace Unity.QuickDuel
             nextRound.AddBinding("<Gamepad>/start");
 
             // Keys typed into the online menu's address field, and clicks on its buttons, are the menu's (UQD-T21).
-            leftKey.performed += ctx => { if (!UiFocus.IsTyping) controller.Strike(Side.Left, ctx.time); };
-            rightKey.performed += ctx => { if (RightIsHuman && !UiFocus.IsTyping) controller.Strike(Side.Right, ctx.time); };
+            // obj_game's Space: if (is_singleplayer) action_attack(0).
+            spaceKey.performed += ctx => { if (!Versus && !UiFocus.IsTyping) controller.Strike(Side.Left, ctx.time); };
+            // obj_game's keyboard event: if (!is_singleplayer) vk_lcontrol -> action_attack(0), vk_rcontrol -> action_attack(1).
+            leftCtrl.performed += ctx => { if (!VsComputer && !UiFocus.IsTyping) controller.Strike(Side.Left, ctx.time); };
+            rightCtrl.performed += ctx => { if (!VsComputer && !UiFocus.IsTyping) controller.Strike(Side.Right, ctx.time); };
             padStrike.performed += OnPadStrike;
+            // obj_game's global left press: startup ? countdown : (is_singleplayer ? action_attack(0)).
             pointerStrike.performed += ctx =>
             {
-                if (UiFocus.PointerOverUi || Skipped()) return;
+                if (UiFocus.PointerOverUi || Skipped() || Versus) return;
                 controller.Strike(Side.Left, ctx.time);
             };
             // Online only: the host's Start or Space begins the next round, unless Select is held with Start — that
@@ -80,8 +93,9 @@ namespace Unity.QuickDuel
 
         private void OnEnable()
         {
-            leftKey.Enable();
-            rightKey.Enable();
+            spaceKey.Enable();
+            leftCtrl.Enable();
+            rightCtrl.Enable();
             padStrike.Enable();
             pointerStrike.Enable();
             nextRound.Enable();
@@ -89,8 +103,9 @@ namespace Unity.QuickDuel
 
         private void OnDisable()
         {
-            leftKey.Disable();
-            rightKey.Disable();
+            spaceKey.Disable();
+            leftCtrl.Disable();
+            rightCtrl.Disable();
             padStrike.Disable();
             pointerStrike.Disable();
             nextRound.Disable();
@@ -98,8 +113,9 @@ namespace Unity.QuickDuel
 
         private void OnDestroy()
         {
-            leftKey.Dispose();
-            rightKey.Dispose();
+            spaceKey.Dispose();
+            leftCtrl.Dispose();
+            rightCtrl.Dispose();
             padStrike.Dispose();
             pointerStrike.Dispose();
             nextRound.Dispose();

@@ -379,7 +379,7 @@ namespace Unity.QuickDuel
         {
             var side = controller.LocalSide;
             var seat = side.HasValue ? $"You are {(side == Side.Left ? "Left" : "Right")}" : "Watching";
-            const string strike = "Strike: A / L / gamepad / click";
+            const string strike = "Strike: Space / Ctrl / gamepad / click";
             string next;
             if (controller.AwaitingVerdict)
                 next = "Waiting for the verdict";

@@ -28,7 +28,8 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
   the only way to win is to react, not to count.
 - **Patience is a skill.** Striking during the standoff loses the round outright, and the loser is taunted
   with a line from the old Android build ("Jumped the Gun", "Too Soon", ...).
-- **Couch first.** Two players on one machine (keyboard A / L, or one gamepad each), or one player against
+- **Couch first.** Two players on one machine (Left Ctrl / Right Ctrl, as the original's Versus had them, or one
+  gamepad each), or one player against
   an AI on Easy, Normal or Hard. A match is best of 3.
 
 ## 3. What it is NOT {#UQD-§3}

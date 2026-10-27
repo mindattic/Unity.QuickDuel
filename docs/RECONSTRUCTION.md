@@ -42,8 +42,8 @@ updated: 2026-10-26
 
 | Input | Original | Rebuild |
 | --- | --- | --- |
-| Space or left mouse | Strike for the left fighter in single player; skips `startup` | Mouse and touch strike for the left duelist (UQD-T25), and skip the startup (UQD-T66) |
-| Left / Right Ctrl | The two strikes in Versus | A / L, and one gamepad each (deliberate) |
+| Space or left mouse | Strike for the left fighter in single player; skips `startup` | Matches (UQD-T69): against the computer Space or the mouse (and touch) strike for the left fighter; a click skips the startup in either mode (UQD-T66) |
+| Left / Right Ctrl | The two strikes in Versus | Matches (UQD-T69; A / L until then); one gamepad each as well, which the original lacked |
 | F1 | Toggle fullscreen | Built (UQD-T50: `GameWindow` in every scene) |
 | F12 | Toggle the debug overlay (frame counter, both reaction numbers, fps) | Built as a developer toggle, off at start, editor and development builds only (UQD-T50: `DuelDebugOverlay`) |
 | R | Go to the `location` map | Dropped |
@@ -214,5 +214,4 @@ best worked after UQD-T30.
 - Fighters are cosmetic, with no stats; the computer opponent has fixed Easy / Normal / Hard ranges, not an
   adaptive ART.
 - A match is best of 3, not HP.
-- Versus uses A / L and gamepads, not Left / Right Ctrl.
 - The original plays no music (its jukebox script is commented out), so none is added.
