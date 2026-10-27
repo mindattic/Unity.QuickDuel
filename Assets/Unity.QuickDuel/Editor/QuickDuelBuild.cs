@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Unity.QuickDuel.EditorTools
 {
-    // Builds the standalone Windows player. deploy.ps1 runs it in batch mode:
+    // Builds the standalone Windows player. run.ps1 runs it in batch mode:
     // Unity -batchmode -quit -executeMethod Unity.QuickDuel.EditorTools.QuickDuelBuild.BuildWindows
     public static class QuickDuelBuild
     {

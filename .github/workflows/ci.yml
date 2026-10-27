@@ -91,7 +91,7 @@ jobs:
             playmode-results
           if-no-files-found: ignore
 
-      # deploy.ps1 drives a local Windows Unity.exe through this same build method, and Windows editors can't run
+      # run.ps1 drives a local Windows Unity.exe through this same build method, and Windows editors can't run
       # on a hosted runner; GameCI builds the Windows player in its Linux image with the identical entry point.
       - uses: game-ci/unity-builder@v4
         with:
