@@ -6,7 +6,7 @@ namespace Unity.QuickDuel
 {
     // One of the original arenas as the Duel scene carries it (UQD-T33): the manifest entry (Data/assets.json,
     // from load_arenas.gml) with its backdrop sprite resolved to the imported asset. Written by DuelSceneBuilder
-    // from the manifest, never by hand; DuelView draws the one the round's arena roll lands on, and DuelAmbient plays its
+    // from the manifest, never by hand; DuelView draws the one the match's arena roll lands on, and DuelAmbient plays its
     // ambient effect (UQD-T49).
     [Serializable]
     public sealed class ArenaBackdrop

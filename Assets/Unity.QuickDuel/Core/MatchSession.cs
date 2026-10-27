@@ -28,14 +28,14 @@ namespace Unity.QuickDuel.Core
             this.aiTuning = aiTuning ?? throw new ArgumentNullException(nameof(aiTuning));
             this.winsNeeded = winsNeeded;
             this.random = random ?? new Random();
-            ArenaRoll = ArenaDraw.Roll(this.random);
             ApplyMode(mode);
         }
 
         public DuelMode Mode { get; private set; }
 
-        // The arena roll (ArenaDraw) of the round in progress or last played; drawn afresh by every BeginRound,
-        // and once on construction so the screen before the first round has an arena too.
+        // The arena roll (ArenaDraw) of the match in progress: drawn with every new match (on construction, on a mode
+        // change, and when a finished match is replaced) and kept for each of its rounds, as the original chose its arena
+        // once per visit to the gamescreen (choose_random_arena, from obj_location only) (UQD-T63).
         public int ArenaRoll { get; private set; }
 
         // The fighter roll (FighterDraw) of the match in progress: which cosmetic fighter stands in each seat. Drawn
@@ -92,7 +92,6 @@ namespace Unity.QuickDuel.Core
             Duel.PhaseChanged += OnDuelPhaseChanged;
             Duel.Resolved += OnDuelResolved;
             Round++;
-            ArenaRoll = ArenaDraw.Roll(random);
             aiStrikeAt = null;
             RoundStarted?.Invoke();
             Duel.Begin(now);
@@ -154,6 +153,7 @@ namespace Unity.QuickDuel.Core
         private void NewMatch()
         {
             Match = new Match(winsNeeded);
+            ArenaRoll = ArenaDraw.Roll(random);
             FighterRoll = FighterDraw.Roll(random);
         }
 

@@ -80,8 +80,8 @@ namespace Unity.QuickDuel
 
         public double Now => Clock();
 
-        // The arena roll (ArenaDraw) of the round in progress or last played: the local session's, or online the
-        // host's, so every peer draws the same arena. Changes with every round.
+        // The arena roll (ArenaDraw) of the match in progress: the local session's, or online the host's, so every
+        // peer draws the same arena. Changes with every new match (UQD-T63).
         public int ArenaRoll => online != null ? online.ArenaRoll : Session.ArenaRoll;
 
         // The fighter roll (FighterDraw) of the match in progress: the local session's, or online the host's, so every

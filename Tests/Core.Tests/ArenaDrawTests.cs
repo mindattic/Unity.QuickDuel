@@ -44,26 +44,48 @@ namespace Unity.QuickDuel.Core.Tests
         }
 
         [Test]
-        public void A_local_session_draws_a_fresh_arena_every_round()
+        public void A_local_session_keeps_one_arena_for_every_round_of_a_match()
         {
+            // The original chose its arena once per game (choose_random_arena, from obj_location only) (UQD-T63).
             var session = new MatchSession(() => TestTuning.Profile.Ai, 99, DuelMode.LocalPvp, new Random(11));
-            var rolls = new List<int> { session.ArenaRoll };
+            var arena = session.ArenaRoll;
+            Assert.That(arena, Is.GreaterThanOrEqualTo(0));
             for (var round = 0; round < 20; round++)
             {
                 var now = round * 10.0;
                 Assert.That(session.BeginRound(Quick(), now), Is.True);
-                rolls.Add(session.ArenaRoll);
+                Assert.That(session.ArenaRoll, Is.EqualTo(arena), "the same arena all match");
                 session.Tick(now + 5.0);   // nobody strikes: the round times out
                 Assert.That(session.Phase, Is.EqualTo(DuelPhase.Resolved));
             }
+        }
 
-            var arenas = new HashSet<int>();
-            foreach (var roll in rolls)
+        [Test]
+        public void A_new_match_draws_a_fresh_arena()
+        {
+            var session = new MatchSession(() => TestTuning.Profile.Ai, 99, DuelMode.LocalPvp, new Random(11));
+            var arenas = new HashSet<int> { ArenaDraw.Pick(session.ArenaRoll, 11) };
+            for (var match = 0; match < 20; match++)
             {
-                Assert.That(roll, Is.GreaterThanOrEqualTo(0));
-                arenas.Add(ArenaDraw.Pick(roll, 11));
+                Assert.That(session.CycleMode(MatchSession.LeftPlayerId), Is.True);
+                arenas.Add(ArenaDraw.Pick(session.ArenaRoll, 11));
             }
-            Assert.That(arenas.Count, Is.GreaterThan(1), "the arena changes between rounds");
+            Assert.That(arenas.Count, Is.GreaterThan(1), "the arena changes between matches");
+        }
+
+        [Test]
+        public void The_host_keeps_one_arena_for_every_round_of_a_match()
+        {
+            var host = new OnlineDuelHost(Quick(), 99, TestTuning.Profile.Judge.HumanFloorSeconds,
+                TestTuning.Profile.Online.ReportGraceSeconds, new Random(5));
+            var arena = host.ArenaRoll;
+            for (var round = 1; round <= 5; round++)
+            {
+                host.BeginRound(round * 100.0);
+                Assert.That(host.ArenaRoll, Is.EqualTo(arena));
+                host.Report(Side.Left, round, 0.3);
+                host.Report(Side.Right, round, 0.4);
+            }
         }
 
         [Test]

@@ -26,7 +26,7 @@ namespace Unity.QuickDuel
         // That round's number, from 1; 0 before the first.
         int RoundNumber { get; }
 
-        // The host's arena roll (ArenaDraw) for that round, so every peer shows the same arena; 0 before the first.
+        // The host's arena roll (ArenaDraw) for that round's match, so every peer shows the same arena; 0 before the first.
         int ArenaRoll { get; }
 
         // The host's fighter roll (FighterDraw) for that round's match, so every peer shows the same fighters; 0 before the first.

@@ -52,8 +52,8 @@ namespace Unity.QuickDuel.Core
         public double CountdownSeconds => settings.CountdownSeconds;
         public double StandoffSeconds { get; private set; }
 
-        // The current round's arena roll (ArenaDraw), drawn with its lengths; send it with RoundBegan so every peer
-        // shows the same arena.
+        // The current match's arena roll (ArenaDraw), drawn with every new match and kept for its rounds, as the original
+        // kept one arena per game (UQD-T63); send it with RoundBegan so every peer shows the same arena.
         public int ArenaRoll { get; private set; }
 
         // The current match's fighter roll (FighterDraw): which cosmetic fighter stands in each seat. Drawn with every
@@ -80,7 +80,6 @@ namespace Unity.QuickDuel.Core
             leftReported = rightReported = false;
             StandoffSeconds = settings.MinStandoffSeconds
                 + random.NextDouble() * (settings.MaxStandoffSeconds - settings.MinStandoffSeconds);
-            ArenaRoll = ArenaDraw.Roll(random);
             deadline = now + settings.CountdownSeconds + StandoffSeconds + settings.StrikeTimeoutSeconds
                 + settings.SettleSeconds + ReportGraceSeconds;
             RoundBegan?.Invoke(Round, settings.CountdownSeconds, StandoffSeconds);
@@ -121,6 +120,7 @@ namespace Unity.QuickDuel.Core
         private void NewMatch()
         {
             Match = new Match(winsNeeded);
+            ArenaRoll = ArenaDraw.Roll(random);
             FighterRoll = FighterDraw.Roll(random);
         }
 

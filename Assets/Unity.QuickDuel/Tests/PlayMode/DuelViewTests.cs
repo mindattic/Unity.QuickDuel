@@ -248,7 +248,7 @@ namespace Unity.QuickDuel.Tests
         // The scene carries the 11 original arenas, each with its art, and draws the one the round's roll lands on,
         // afresh every round (UQD-T33).
         [UnityTest]
-        public IEnumerator EachRoundIsFoughtOnTheArenaItsRollLandsOn()
+        public IEnumerator EveryRoundOfAMatchIsFoughtOnTheArenaItsRollLandsOn()
         {
             Assert.That(view.Arenas, Has.Count.EqualTo(11));
             Assert.That(view.Arenas.Select(a => a.Name), Is.EqualTo(new[]
@@ -274,7 +274,9 @@ namespace Unity.QuickDuel.Tests
                 shown.Add(view.Arena.Id);
                 yield return DuelSceneTests.WaitUntil(() => controller.Phase == DuelPhase.Resolved, 3f);
             }
-            Assert.That(shown.Count, Is.GreaterThan(1), "the arena is drawn again every round");
+            // Nobody strikes in these rounds, so the match runs on: one arena for all of it, as the original kept one per
+            // game (UQD-T63).
+            Assert.That(shown.Count, Is.EqualTo(1), "the arena is kept for every round of the match");
         }
 
         // The five original fighters, cosmetic only (UQD-T34): the pair the match's fighter roll lands on stands at a

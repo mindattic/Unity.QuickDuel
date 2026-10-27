@@ -17,8 +17,8 @@ namespace Unity.QuickDuel
     // "stage", the same 1440 x 1080 centred in Root, and edge content (the arena backdrop, letterbox, the edge score
     // labels) is positioned by percentage straight off Root.
     //
-    // The backdrop is one of the original's 11 arenas (UQD-T33), the one the round's arena roll lands on
-    // (ArenaDraw, drawn by the authority each round), scaled to cover the screen. On the cue the whole backdrop's
+    // The backdrop is one of the original's 11 arenas (UQD-T33), the one the match's arena roll lands on
+    // (ArenaDraw, drawn by the authority each match, UQD-T63), scaled to cover the screen. On the cue the whole backdrop's
     // colours invert, as obj_arena did by drawing white over the view with an inverting blend
     // (draw_set_blend_mode_ext(bm_inv_dest_colour, bm_zero)): a real per-pixel invert, here a UI Toolkit invert
     // filter on the backdrop, not a recolouring of the boxes drawn over it.

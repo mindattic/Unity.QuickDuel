@@ -49,7 +49,7 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
   (vs computer), Versus (two players), Quit, Credits and the computer's difficulty, and then to the duel. There
   are no options, scores, character select or map screens; the original's `Options` and `Scores` buttons were
   empty stubs and are dropped ([§4.6](#UQD-§4.6)).
-- **NOT a game of many arenas as gameplay.** The 11 arenas are a backdrop, one drawn at random per round, with an
+- **NOT a game of many arenas as gameplay.** The 11 arenas are a backdrop, one drawn at random per match, with an
   ambient effect on a few; an arena never changes a round's timing, judging or scoring ([§4.7](#UQD-§4.7)).
 - **Online is built, not the front door.** Online PvP runs in the Duel scene through a Host / Join menu
   (§4.4, `OnlineDuelMenu`); it never starts by itself, and the main menu offers local play only.
@@ -67,7 +67,7 @@ Assets/Unity.QuickDuel/
                                                       WeaponToss, CornerArt, AmbientField, IntroScene, MainMenu, MenuFade,
                                                       LoadingFade, CreditsRoll, VerdictScreen, VerdictBanner, DebugReadout,
                                                       OriginalType, FighterMotion,
-                                                      ArenaDraw (each round's arena roll and the arena it lands on),
+                                                      ArenaDraw (each match's arena roll and the arena it lands on),
                                                       FighterDraw (each match's fighter roll and the pair it lands on),
                                                       FighterLineup (where the fighters stand, their fade and tint)
   StreamingAssets/Settings/tuning.json                every tuning number, as data
@@ -246,7 +246,7 @@ The `Options`, `Scores`, character select and map rooms of the original are drop
 ### 4.7 Arenas {#UQD-§4.7}
 `Data/assets.json`'s `arenas` section, written by `OriginalAssetGenerator` from `load_arenas.gml`, names the 11 arenas
 with a description, a backdrop sprite and the ambient effect `setup_arena_properties.gml` placed there. The authority
-draws an arena roll per round (`MatchSession.ArenaRoll`, `OnlineDuelHost.ArenaRoll` online so both peers agree) and
+draws an arena roll per match (`MatchSession.ArenaRoll`, `OnlineDuelHost.ArenaRoll` online so both peers agree) and
 `ArenaDraw.Pick` maps it onto the list; `ArenaBackdrop` is the arena as the scene carries it. The cue inverts the
 backdrop only (a real colour invert). The arena's ambient effect (`AmbientField`, `DuelAmbient`) is cosmetic and waits
 while the duel waits on the first strike. Details are in [§6](#UQD-§6).
@@ -377,11 +377,11 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   `sfx_defeat.ogg`: the original's `.ogg` fails Unity's FMOD import, so the committed re-encode of its `.wav`
   (UQD-T24) is kept and the generator never overwrites it.
 
-- ✅ The 11 arenas and a real invert (UQD-T33, `ArenaDrawTests`, `DuelViewTests`): every round is fought on one of
+- ✅ The 11 arenas and a real invert (UQD-T33, `ArenaDrawTests`, `DuelViewTests`): every match is fought on one of
   `load_arenas.gml`'s arenas (Wastes of Nod, Pastel Fields, Frozen Tundra, The Fumaroles, Dusty Junction, Sozza's Point,
   South Ridge, Arid Plains, Interior Sea, Tu'verone Forest, Harvest Cresent), read from the data file
   `Data/assets.json` (name, description, backdrop sprite) by `DuelSceneBuilder` into `DuelView`'s serialized arena list.
-  The authority draws an arena roll with each round (`MatchSession.ArenaRoll` locally, `OnlineDuelHost.ArenaRoll`
+  The authority draws an arena roll with each match (`MatchSession.ArenaRoll` locally, `OnlineDuelHost.ArenaRoll`
   online, sent in the `RoundBegan` RPC so both peers show the same arena) and `ArenaDraw.Pick` maps it onto the list;
   the backdrop covers the screen behind everything else. On the cue the whole backdrop inverts with a UI Toolkit
   `invert` filter, the same per-pixel `1 - colour` as `obj_arena`'s `draw_set_blend_mode_ext(10, 1)` (inverse
@@ -389,9 +389,10 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   the original only the backdrop inverts, not what is drawn over it.
   - **Fixed defect**: `load_arenas.gml` gives South Ridge Sozza's Point's id (5), so South Ridge overwrote it and
     `irandom_range(0, 9)` could only ever draw 10 arenas; every one of the 11 is drawn now.
-  - **Deliberate deviation**: the original rolled the arena once per game (`load_arenas.gml` and
-    `choose_random_arena.gml`, kept by `obj_game`); the rebuild draws one per round, so the duels of a match do not
-    all look alike (UQD-US-P2).
+  - **Once per match, matches** (UQD-T63): the original rolled its arena once per game (`choose_random_arena.gml`,
+    called only from `obj_location`, the arena kept by `obj_game`); the rebuild draws one with each match and keeps it
+    for every round of that match. (UQD-T33 had drawn one per round; restored to the original under the faithful-port
+    rule.)
   - The display name keeps the original's spelling, "Harvest Cresent", as `load_arenas.gml` has it; the names and
     descriptions were only shown on the dropped overworld (`obj_locationart`), so nothing shows them yet.
 
@@ -693,9 +694,9 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
     rain (-1) draw over the fighters and under the splatters; butterflies, flies and fireflies (0, the fighters' own)
     just behind the fighters and over the blood drops (1). They are not inverted on the cue: `obj_arena` inverted only
     what was drawn before it, at depth 100.
-  - **Per round, deliberate**: the original rolled its arena once per game ([§6](#UQD-§6), UQD-T33), so its emitter ran
-    for the whole game; the rebuild's arena changes each round, under the loading fade's full image, and the new arena's
-    effect starts afresh there as the original's did with the room (the streams start from an empty sky).
+  - **Per match, matches** (UQD-T63): the original rolled its arena once per game, so its emitter ran for the whole
+    game; the rebuild keeps the match's arena, and its effect, through every round, and a new match's arena starts its
+    effect afresh as the original's did with the room (the streams start from an empty sky).
   - **Options**: the original's rain (`obj_rain_emitter` / `obj_raindrop`), leaf (`obj_leaf_emitter`) and firefly
     (`obj_firefly_emitter` / `obj_firefly`, `ai_firefly`) emitters, which no arena created, are built with their
     figures: an arena's `ambient` may name "rain", "leaf" or "firefly", and `DuelAmbient.Override` plays any of the
