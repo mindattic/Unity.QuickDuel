@@ -261,6 +261,25 @@ draws an arena roll per match (`MatchSession.ArenaRoll`, `OnlineDuelHost.ArenaRo
 backdrop only (a real colour invert). The arena's ambient effect (`AmbientField`, `DuelAmbient`) is cosmetic and waits
 while the duel waits on the first strike. Details are in [§6](#UQD-§6).
 
+### 4.8 Deviations from the original {#UQD-§4.8}
+Current with the faithfulness audit of 2026-10-26 (UQD-T63 to T69, T73). Under the faithful-port rule a working
+original behaviour is kept exactly; these are the only places the rebuild differs on purpose, each with its reason.
+
+- **Event-timestamp timing** instead of 1 ms ticks at 1000 fps ([UQD-LAW-2](#UQD-LAW-2)).
+- **No clash**: a dead heat scores nobody ([§3](#UQD-§3)).
+- **Cosmetic fighters, fixed AI ranges**: no stats, and Easy / Normal / Hard stand in for the adaptive ART
+  ([§4.5](#UQD-§4.5)); both seats are drawn at random per match as there is no character select.
+- **Best of 3 for HP**: the match-deciding round stands in for the killing blow ([§3](#UQD-§3)).
+- **Taunt wording**: the Android build's ten lines replace "Premature Strike!" ([§6](#UQD-§6)).
+- **Online only**: the 3 s strike timeout, the host's verdict and the host's Space / Start to begin a round, because
+  a peer can vanish and online has no original ([§4.4](#UQD-§4.4)).
+- **No music**: the original's jukebox is commented out.
+
+Restored by the audit, so no longer deviations: the arena once per match (UQD-T63), the loser held on the first
+defeat frame unless the round decides the match (UQD-T64), Escape to the main menu at any moment (UQD-T65), the
+self-running startup with no Ready screen (UQD-T66), no in-duel mode cycle (UQD-T67), a local round with no strike
+timeout (UQD-T68), the original's strike keys (UQD-T69), and no HUD the gamescreen never drew (UQD-T73).
+
 ## 5. The Laws {#UQD-§5}
 
 Unity.QuickDuel **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
@@ -307,8 +326,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   human floor, online report grace, taunt lines) lives in `StreamingAssets/Settings/tuning.json` as named profiles
   (`standard` holds figures re-derived from BushidoCoda.gmx, see the tuning provenance below), validated on load with every problem named by file,
   key and line, and read through `TuningRegistry` / `TuningStore`; Core has no number baked in. The
-  `com.mindattic.unity.shared` package is in the manifest, ready for the player-profile work (the registry itself is
-  Core code; nothing yet uses the package). `TuningStore` reads the file from disk, so it is desktop-only: Android
+  `com.mindattic.unity.shared` package is in the manifest, the shared profile sets the game's volume and session mute
+  (UQD-T61, UQD-T74; the registry itself is Core code). `TuningStore` reads the file from disk, so it is desktop-only: Android
   and WebGL need a UnityWebRequest source before they ship.
 - ✅ Tuning provenance (UQD-T57, checked against `BushidoCoda.gmx` and the Android `BattleSystem.java`, 03-15-13):
   - **Countdown, 4 s**: `obj_gameclock` `countdown_time = 4 * room_speed`, "Get Ready" for the first quarter, then
@@ -781,8 +800,8 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   verdicts, each drawn and committed under `docs/parity` beside the original's own art. **The repo is complete**
   (AGENTS.md rule 8): every [RECONSTRUCTION](RECONSTRUCTION.md) row is built or dropped on
   purpose. What remains below is optional future work, not part of the proof of concept.
-- ⬜ Player profiles through `com.mindattic.unity.shared`: the package is in the manifest but only its session mute is
-  used; the tuning registry stays the game's own (UQD-T28).
+- ⬜ Player profiles through `com.mindattic.unity.shared`: only the shared profile's sound-effect volume and mute (the
+  session mute among them) are used (UQD-T61, UQD-T74); the tuning registry stays the game's own (UQD-T28).
 - ⬜ A tuning source for Android and WebGL (`TuningStore` reads the file from disk, so it is desktop-only).
 - ⬜ Online play from the main menu: Host / Join lives in the Duel scene only ([§3](#UQD-§3)).
 - ⬜ The Unity CI job has not yet run on a hosted runner: it waits for the Unity license secrets (UQD-T52).

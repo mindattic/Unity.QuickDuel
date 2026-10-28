@@ -210,9 +210,25 @@ best worked after UQD-T30.
 
 ## 5. Deliberate deviations (stay unless the BIBLE changes)
 
+Current with the faithfulness audit of 2026-10-26 (UQD-T63 to T69, and the follow-ups UQD-T70, T73): the audit
+compared the rebuild with the original line by line under the faithful-port rule, and every behaviour that had
+drifted from a working original was restored. What is left is only what the original could not give a Unity
+rebuild, each recorded in the BIBLE ([section 4.8](BIBLE.md#UQD-§4.8)).
+
 - Reactions are timed by input event timestamp, not by ticks at 1000 fps ([UQD-LAW-2](BIBLE.md#UQD-LAW-2)).
 - No clash: a dead heat scores nobody.
 - Fighters are cosmetic, with no stats; the computer opponent has fixed Easy / Normal / Hard ranges, not an
   adaptive ART.
-- A match is best of 3, not HP.
+- A match is best of 3, not HP; the round that decides the match stands in for the killing blow.
+- Both seats' fighters are drawn at random per match, as there is no character select or `choose_opponent`.
+- The taunt wording is the Android build's ten lines, drawn where the GameMaker build wrote "Premature Strike!".
+- Online rounds (no original) give up after a 3 s strike timeout, show the host's verdict and let the host's Space
+  / Start begin each round; local rounds have none of these.
 - The original plays no music (its jukebox script is commented out), so none is added.
+
+Restored by the audit, no longer deviations: the arena is rolled once per match, not per round (UQD-T63); a round's
+loser holds its first defeat frame unless the round decides the match (UQD-T64); Escape leaves the duel for the main
+menu at any moment (UQD-T65); the startup runs by itself and a click skips it, with no Ready screen (UQD-T66); no
+in-duel mode cycle or mode line (UQD-T67); a local round waits for the first strike with no timeout (UQD-T68); the
+original's strike keys, Space or mouse against the computer and Left / Right Ctrl in Versus (UQD-T69); and the
+per-side reaction lines and the red "!" the gamescreen never drew are gone (UQD-T73).
