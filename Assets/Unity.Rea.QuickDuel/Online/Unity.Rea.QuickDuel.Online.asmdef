@@ -1,9 +1,9 @@
 {
-    "name": "Unity.QuickDuel.Online",
+    "name": "Unity.Rea.QuickDuel.Online",
     "rootNamespace": "Unity.QuickDuel.Online",
     "references": [
-        "Unity.QuickDuel.Core",
-        "Unity.QuickDuel.Runtime",
+        "Unity.Rea.QuickDuel.Core",
+        "Unity.Rea.QuickDuel.Runtime",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Netcode.Runtime",

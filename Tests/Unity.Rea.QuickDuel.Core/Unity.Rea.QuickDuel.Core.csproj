@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Compiles the engine-free Unity source (Assets/Unity.QuickDuel/Core) as a plain .NET Standard 2.1
+  <!-- Compiles the engine-free Unity source (Assets/Unity.Rea.QuickDuel/Core) as a plain .NET Standard 2.1
        library, matching Unity 6 (C# 9), so the duel rules are testable in seconds without the editor. -->
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
-    <AssemblyName>Unity.QuickDuel.Core</AssemblyName>
+    <AssemblyName>Unity.Rea.QuickDuel.Core</AssemblyName>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../Assets/Unity.QuickDuel/Core/**/*.cs" />
+    <Compile Include="../../Assets/Unity.Rea.QuickDuel/Core/**/*.cs" />
   </ItemGroup>
 </Project>

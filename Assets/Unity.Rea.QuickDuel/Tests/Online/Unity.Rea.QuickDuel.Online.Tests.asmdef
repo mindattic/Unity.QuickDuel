@@ -1,11 +1,11 @@
 {
-    "name": "Unity.QuickDuel.Online.Tests",
+    "name": "Unity.Rea.QuickDuel.Online.Tests",
     "rootNamespace": "Unity.QuickDuel.Online.Tests",
     "references": [
-        "Unity.QuickDuel.Core",
-        "Unity.QuickDuel.Runtime",
-        "Unity.QuickDuel.Online",
-        "Unity.QuickDuel.PlayMode.Tests",
+        "Unity.Rea.QuickDuel.Core",
+        "Unity.Rea.QuickDuel.Runtime",
+        "Unity.Rea.QuickDuel.Online",
+        "Unity.Rea.QuickDuel.PlayMode.Tests",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer.Testing",

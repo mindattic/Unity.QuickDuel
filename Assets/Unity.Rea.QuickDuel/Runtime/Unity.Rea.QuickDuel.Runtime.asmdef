@@ -1,7 +1,11 @@
 {
-    "name": "Unity.QuickDuel.Core",
-    "rootNamespace": "Unity.QuickDuel.Core",
-    "references": [],
+    "name": "Unity.Rea.QuickDuel.Runtime",
+    "rootNamespace": "Unity.QuickDuel",
+    "references": [
+        "Unity.Rea.QuickDuel.Core",
+        "Unity.InputSystem",
+        "Unity.Shared.Core"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -10,5 +14,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": true
+    "noEngineReferences": false
 }

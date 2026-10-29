@@ -4,10 +4,10 @@
     "updatedAt":  "2026-10-25T07:05:53.2507032Z",
     "savedBy":  "ryandebraal@mindattic.com",
     "repo":  {
-                 "name":  "Unity.QuickDuel",
-                 "path":  "D:\\Projects\\MindAttic\\Unity.QuickDuel",
+                 "name":  "Unity.Rea.QuickDuel",
+                 "path":  "D:\\Projects\\MindAttic\\Unity.Rea.QuickDuel",
                  "worktree":  false,
-                 "mainRepo":  "D:\\Projects\\MindAttic\\Unity.QuickDuel",
+                 "mainRepo":  "D:\\Projects\\MindAttic\\Unity.Rea.QuickDuel",
                  "branch":  "main"
              },
     "task":  "Allocate loop is off for this CLI (Unity.QuickDuel). Resume by running /allocate on again, or checking orchestrator next --repos \"Unity.QuickDuel\" --claim for more workable tickets.",

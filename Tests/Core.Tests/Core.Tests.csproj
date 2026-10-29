@@ -4,7 +4,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Unity.QuickDuel.Core.Tests</AssemblyName>
+    <AssemblyName>Unity.Rea.QuickDuel.Core.Tests</AssemblyName>
     <RootNamespace>Unity.QuickDuel.Core.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
@@ -18,6 +18,6 @@
     <Content Include="../../Assets/StreamingAssets/Settings/tuning.json" Link="Settings/tuning.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Unity.QuickDuel.Core/Unity.QuickDuel.Core.csproj" />
+    <ProjectReference Include="../Unity.Rea.QuickDuel.Core/Unity.Rea.QuickDuel.Core.csproj" />
   </ItemGroup>
 </Project>

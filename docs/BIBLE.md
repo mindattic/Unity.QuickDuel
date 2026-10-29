@@ -1,21 +1,21 @@
 ---
 codex: 1
-project: Unity.QuickDuel
+project: Unity.Rea.QuickDuel
 code: UQD
 layer: bible
 status: living
 updated: 2026-10-26
 ---
 
-# Unity.QuickDuel — Project Bible
-> Single source of truth for what Unity.QuickDuel IS, is NOT, and the rules that keep it coherent.
+# Unity.Rea.QuickDuel — Project Bible
+> Single source of truth for what Unity.Rea.QuickDuel IS, is NOT, and the rules that keep it coherent.
 > README says how to build and play it; [ORIGINS](ORIGINS.md) says where it comes from; this says how to
 > think about the game.
 
 Status legend: ✅ done (verified by a test/build) · 🟡 partial · ⬜ planned · `living`.
 
 ## 1. The one sentence {#UQD-§1}
-Unity.QuickDuel is a Unity 6 reaction duel: two duelists wait through a standoff of unknown length, the
+Unity.Rea.QuickDuel is a Unity 6 reaction duel: two duelists wait through a standoff of unknown length, the
 screen flashes and a blade is drawn, and whoever strikes first wins — strike before the cue and you lose.
 
 ## 2. The product promise {#UQD-§2}
@@ -58,7 +58,7 @@ screen flashes and a blade is drawn, and whoever strikes first wins — strike b
 ## 4. Architecture canon {#UQD-§4}
 
 ```
-Assets/Unity.QuickDuel/
+Assets/Unity.Rea.QuickDuel/
   Core/      engine-free rules (noEngineReferences)   Duel, DuelSettings, DuelResult, DuelJudge, Match, AiOpponent,
                                                       MatchSession, OnlineDuelHost, OnlineDuelClient
   Core/Settings/ the tuning registry                  TuningRegistry (named profiles), Json, SettingsReader, ISettingsSource
@@ -282,14 +282,14 @@ timeout (UQD-T68), the original's strike keys (UQD-T69), and no HUD the gamescre
 
 ## 5. The Laws {#UQD-§5}
 
-Unity.QuickDuel **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
+Unity.Rea.QuickDuel **inherits the org-wide house rules** in `../../MindAttic.HouseRules.md`. Of note here:
 HOUSE-LAW-8 (done is verified, not asserted), HOUSE-LAW-14 (docs publish through the shared docs site),
 HOUSE-LAW-15 (don't wait on a full local test run before landing).
 
 Project-specific laws:
 
 ### UQD-LAW-1 — The rules stay engine-free {#UQD-LAW-1}
-Everything that decides who wins lives in `Assets/Unity.QuickDuel/Core` with `noEngineReferences: true`,
+Everything that decides who wins lives in `Assets/Unity.Rea.QuickDuel/Core` with `noEngineReferences: true`,
 and compiles and is tested outside Unity through `Tests/Core.Tests`. Runtime code feeds timestamps in and
 draws what comes out; it never judges a round itself.
 
@@ -321,7 +321,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
 - ✅ Core tests in CI on push and pull request (UQD-T9).
 - ✅ Duel scene and controller (UQD-T3), two-player input by event timestamp (UQD-T2), presentation (UQD-T4),
   taunts (UQD-T6), original Bushido Coda audio (UQD-T5), vs-AI mode and match scoreboard (UQD-T15) —
-  PlayMode tests under `Assets/Unity.QuickDuel/Tests/PlayMode`.
+  PlayMode tests under `Assets/Unity.Rea.QuickDuel/Tests/PlayMode`.
 - ✅ Tuning is data (UQD-T28, `TuningRegistryTests`): every number (round clock, AI reaction ranges, wins needed,
   human floor, online report grace, taunt lines) lives in `StreamingAssets/Settings/tuning.json` as named profiles
   (`standard` holds figures re-derived from BushidoCoda.gmx, see the tuning provenance below), validated on load with every problem named by file,
@@ -360,7 +360,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   (the built-in pipeline, no URP in `Packages/manifest.json`, `GraphicsSettings.defaultRenderPipeline`
   null). URP 17.4.0 is now in the manifest; `RenderPipelineBuilder` (menu *QuickDuel → Build Render
   Pipeline*, or batch mode, and run by `DuelSceneBuilder` before every scene rebuild) creates
-  `Assets/Unity.QuickDuel/Rendering/QuickDuelURP.asset` (a forward Universal Renderer — the game has no
+  `Assets/Unity.Rea.QuickDuel/Rendering/QuickDuelURP.asset` (a forward Universal Renderer — the game has no
   sprites or 2D lights, only UI, so the 2D renderer is not needed) and assigns it as the default
   pipeline and on every quality level. The pipeline-agnostic layer is the whole game: `DuelView` draws
   only a UI Toolkit tree (UQD-T31) over a camera backdrop; no shader or material in the repo names URP.
@@ -773,7 +773,7 @@ live in [USER_STORIES.md](USER_STORIES.md) (generated — never hand-edited, see
   - **Icon, matches**: the player's icon is the original's `bushidocoda.ico` (its 64 x 64 frame, set by
     `PlayerIconBuilder` before every build); the product name stays QuickDuel.
 
-- ✅ Parity scene tests and the EditMode suite (UQD-T51): `Tests/Editor` (asmdef `Unity.QuickDuel.Editor.Tests`,
+- ✅ Parity scene tests and the EditMode suite (UQD-T51): `Tests/Editor` (asmdef `Unity.Rea.QuickDuel.Editor.Tests`,
   EditMode) opens each built scene and checks it, checks the build order and registration (`SceneBuilderTests`), runs the
   art and data generators on stand-in files and the catalog against the shipped manifest and files on disk
   (`OriginalAssetGeneratorTests`), and validates the settings registry against the shipped `tuning.json`

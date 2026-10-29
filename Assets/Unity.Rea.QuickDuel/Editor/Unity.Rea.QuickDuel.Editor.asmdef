@@ -1,10 +1,10 @@
 {
-    "name": "Unity.QuickDuel.Editor",
+    "name": "Unity.Rea.QuickDuel.Editor",
     "rootNamespace": "Unity.QuickDuel.EditorTools",
     "references": [
-        "Unity.QuickDuel.Core",
-        "Unity.QuickDuel.Runtime",
-        "Unity.QuickDuel.Online",
+        "Unity.Rea.QuickDuel.Core",
+        "Unity.Rea.QuickDuel.Runtime",
+        "Unity.Rea.QuickDuel.Online",
         "Unity.Multiplayer",
         "Unity.Multiplayer.Core",
         "Unity.Multiplayer.Editor",

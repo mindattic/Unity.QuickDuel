@@ -1,13 +1,13 @@
 ---
 codex: 1
-project: Unity.QuickDuel
+project: Unity.Rea.QuickDuel
 code: UQD
 layer: reconstruction
 status: living
 updated: 2026-10-26
 ---
 
-# Unity.QuickDuel - Reconstruction (REA of the original)
+# Unity.Rea.QuickDuel - Reconstruction (REA of the original)
 
 > What the original GameMaker prototype was, object by object, and where each piece stands in this rebuild.
 > Audit ticket UQD-T26 (owner 2026-10-23). Rules and laws live in the [BIBLE](BIBLE.md); the history of the

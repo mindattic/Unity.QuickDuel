@@ -1,16 +1,16 @@
 {
-    "name": "Unity.QuickDuel.PlayMode.Tests",
-    "rootNamespace": "Unity.QuickDuel.Tests",
+    "name": "Unity.Rea.QuickDuel.Editor.Tests",
+    "rootNamespace": "Unity.QuickDuel.EditorTests",
     "references": [
-        "Unity.QuickDuel.Core",
-        "Unity.QuickDuel.Runtime",
-        "Unity.InputSystem",
-        "Unity.Shared.Core",
-        "Unity.InputSystem.TestFramework",
+        "Unity.Rea.QuickDuel.Core",
+        "Unity.Rea.QuickDuel.Runtime",
+        "Unity.Rea.QuickDuel.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
