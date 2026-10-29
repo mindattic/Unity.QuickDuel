@@ -225,7 +225,7 @@ namespace Unity.QuickDuel.EditorTools
 
         private static AudioClip Clip(string name)
         {
-            var path = $"Assets/Unity.QuickDuel/Audio/{name}.ogg";
+            var path = $"Assets/Unity.Rea.QuickDuel/Audio/{name}.ogg";
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
             if (clip == null)
                 Debug.LogWarning($"QuickDuel: missing {path}");

@@ -29,7 +29,7 @@ namespace Unity.QuickDuel.EditorTools
     /// </summary>
     public static class OriginalFontBuilder
     {
-        public const string Folder = "Assets/Unity.QuickDuel/Resources/UI/Fonts";
+        public const string Folder = "Assets/Unity.Rea.QuickDuel/Resources/UI/Fonts";
         public const string ResourceFolder = "UI/Fonts";
 
         [MenuItem("QuickDuel/Build Original Font Assets")]

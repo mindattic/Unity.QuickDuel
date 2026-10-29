@@ -15,7 +15,7 @@ namespace Unity.QuickDuel.EditorTools
     // the Host / Join menu on the Duel object, wired in code. Run by DuelSceneBuilder; never by hand.
     public static class OnlineSceneBuilder
     {
-        public const string Folder = "Assets/Unity.QuickDuel/Online";
+        public const string Folder = "Assets/Unity.Rea.QuickDuel/Online";
         public const string PrefabPath = Folder + "/OnlineDuel.prefab";
         public const string PrefabListPath = Folder + "/QuickDuelNetPrefabs.asset";
 

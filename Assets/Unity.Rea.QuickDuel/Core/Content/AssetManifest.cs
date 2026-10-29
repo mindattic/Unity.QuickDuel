@@ -7,7 +7,7 @@ namespace Unity.QuickDuel.Core
     // data file Data/assets.json. The Editor's OriginalAssetGenerator copies each file out of BushidoCoda.gmx
     // and writes this file; everything that draws or plays an original asset finds it here by its GameMaker
     // name ("spr_character_ronin_attack", "sfx_hitground3", "fnt_oldenglish"), so no path is hard-coded in
-    // behaviour. Paths are relative to the game's asset folder (Assets/Unity.QuickDuel), use forward slashes
+    // behaviour. Paths are relative to the game's asset folder (Assets/Unity.Rea.QuickDuel), use forward slashes
     // and may not climb out of it. A bad file throws one SettingsException naming every problem by key and line.
     public sealed class AssetManifest
     {

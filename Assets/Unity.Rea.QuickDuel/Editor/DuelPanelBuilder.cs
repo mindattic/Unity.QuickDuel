@@ -23,7 +23,7 @@ namespace Unity.QuickDuel.EditorTools
     /// </summary>
     public static class DuelPanelBuilder
     {
-        public const string Folder = "Assets/Unity.QuickDuel/Resources/UI";
+        public const string Folder = "Assets/Unity.Rea.QuickDuel/Resources/UI";
         public const string PanelPath = Folder + "/DuelPanelSettings.asset";
         public const string ResourcePath = "UI/DuelPanelSettings";
 

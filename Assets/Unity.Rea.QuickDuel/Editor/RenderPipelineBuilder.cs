@@ -21,7 +21,7 @@ namespace Unity.QuickDuel.EditorTools
     /// </summary>
     public static class RenderPipelineBuilder
     {
-        public const string Folder = "Assets/Unity.QuickDuel/Rendering";
+        public const string Folder = "Assets/Unity.Rea.QuickDuel/Rendering";
         public const string PipelinePath = Folder + "/QuickDuelURP.asset";
         public const string RendererPath = Folder + "/QuickDuelURPRenderer.asset";
         private const string PostProcessDataPath = "Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset";

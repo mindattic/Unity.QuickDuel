@@ -205,7 +205,7 @@ namespace Unity.QuickDuel.EditorTests
             OriginalAssetImportRules.Forget();
             Assert.That(OriginalAssetImportRules.Governs(path), Is.True);
             Assert.That(OriginalAssetImportRules.SpriteOf(path).Id, Is.EqualTo("spr_cloud1"));
-            Assert.That(OriginalAssetImportRules.Governs("Assets/Unity.QuickDuel/Art/Nope.png"), Is.False);
+            Assert.That(OriginalAssetImportRules.Governs("Assets/Unity.Rea.QuickDuel/Art/Nope.png"), Is.False);
 
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             var settings = new TextureImporterSettings();

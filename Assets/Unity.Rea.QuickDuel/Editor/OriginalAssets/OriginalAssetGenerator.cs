@@ -24,7 +24,7 @@ namespace Unity.QuickDuel.EditorTools
     /// </summary>
     public static class OriginalAssetGenerator
     {
-        public const string GameFolder = "Assets/Unity.QuickDuel";
+        public const string GameFolder = "Assets/Unity.Rea.QuickDuel";
         public const string DataFolder = GameFolder + "/Data";
         public const string ManifestPath = DataFolder + "/" + AssetManifest.File;
         public const string CreditsFile = "Data/credits.txt";
