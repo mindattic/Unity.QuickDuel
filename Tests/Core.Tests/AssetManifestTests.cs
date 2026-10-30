@@ -12,7 +12,7 @@ namespace Unity.QuickDuel.Core.Tests
     public class AssetManifestTests
     {
         private static readonly string Repo = FindRepo();
-        private static readonly string GameFolder = Path.Combine(Repo, "Assets", "Unity.QuickDuel");
+        private static readonly string GameFolder = Path.Combine(Repo, "Assets", "Unity.Rea.QuickDuel");
         private static readonly Lazy<AssetManifest> Shipped = new Lazy<AssetManifest>(() =>
             AssetManifest.Load(new DirectorySettingsSource(Path.Combine(GameFolder, "Data"))));
 
