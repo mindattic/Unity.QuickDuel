@@ -10,7 +10,7 @@ namespace Unity.QuickDuel.Core.Tests
     // offsets in its own order, and the five shipped glyph tables read whole.
     public class OriginalTypeTests
     {
-        private static readonly string Fonts = Path.Combine(FindRepo(), "Assets", "Unity.QuickDuel", "Fonts");
+        private static readonly string Fonts = Path.Combine(FindRepo(), "Assets", "Unity.Rea.QuickDuel", "Fonts");
 
         private static string FindRepo()
         {
